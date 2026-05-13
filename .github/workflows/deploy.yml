@@ -41,52 +41,22 @@ jobs:
           npx wrangler deploy 2>&1 | tee /tmp/worker.log
           echo "worker_exit:${PIPESTATUS[0]}"
 
-      - name: CF Pages - List and clean stuck deployments
+      - name: Nuclear - Delete and recreate CF Pages project
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          DEPS=$(curl -s \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard/deployments?per_page=25" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
-          echo "$DEPS" > /tmp/deps-before.json
-          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MKCndpdGggb3BlbignL3RtcC9kZXBzLWJlZm9yZS5qc29uJykgYXMgZjoKICAgIGQgPSBqc29uLmxvYWQoZikKCnRva2VuID0gb3MuZW52aXJvblsnQ0xPVURGTEFSRV9BUElfVE9LRU4nXQphY2N0ICA9IG9zLmVudmlyb25bJ0NMT1VERkxBUkVfQUNDT1VOVF9JRCddCnJlc3VsdHMgPSBkLmdldCgncmVzdWx0JywgW10pCgpwcmludChmIlRvdGFsIGRlcGxveW1lbnRzOiB7bGVuKHJlc3VsdHMpfSIpCmZvciByIGluIHJlc3VsdHNbOjEwXToKICAgIGRlcF9pZCAgPSByLmdldCgnaWQnLCAnPycpWzo4XQogICAgYnJhbmNoICA9IHIuZ2V0KCdkZXBsb3ltZW50X3RyaWdnZXInLCB7fSkuZ2V0KCdtZXRhZGF0YScsIHt9KS5nZXQoJ2JyYW5jaCcsICc/JykKICAgIHN0YWdlICAgPSByLmdldCgnbGF0ZXN0X3N0YWdlJywge30pLmdldCgnbmFtZScsICc/JykKICAgIHN0YXR1cyAgPSByLmdldCgnbGF0ZXN0X3N0YWdlJywge30pLmdldCgnc3RhdHVzJywgJz8nKQogICAgYWxpYXNlcyA9IHIuZ2V0KCdhbGlhc2VzJykgb3IgW10KICAgIGlzX3Byb2QgPSAnbWlrLWRhc2hib2FyZC5wYWdlcy5kZXYnIGluIHN0cihhbGlhc2VzKQogICAgcHJpbnQoZiIgIHtkZXBfaWR9IGJyYW5jaD17YnJhbmNoOjEwfSB7c3RhZ2V9OntzdGF0dXM6OH0gcHJvZD17aXNfcHJvZH0iKQoKcHJpbnQoIj09PSBEZWxldGluZyBmYWlsZWQgZGVwbG95bWVudHMgPT09IikKZGVsZXRlZCA9IDAKZm9yIHIgaW4gcmVzdWx0czoKICAgIHN0YXR1cyAgPSByLmdldCgnbGF0ZXN0X3N0YWdlJywge30pLmdldCgnc3RhdHVzJywgJycpCiAgICBkZXBfaWQgID0gci5nZXQoJ2lkJywgJycpCiAgICBhbGlhc2VzID0gci5nZXQoJ2FsaWFzZXMnKSBvciBbXQogICAgaXNfcHJvZCA9ICdtaWstZGFzaGJvYXJkLnBhZ2VzLmRldicgaW4gc3RyKGFsaWFzZXMpCiAgICBpZiBzdGF0dXMgPT0gJ2ZhaWx1cmUnIGFuZCBkZXBfaWQgYW5kIG5vdCBpc19wcm9kOgogICAgICAgIHVybCA9IGYiaHR0cHM6Ly9hcGkuY2xvdWRmbGFyZS5jb20vY2xpZW50L3Y0L2FjY291bnRzL3thY2N0fS9wYWdlcy9wcm9qZWN0cy9taWstZGFzaGJvYXJkL2RlcGxveW1lbnRzL3tkZXBfaWR9P2ZvcmNlPXRydWUiCiAgICAgICAgcmVzID0gc3VicHJvY2Vzcy5ydW4oWydjdXJsJywgJy1zJywgJy1YJywgJ0RFTEVURScsIHVybCwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJy1IJywgZidBdXRob3JpemF0aW9uOiBCZWFyZXIge3Rva2VufSddLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgICAgICByZXN1bHQgPSBqc29uLmxvYWRzKHJlcy5zdGRvdXQpIGlmIHJlcy5zdGRvdXQuc3RyaXAoKSBlbHNlIHt9CiAgICAgICAgcHJpbnQoZiIgIERlbGV0ZWQge2RlcF9pZFs6OF19OiBzdWNjZXNzPXtyZXN1bHQuZ2V0KCdzdWNjZXNzJywgJz8nKX0iKQogICAgICAgIGRlbGV0ZWQgKz0gMQoKcHJpbnQoZiJEZWxldGVkIHtkZWxldGVkfSBmYWlsZWQgZGVwbG95bWVudHMiKQo=" | base64 -d > /tmp/list_deps.py
-          python3 /tmp/list_deps.py
+          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MsIHRpbWUKCnRva2VuID0gb3MuZW52aXJvblsnQ0xPVURGTEFSRV9BUElfVE9LRU4nXQphY2N0ICA9IG9zLmVudmlyb25bJ0NMT1VERkxBUkVfQUNDT1VOVF9JRCddCkJBU0UgID0gZiJodHRwczovL2FwaS5jbG91ZGZsYXJlLmNvbS9jbGllbnQvdjQvYWNjb3VudHMve2FjY3R9L3BhZ2VzL3Byb2plY3RzIgoKZGVmIGNmKG1ldGhvZCwgcGF0aCwgZGF0YT1Ob25lLCBiYXNlPUJBU0UpOgogICAgYXJncyA9IFsnY3VybCcsICctcycsICctWCcsIG1ldGhvZCwgYmFzZSArIHBhdGgsCiAgICAgICAgICAgICctSCcsIGYnQXV0aG9yaXphdGlvbjogQmVhcmVyIHt0b2tlbn0nLAogICAgICAgICAgICAnLUgnLCAnQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9qc29uJ10KICAgIGlmIGRhdGEgaXMgbm90IE5vbmU6CiAgICAgICAgYXJncyArPSBbJy1kJywganNvbi5kdW1wcyhkYXRhKV0KICAgIHIgPSBzdWJwcm9jZXNzLnJ1bihhcmdzLCBjYXB0dXJlX291dHB1dD1UcnVlLCB0ZXh0PVRydWUpCiAgICB0cnk6CiAgICAgICAgcmV0dXJuIGpzb24ubG9hZHMoci5zdGRvdXQpCiAgICBleGNlcHQ6CiAgICAgICAgcmV0dXJuIHsncmF3Jzogci5zdGRvdXRbOjIwMF19CgpwcmludCgiPT09IERlbGV0aW5nIG1pay1kYXNoYm9hcmQgQ0YgUGFnZXMgcHJvamVjdCA9PT0iKQpyID0gY2YoJ0RFTEVURScsICcvbWlrLWRhc2hib2FyZCcpCnByaW50KGYiRGVsZXRlOiBzdWNjZXNzPXtyLmdldCgnc3VjY2VzcycpfSBlcnJvcnM9e3IuZ2V0KCdlcnJvcnMnLCdub25lJyl9IikKCnRpbWUuc2xlZXAoNSkKCnByaW50KCJcbj09PSBSZWNyZWF0aW5nIG1pay1kYXNoYm9hcmQgQ0YgUGFnZXMgcHJvamVjdCA9PT0iKQpyMiA9IGNmKCdQT1NUJywgJycsIHsnbmFtZSc6ICdtaWstZGFzaGJvYXJkJywgJ3Byb2R1Y3Rpb25fYnJhbmNoJzogJ21haW4nfSkKcHJpbnQoZiJDcmVhdGU6IHN1Y2Nlc3M9e3IyLmdldCgnc3VjY2VzcycpfSIpCnByaW50KGYiRXJyb3JzOiB7cjIuZ2V0KCdlcnJvcnMnKX0iKQppZiBpc2luc3RhbmNlKHIyLmdldCgncmVzdWx0JyksIGRpY3QpOgogICAgcHJpbnQoZiIgIGlkPXtyMlsncmVzdWx0J10uZ2V0KCdpZCcsJz8nKVs6OF19IikKICAgIHByaW50KGYiICBzdWJkb21haW49e3IyWydyZXN1bHQnXS5nZXQoJ3N1YmRvbWFpbicsJz8nKX0iKQogICAgcHJpbnQoZiIgIHByb2R1Y3Rpb25fYnJhbmNoPXtyMlsncmVzdWx0J10uZ2V0KCdwcm9kdWN0aW9uX2JyYW5jaCcsJz8nKX0iKQoKdGltZS5zbGVlcCgzKQpwcmludCgiUHJvamVjdCByZWFkeSBmb3IgZnJlc2ggZGVwbG95bWVudCIpCg==" | base64 -d > /tmp/nuclear.py
+          python3 /tmp/nuclear.py 2>&1 | tee /tmp/nuclear.log
 
-      - name: CF Pages GET + PATCH production_branch
-        id: cf_diag
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          CF_GET=$(curl -s \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
-          echo "$CF_GET" > /tmp/cf-get.json
-          PROD_BRANCH=$(echo "$CF_GET" | python3 -c \
-            'import json,sys; d=json.load(sys.stdin); print(d.get("result",{}).get("production_branch","MISSING"))' \
-            2>/dev/null || echo "parse_error")
-          echo "CF GET: production_branch=${PROD_BRANCH}"
-          echo "PROD_BRANCH=${PROD_BRANCH}" >> $GITHUB_ENV
-          CF_PATCH=$(curl -s -X PATCH \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d '{"production_branch":"main"}')
-          echo "$CF_PATCH" > /tmp/cf-patch.json
-          PATCH_OK=$(echo "$CF_PATCH" | python3 -c \
-            'import json,sys; d=json.load(sys.stdin); print(d.get("success","?"))' \
-            2>/dev/null || echo "parse_error")
-          echo "CF PATCH: success=${PATCH_OK}"
-
-      - name: Deploy Pages
+      - name: Deploy Pages - fresh
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -o pipefail
-          echo "=== Deploying frontend to CF Pages (branch: main) ==="
+          echo "=== Fresh deploy to new mik-dashboard project ==="
           npx wrangler pages deploy ../frontend \
             --project-name mik-dashboard \
             --branch main \
@@ -96,39 +66,20 @@ jobs:
           echo "pages_main_exit:${MAIN_EXIT}"
           DEPLOY_URL=$(grep -oP 'https://[a-f0-9]+\.mik-dashboard\.pages\.dev' /tmp/pages-main.log | tail -1 || echo "")
           echo "DEPLOY_URL=${DEPLOY_URL}" >> $GITHUB_ENV
-          echo "Deployment preview URL: ${DEPLOY_URL}"
+          echo "New deployment URL: ${DEPLOY_URL}"
           if [ "${MAIN_EXIT}" -ne 0 ]; then
-            echo "ERROR: wrangler pages deploy failed"
+            cat /tmp/pages-main.log
             exit "${MAIN_EXIT}"
           fi
 
-      - name: Verify deployment content
-        env:
-          DEPLOY_URL: ${{ env.DEPLOY_URL }}
+      - name: Verify production URL
         run: |
-          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MsIHJlCgojIFJlYWQgZGVwbG95IFVSTCBmcm9tIGVudiAoc2V0IGJ5IERlcGxveSBQYWdlcyBzdGVwKQpkZXBsb3lfdXJsID0gb3MuZW52aXJvbi5nZXQoJ0RFUExPWV9VUkwnLCAnJykKcHJpbnQoZiJEZXBsb3ltZW50LXNwZWNpZmljIFVSTDoge2RlcGxveV91cmx9IikKCmlmIGRlcGxveV91cmw6CiAgICAjIEZldGNoIHRoZSBkZXBsb3ltZW50LXNwZWNpZmljIFVSTAogICAgcmVzID0gc3VicHJvY2Vzcy5ydW4oWydjdXJsJywgJy1zJywgJy1MJywgJy0tbWF4LXRpbWUnLCAnMTUnLCBkZXBsb3lfdXJsXSwKICAgICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgIGJvZHkgPSByZXMuc3Rkb3V0CiAgICAjIENoZWNrIGZvciB2ZXJzaW9uIGNvbW1lbnQKICAgIG0gPSByZS5zZWFyY2gocic8IS0tLio/TUlLLio/LS0+JywgYm9keSkKICAgIGNvbW1lbnQgPSBtLmdyb3VwKDApIGlmIG0gZWxzZSAnTk9UIEZPVU5EJwogICAgcHJpbnQoZiJWZXJzaW9uIGNvbW1lbnQgaW4gZGVwbG95IFVSTDoge2NvbW1lbnR9IikKICAgICMgQ2hlY2sgZm9yIG9sZCBoYXJkY29kZWQgdGFicwogICAgaGFzX29sZF90YWJzID0gYm9vbChyZS5zZWFyY2gocic8YnV0dG9uW14+XSo+KD86UENNQXxTa2lmdHxUVEd8SUJUTXxNUEl8SUNDQSk8L2J1dHRvbj4nLCBib2R5KSkKICAgICMgQ2hlY2sgZm9yIGR5bmFtaWMgc291cmNlIGxvYWRpbmcKICAgIGhhc19keW5hbWljID0gJ3JlbmRlclNvdXJjZVRhYnMnIGluIGJvZHkgb3IgJ2xvYWRTb3VyY2VUYWJzJyBpbiBib2R5IG9yICdzb3VyY2UtdGFiJyBpbiBib2R5CiAgICBwcmludChmIkhhcyBvbGQgaGFyZGNvZGVkIHRhYnM6IHtoYXNfb2xkX3RhYnN9IikKICAgIHByaW50KGYiSGFzIGR5bmFtaWMgc291cmNlIGNvZGU6IHtoYXNfZHluYW1pY30iKQogICAgcHJpbnQoZiJCb2R5IGxlbmd0aDoge2xlbihib2R5KX0gY2hhcnMiKQplbHNlOgogICAgcHJpbnQoIk5vIERFUExPWV9VUkwgc2V0IikKCiMgQWxzbyBmZXRjaCB0aGUgcHJvZHVjdGlvbiBVUkwKcHJpbnQoIlxuPT09IFByb2R1Y3Rpb24gVVJMIGNoZWNrID09PSIpCnJlczIgPSBzdWJwcm9jZXNzLnJ1bihbJ2N1cmwnLCAnLXMnLCAnLUwnLCAnLS1tYXgtdGltZScsICcxNScsCiAgICAgICAgICAgICAgICAgICAgICAgJ2h0dHBzOi8vbWlrLWRhc2hib2FyZC5wYWdlcy5kZXYnLAogICAgICAgICAgICAgICAgICAgICAgICctdycsICdcbiUle2h0dHBfY29kZX0nXSwKICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKYm9keTIgPSByZXMyLnN0ZG91dApsaW5lcyA9IGJvZHkyLnJzcGxpdCgnXG4nLCAxKQpodHRwX2NvZGUgPSBsaW5lc1stMV0gaWYgbGVuKGxpbmVzKSA+IDEgZWxzZSAnPycKYm9keTJfY29udGVudCA9IGxpbmVzWzBdIGlmIGxlbihsaW5lcykgPiAxIGVsc2UgYm9keTIKbTIgPSByZS5zZWFyY2gocic8IS0tLio/TUlLLio/LS0+JywgYm9keTJfY29udGVudCkKY29tbWVudDIgPSBtMi5ncm91cCgwKSBpZiBtMiBlbHNlICdOT1QgRk9VTkQnCmhhc19vbGRfdGFiczIgPSBib29sKHJlLnNlYXJjaChyJzxidXR0b25bXj5dKj4oPzpQQ01BfFNraWZ0fFRUR3xJQlRNfE1QSXxJQ0NBKTwvYnV0dG9uPicsIGJvZHkyX2NvbnRlbnQpKQpwcmludChmIkhUVFAgc3RhdHVzOiB7aHR0cF9jb2RlfSIpCnByaW50KGYiVmVyc2lvbiBjb21tZW50IGluIHByb2QgVVJMOiB7Y29tbWVudDJ9IikKcHJpbnQoZiJIYXMgb2xkIGhhcmRjb2RlZCB0YWJzOiB7aGFzX29sZF90YWJzMn0iKQpwcmludChmIkJvZHkgbGVuZ3RoOiB7bGVuKGJvZHkyX2NvbnRlbnQpfSBjaGFycyIpCg==" | base64 -d > /tmp/verify_content.py
-          python3 /tmp/verify_content.py 2>&1 | tee /tmp/verify-content.log
-
-      - name: Purge CF Pages cache
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MKCnRva2VuID0gb3MuZW52aXJvblsnQ0xPVURGTEFSRV9BUElfVE9LRU4nXQphY2N0ICA9IG9zLmVudmlyb25bJ0NMT1VERkxBUkVfQUNDT1VOVF9JRCddCgojIFRyeSBtdWx0aXBsZSBDRiBjYWNoZSBwdXJnZSBhcHByb2FjaGVzCgojIDEuIENGIFBhZ2VzIHByb2plY3QtbGV2ZWwgY2FjaGUgcHVyZ2UgKHVuZG9jdW1lbnRlZCBidXQgbWF5IHdvcmspCnByaW50KCI9PT0gQXR0ZW1wdCAxOiBQYWdlcyBwcm9qZWN0IHB1cmdlX2NhY2hlID09PSIpCnVybDEgPSBmImh0dHBzOi8vYXBpLmNsb3VkZmxhcmUuY29tL2NsaWVudC92NC9hY2NvdW50cy97YWNjdH0vcGFnZXMvcHJvamVjdHMvbWlrLWRhc2hib2FyZC9kZXBsb3ltZW50cyIKcmVzID0gc3VicHJvY2Vzcy5ydW4oWydjdXJsJywgJy1zJywgJy1YJywgJ0dFVCcsIHVybDEgKyAnP3Blcl9wYWdlPTEnLAogICAgICAgICAgICAgICAgICAgICAgJy1IJywgZidBdXRob3JpemF0aW9uOiBCZWFyZXIge3Rva2VufSddLAogICAgICAgICAgICAgICAgICAgICBjYXB0dXJlX291dHB1dD1UcnVlLCB0ZXh0PVRydWUpCmQgPSBqc29uLmxvYWRzKHJlcy5zdGRvdXQpIGlmIHJlcy5zdGRvdXQuc3RyaXAoKSBlbHNlIHt9CmRlcHMgPSBkLmdldCgncmVzdWx0JywgW10pCmlmIGRlcHM6CiAgICBkZXBfaWQgPSBkZXBzWzBdLmdldCgnaWQnLCAnJykKICAgIHB1cmdlX3VybCA9IGYiaHR0cHM6Ly9hcGkuY2xvdWRmbGFyZS5jb20vY2xpZW50L3Y0L2FjY291bnRzL3thY2N0fS9wYWdlcy9wcm9qZWN0cy9taWstZGFzaGJvYXJkL2RlcGxveW1lbnRzL3tkZXBfaWR9L3B1cmdlLWNhY2hlIgogICAgcjIgPSBzdWJwcm9jZXNzLnJ1bihbJ2N1cmwnLCAnLXMnLCAnLVgnLCAnREVMRVRFJywgcHVyZ2VfdXJsLAogICAgICAgICAgICAgICAgICAgICAgICAgJy1IJywgZidBdXRob3JpemF0aW9uOiBCZWFyZXIge3Rva2VufScsCiAgICAgICAgICAgICAgICAgICAgICAgICAnLUgnLCAnQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9qc29uJ10sCiAgICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgIHJlc3VsdCA9IGpzb24ubG9hZHMocjIuc3Rkb3V0KSBpZiByMi5zdGRvdXQuc3RyaXAoKSBlbHNlIHt9CiAgICBwcmludChmIlB1cmdlIHJlc3VsdDoge3Jlc3VsdH0iKQplbHNlOgogICAgcHJpbnQoIk5vIGRlcGxveW1lbnRzIGZvdW5kIGZvciBwdXJnZSIpCgojIDIuIFRyeSBwYWdlcyBwcm9qZWN0LWxldmVsIHB1cmdlIGVuZHBvaW50CnByaW50KCJcbj09PSBBdHRlbXB0IDI6IFByb2plY3QtbGV2ZWwgcHVyZ2UgPT09IikKdXJsMiA9IGYiaHR0cHM6Ly9hcGkuY2xvdWRmbGFyZS5jb20vY2xpZW50L3Y0L2FjY291bnRzL3thY2N0fS9wYWdlcy9wcm9qZWN0cy9taWstZGFzaGJvYXJkL3B1cmdlX2NhY2hlIgpyMyA9IHN1YnByb2Nlc3MucnVuKFsnY3VybCcsICctcycsICctWCcsICdQT1NUJywgdXJsMiwKICAgICAgICAgICAgICAgICAgICAgJy1IJywgZidBdXRob3JpemF0aW9uOiBCZWFyZXIge3Rva2VufScsCiAgICAgICAgICAgICAgICAgICAgICctSCcsICdDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24nLAogICAgICAgICAgICAgICAgICAgICAnLWQnLCAne30nXSwKICAgICAgICAgICAgICAgICAgICBjYXB0dXJlX291dHB1dD1UcnVlLCB0ZXh0PVRydWUpCnJlc3VsdDMgPSBqc29uLmxvYWRzKHIzLnN0ZG91dCkgaWYgcjMuc3Rkb3V0LnN0cmlwKCkgZWxzZSB7fQpwcmludChmIlByb2plY3QgcHVyZ2UgcmVzdWx0OiB7cmVzdWx0My5nZXQoJ3N1Y2Nlc3MnLCc/Jyl9IGVycm9ycz17cmVzdWx0My5nZXQoJ2Vycm9ycycsJz8nKX0iKQoKIyAzLiBDaGVjayBpZiB0aGUgem9uZSBmb3IgcGFnZXMuZGV2IGlzIGFjY2Vzc2libGUKcHJpbnQoIlxuPT09IEF0dGVtcHQgMzogTGlzdCB6b25lcyBmb3IgcGFnZXMuZGV2ID09PSIpCnI0ID0gc3VicHJvY2Vzcy5ydW4oWydjdXJsJywgJy1zJywKICAgICAgICAgICAgICAgICAgICAgJ2h0dHBzOi8vYXBpLmNsb3VkZmxhcmUuY29tL2NsaWVudC92NC96b25lcz9uYW1lPXBhZ2VzLmRldicsCiAgICAgICAgICAgICAgICAgICAgICctSCcsIGYnQXV0aG9yaXphdGlvbjogQmVhcmVyIHt0b2tlbn0nXSwKICAgICAgICAgICAgICAgICAgICBjYXB0dXJlX291dHB1dD1UcnVlLCB0ZXh0PVRydWUpCnJlc3VsdDQgPSBqc29uLmxvYWRzKHI0LnN0ZG91dCkgaWYgcjQuc3Rkb3V0LnN0cmlwKCkgZWxzZSB7fQp6b25lcyA9IHJlc3VsdDQuZ2V0KCdyZXN1bHQnLCBbXSkKcHJpbnQoZiJab25lcyBmb3VuZCBmb3IgcGFnZXMuZGV2OiB7bGVuKHpvbmVzKX0iKQpmb3IgeiBpbiB6b25lczoKICAgIHByaW50KGYiICB6b25lX2lkPXt6LmdldCgnaWQnKX0gbmFtZT17ei5nZXQoJ25hbWUnKX0gc3RhdHVzPXt6LmdldCgnc3RhdHVzJyl9IikK" | base64 -d > /tmp/purge_cache.py
-          python3 /tmp/purge_cache.py 2>&1 | tee /tmp/purge.log
-
-      - name: Verify and promote production deployment
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          DEPLOY_URL: ${{ env.DEPLOY_URL }}
-        run: |
-          DEPS=$(curl -s \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard/deployments?per_page=10" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
-          echo "$DEPS" > /tmp/deps-after.json
-          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MKCndpdGggb3BlbignL3RtcC9kZXBzLWFmdGVyLmpzb24nKSBhcyBmOgogICAgZCA9IGpzb24ubG9hZChmKQoKdG9rZW4gPSBvcy5lbnZpcm9uWydDTE9VREZMQVJFX0FQSV9UT0tFTiddCmFjY3QgID0gb3MuZW52aXJvblsnQ0xPVURGTEFSRV9BQ0NPVU5UX0lEJ10KcmVzdWx0cyA9IGQuZ2V0KCdyZXN1bHQnLCBbXSkKCnByaW50KGYiPT09IERlcGxveW1lbnRzIGFmdGVyIGRlcGxveSAoe2xlbihyZXN1bHRzKX0gdG90YWwpID09PSIpCmZvciByIGluIHJlc3VsdHNbOjhdOgogICAgZGVwX2lkICA9IHIuZ2V0KCdpZCcsICc/JylbOjhdCiAgICBicmFuY2ggID0gci5nZXQoJ2RlcGxveW1lbnRfdHJpZ2dlcicsIHt9KS5nZXQoJ21ldGFkYXRhJywge30pLmdldCgnYnJhbmNoJywgJz8nKQogICAgc3RhZ2UgICA9IHIuZ2V0KCdsYXRlc3Rfc3RhZ2UnLCB7fSkuZ2V0KCduYW1lJywgJz8nKQogICAgc3RhdHVzICA9IHIuZ2V0KCdsYXRlc3Rfc3RhZ2UnLCB7fSkuZ2V0KCdzdGF0dXMnLCAnPycpCiAgICBhbGlhc2VzID0gci5nZXQoJ2FsaWFzZXMnKSBvciBbXQogICAgaXNfcHJvZCA9ICdtaWstZGFzaGJvYXJkLnBhZ2VzLmRldicgaW4gc3RyKGFsaWFzZXMpCiAgICBjcmVhdGVkID0gci5nZXQoJ2NyZWF0ZWRfb24nLCAnPycpWzoxNl0KICAgIHByaW50KGYiICB7ZGVwX2lkfSB7Y3JlYXRlZH0gYnJhbmNoPXticmFuY2g6MTB9IHtzdGFnZX06e3N0YXR1czo4fSBwcm9kPXtpc19wcm9kfSIpCgpwcm9kX2RlcCA9IE5vbmUKbGF0ZXN0X21haW5fc3VjY2VzcyA9IE5vbmUKZm9yIHIgaW4gcmVzdWx0czoKICAgIGFsaWFzZXMgPSByLmdldCgnYWxpYXNlcycpIG9yIFtdCiAgICBpZiAnbWlrLWRhc2hib2FyZC5wYWdlcy5kZXYnIGluIHN0cihhbGlhc2VzKToKICAgICAgICBwcm9kX2RlcCA9IHIuZ2V0KCdpZCcsICcnKQogICAgYnJhbmNoICA9IHIuZ2V0KCdkZXBsb3ltZW50X3RyaWdnZXInLCB7fSkuZ2V0KCdtZXRhZGF0YScsIHt9KS5nZXQoJ2JyYW5jaCcsICcnKQogICAgc3RhdHVzICA9IHIuZ2V0KCdsYXRlc3Rfc3RhZ2UnLCB7fSkuZ2V0KCdzdGF0dXMnLCAnJykKICAgIGlmIGJyYW5jaCA9PSAnbWFpbicgYW5kIHN0YXR1cyA9PSAnc3VjY2VzcycgYW5kIGxhdGVzdF9tYWluX3N1Y2Nlc3MgaXMgTm9uZToKICAgICAgICBsYXRlc3RfbWFpbl9zdWNjZXNzID0gci5nZXQoJ2lkJywgJycpCgpwcmludChmIlxuQ3VycmVudCBwcm9kdWN0aW9uIGRlcGxveW1lbnQ6IHtwcm9kX2RlcFs6OF0gaWYgcHJvZF9kZXAgZWxzZSAnTk9ORSd9IikKcHJpbnQoZiJMYXRlc3Qgc3VjY2VzcyBvbiBtYWluOiAgICAgICAge2xhdGVzdF9tYWluX3N1Y2Nlc3NbOjhdIGlmIGxhdGVzdF9tYWluX3N1Y2Nlc3MgZWxzZSAnTk9ORSd9IikKCmlmIGxhdGVzdF9tYWluX3N1Y2Nlc3M6CiAgICBpZiBsYXRlc3RfbWFpbl9zdWNjZXNzID09IHByb2RfZGVwOgogICAgICAgIHByaW50KCJPSzogUHJvZHVjdGlvbiBhbHJlYWR5IHBvaW50cyB0byBsYXRlc3QgbWFpbiBzdWNjZXNzIGRlcGxveW1lbnQiKQogICAgZWxzZToKICAgICAgICBwcmludCgiQUNUSU9OOiBSZXRyeWluZyBkZXBsb3ltZW50IHRvIHJlLXByb21vdGUgdG8gcHJvZHVjdGlvbi4uLiIpCiAgICAgICAgdXJsID0gZiJodHRwczovL2FwaS5jbG91ZGZsYXJlLmNvbS9jbGllbnQvdjQvYWNjb3VudHMve2FjY3R9L3BhZ2VzL3Byb2plY3RzL21pay1kYXNoYm9hcmQvZGVwbG95bWVudHMve2xhdGVzdF9tYWluX3N1Y2Nlc3N9L3JldHJ5IgogICAgICAgIHJlcyA9IHN1YnByb2Nlc3MucnVuKFsnY3VybCcsICctcycsICctWCcsICdQT1NUJywgdXJsLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnLUgnLCBmJ0F1dGhvcml6YXRpb246IEJlYXJlciB7dG9rZW59JywKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJy1IJywgJ0NvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vanNvbiddLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgICAgICByZXN1bHQgPSBqc29uLmxvYWRzKHJlcy5zdGRvdXQpIGlmIHJlcy5zdGRvdXQuc3RyaXAoKSBlbHNlIHt9CiAgICAgICAgbmV3X2lkID0gJycKICAgICAgICBpZiBpc2luc3RhbmNlKHJlc3VsdC5nZXQoJ3Jlc3VsdCcpLCBkaWN0KToKICAgICAgICAgICAgbmV3X2lkID0gcmVzdWx0WydyZXN1bHQnXS5nZXQoJ2lkJywgJycpWzo4XQogICAgICAgIHdpdGggb3BlbignL3RtcC9yZXRyeS5qc29uJywgJ3cnKSBhcyBmOgogICAgICAgICAgICBqc29uLmR1bXAocmVzdWx0LCBmLCBpbmRlbnQ9MikKICAgICAgICBwcmludChmIlJldHJ5OiBzdWNjZXNzPXtyZXN1bHQuZ2V0KCdzdWNjZXNzJywnPycpfSBuZXdfZGVwbG95X2lkPXtuZXdfaWR9IikKZWxzZToKICAgIHByaW50KCJXQVJOSU5HOiBObyBzdWNjZXNzZnVsIG1haW4gYnJhbmNoIGRlcGxveW1lbnQgZm91bmQhIikK" | base64 -d > /tmp/verify_promote.py
-          python3 /tmp/verify_promote.py
+          sleep 5
+          echo "=== Fetching mik-dashboard.pages.dev ==="
+          curl -s -L --max-time 15 https://mik-dashboard.pages.dev \
+            -w "\nHTTP_CODE:%{http_code}" | tee /tmp/prod-check.txt
+          echo ""
+          grep -oP '<!--.*?MIK.*?-->' /tmp/prod-check.txt || echo "No MIK comment found"
 
       - name: Push diagnostics to deploy-output
         if: always()
@@ -140,39 +91,24 @@ jobs:
         run: |
           {
             echo "=== RUN ${GH_RUN} SHA=${GH_SHA} ==="
-            echo "--- CF GET ---"
-            cat /tmp/cf-get.json 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- CF PATCH ---"
-            cat /tmp/cf-patch.json 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- DEPS BEFORE ---"
-            cat /tmp/deps-before.json 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- DEPS AFTER ---"
-            cat /tmp/deps-after.json 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- RETRY ---"
-            cat /tmp/retry.json 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- VERIFY CONTENT ---"
-            cat /tmp/verify-content.log 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- PURGE LOG ---"
-            cat /tmp/purge.log 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- WORKER LOG ---"
-            cat /tmp/worker.log 2>/dev/null || echo "missing"
+            echo "--- NUCLEAR LOG ---"
+            cat /tmp/nuclear.log 2>/dev/null || echo "missing"
             echo ""
             echo "--- PAGES MAIN LOG ---"
             cat /tmp/pages-main.log 2>/dev/null || echo "missing"
+            echo ""
+            echo "--- PROD CHECK ---"
+            cat /tmp/prod-check.txt 2>/dev/null || echo "missing"
+            echo ""
+            echo "--- WORKER LOG ---"
+            cat /tmp/worker.log 2>/dev/null || echo "missing"
           } > /tmp/diag.txt
           B64=$(base64 -w 0 /tmp/diag.txt)
           MAIN_SHA=$(git rev-parse HEAD)
           curl -s -X POST "https://api.github.com/repos/${GH_REPO}/git/refs" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "{"ref":"refs/heads/deploy-output","sha":"${MAIN_SHA}"}" > /tmp/branch-create.log
+            -d "{"ref":"refs/heads/deploy-output","sha":"${MAIN_SHA}"}" > /dev/null
           EXISTING_SHA=$(curl -s \
             "https://api.github.com/repos/${GH_REPO}/contents/diag.txt?ref=deploy-output" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
@@ -187,7 +123,4 @@ jobs:
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "${PUT_BODY}")
-          STATUS=$(echo "${RESULT}" | python3 -c \
-            'import json,sys; d=json.load(sys.stdin); print(d.get("content",{}).get("name","FAIL:"+str(d.get("message","?"))))' \
-            2>/dev/null || echo "error")
-          echo "deploy-output upload: ${STATUS}"
+          echo "upload: $(echo ${RESULT} | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("content",{}).get("name","FAIL"))' 2>/dev/null)"
