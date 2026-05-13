@@ -41,6 +41,18 @@ jobs:
           npx wrangler deploy 2>&1 | tee /tmp/worker.log
           echo "worker_exit:${PIPESTATUS[0]}"
 
+      - name: CF Pages - List and clean stuck deployments
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          DEPS=$(curl -s \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard/deployments?per_page=25" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
+          echo "$DEPS" > /tmp/deps-before.json
+          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MKCndpdGggb3BlbignL3RtcC9kZXBzLWJlZm9yZS5qc29uJykgYXMgZjoKICAgIGQgPSBqc29uLmxvYWQoZikKCnRva2VuID0gb3MuZW52aXJvblsnQ0xPVURGTEFSRV9BUElfVE9LRU4nXQphY2N0ICA9IG9zLmVudmlyb25bJ0NMT1VERkxBUkVfQUNDT1VOVF9JRCddCnJlc3VsdHMgPSBkLmdldCgncmVzdWx0JywgW10pCgpwcmludChmIlRvdGFsIGRlcGxveW1lbnRzOiB7bGVuKHJlc3VsdHMpfSIpCmZvciByIGluIHJlc3VsdHNbOjEwXToKICAgIGRlcF9pZCAgPSByLmdldCgnaWQnLCAnPycpWzo4XQogICAgYnJhbmNoICA9IHIuZ2V0KCdkZXBsb3ltZW50X3RyaWdnZXInLCB7fSkuZ2V0KCdtZXRhZGF0YScsIHt9KS5nZXQoJ2JyYW5jaCcsICc/JykKICAgIHN0YWdlICAgPSByLmdldCgnbGF0ZXN0X3N0YWdlJywge30pLmdldCgnbmFtZScsICc/JykKICAgIHN0YXR1cyAgPSByLmdldCgnbGF0ZXN0X3N0YWdlJywge30pLmdldCgnc3RhdHVzJywgJz8nKQogICAgYWxpYXNlcyA9IHIuZ2V0KCdhbGlhc2VzJykgb3IgW10KICAgIGlzX3Byb2QgPSAnbWlrLWRhc2hib2FyZC5wYWdlcy5kZXYnIGluIHN0cihhbGlhc2VzKQogICAgcHJpbnQoZiIgIHtkZXBfaWR9IGJyYW5jaD17YnJhbmNoOjEwfSB7c3RhZ2V9OntzdGF0dXM6OH0gcHJvZD17aXNfcHJvZH0iKQoKcHJpbnQoIj09PSBEZWxldGluZyBmYWlsZWQgZGVwbG95bWVudHMgPT09IikKZGVsZXRlZCA9IDAKZm9yIHIgaW4gcmVzdWx0czoKICAgIHN0YXR1cyAgPSByLmdldCgnbGF0ZXN0X3N0YWdlJywge30pLmdldCgnc3RhdHVzJywgJycpCiAgICBkZXBfaWQgID0gci5nZXQoJ2lkJywgJycpCiAgICBhbGlhc2VzID0gci5nZXQoJ2FsaWFzZXMnKSBvciBbXQogICAgaXNfcHJvZCA9ICdtaWstZGFzaGJvYXJkLnBhZ2VzLmRldicgaW4gc3RyKGFsaWFzZXMpCiAgICBpZiBzdGF0dXMgPT0gJ2ZhaWx1cmUnIGFuZCBkZXBfaWQgYW5kIG5vdCBpc19wcm9kOgogICAgICAgIHVybCA9IGYiaHR0cHM6Ly9hcGkuY2xvdWRmbGFyZS5jb20vY2xpZW50L3Y0L2FjY291bnRzL3thY2N0fS9wYWdlcy9wcm9qZWN0cy9taWstZGFzaGJvYXJkL2RlcGxveW1lbnRzL3tkZXBfaWR9P2ZvcmNlPXRydWUiCiAgICAgICAgcmVzID0gc3VicHJvY2Vzcy5ydW4oWydjdXJsJywgJy1zJywgJy1YJywgJ0RFTEVURScsIHVybCwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJy1IJywgZidBdXRob3JpemF0aW9uOiBCZWFyZXIge3Rva2VufSddLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgICAgICByZXN1bHQgPSBqc29uLmxvYWRzKHJlcy5zdGRvdXQpIGlmIHJlcy5zdGRvdXQuc3RyaXAoKSBlbHNlIHt9CiAgICAgICAgcHJpbnQoZiIgIERlbGV0ZWQge2RlcF9pZFs6OF19OiBzdWNjZXNzPXtyZXN1bHQuZ2V0KCdzdWNjZXNzJywgJz8nKX0iKQogICAgICAgIGRlbGV0ZWQgKz0gMQoKcHJpbnQoZiJEZWxldGVkIHtkZWxldGVkfSBmYWlsZWQgZGVwbG95bWVudHMiKQo=" | base64 -d > /tmp/list_deps.py
+          python3 /tmp/list_deps.py
+
       - name: CF Pages GET + PATCH production_branch
         id: cf_diag
         env:
@@ -51,7 +63,6 @@ jobs:
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
           echo "$CF_GET" > /tmp/cf-get.json
-
           PROD_BRANCH=$(echo "$CF_GET" | python3 -c \
             'import json,sys; d=json.load(sys.stdin); print(d.get("result",{}).get("production_branch","MISSING"))' \
             2>/dev/null || echo "parse_error")
@@ -60,7 +71,6 @@ jobs:
             2>/dev/null || echo "parse_error")
           echo "CF GET: success=${CF_SUCCESS} production_branch=${PROD_BRANCH}"
           echo "PROD_BRANCH=${PROD_BRANCH}" >> $GITHUB_ENV
-
           CF_PATCH=$(curl -s -X PATCH \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
@@ -80,20 +90,36 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          PROD_BRANCH: ${{ env.PROD_BRANCH }}
         run: |
           set -o pipefail
-          echo "=== Deploy to branch: main (production after PATCH) ==="
-          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main 2>&1 | tee /tmp/pages-main.log
+          echo "=== Deploying frontend to CF Pages (branch: main) ==="
+          npx wrangler pages deploy ../frontend \
+            --project-name mik-dashboard \
+            --branch main \
+            --commit-dirty=true \
+            2>&1 | tee /tmp/pages-main.log
           MAIN_EXIT=${PIPESTATUS[0]}
           echo "pages_main_exit:${MAIN_EXIT}"
-
-          # If original production_branch differs from main, also deploy there
-          if [ -n "${PROD_BRANCH}" ] && [ "${PROD_BRANCH}" != "main" ] && [ "${PROD_BRANCH}" != "MISSING" ] && [ "${PROD_BRANCH}" != "parse_error" ]; then
-            echo "=== Also deploying to original production branch: ${PROD_BRANCH} ==="
-            npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch "${PROD_BRANCH}" 2>&1 | tee /tmp/pages-orig.log || true
-            echo "pages_orig_exit:${PIPESTATUS[0]}"
+          DEPLOY_URL=$(grep -oP 'https://[a-f0-9]+\.mik-dashboard\.pages\.dev' /tmp/pages-main.log | tail -1 || echo "")
+          echo "DEPLOY_URL=${DEPLOY_URL}" >> $GITHUB_ENV
+          echo "Deployment preview URL: ${DEPLOY_URL}"
+          if [ "${MAIN_EXIT}" -ne 0 ]; then
+            echo "ERROR: wrangler pages deploy failed"
+            exit "${MAIN_EXIT}"
           fi
+
+      - name: Verify and promote production deployment
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DEPLOY_URL: ${{ env.DEPLOY_URL }}
+        run: |
+          DEPS=$(curl -s \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard/deployments?per_page=10" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
+          echo "$DEPS" > /tmp/deps-after.json
+          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MKCndpdGggb3BlbignL3RtcC9kZXBzLWFmdGVyLmpzb24nKSBhcyBmOgogICAgZCA9IGpzb24ubG9hZChmKQoKdG9rZW4gPSBvcy5lbnZpcm9uWydDTE9VREZMQVJFX0FQSV9UT0tFTiddCmFjY3QgID0gb3MuZW52aXJvblsnQ0xPVURGTEFSRV9BQ0NPVU5UX0lEJ10KcmVzdWx0cyA9IGQuZ2V0KCdyZXN1bHQnLCBbXSkKCnByaW50KGYiPT09IERlcGxveW1lbnRzIGFmdGVyIGRlcGxveSAoe2xlbihyZXN1bHRzKX0gdG90YWwpID09PSIpCmZvciByIGluIHJlc3VsdHNbOjhdOgogICAgZGVwX2lkICA9IHIuZ2V0KCdpZCcsICc/JylbOjhdCiAgICBicmFuY2ggID0gci5nZXQoJ2RlcGxveW1lbnRfdHJpZ2dlcicsIHt9KS5nZXQoJ21ldGFkYXRhJywge30pLmdldCgnYnJhbmNoJywgJz8nKQogICAgc3RhZ2UgICA9IHIuZ2V0KCdsYXRlc3Rfc3RhZ2UnLCB7fSkuZ2V0KCduYW1lJywgJz8nKQogICAgc3RhdHVzICA9IHIuZ2V0KCdsYXRlc3Rfc3RhZ2UnLCB7fSkuZ2V0KCdzdGF0dXMnLCAnPycpCiAgICBhbGlhc2VzID0gci5nZXQoJ2FsaWFzZXMnKSBvciBbXQogICAgaXNfcHJvZCA9ICdtaWstZGFzaGJvYXJkLnBhZ2VzLmRldicgaW4gc3RyKGFsaWFzZXMpCiAgICBjcmVhdGVkID0gci5nZXQoJ2NyZWF0ZWRfb24nLCAnPycpWzoxNl0KICAgIHByaW50KGYiICB7ZGVwX2lkfSB7Y3JlYXRlZH0gYnJhbmNoPXticmFuY2g6MTB9IHtzdGFnZX06e3N0YXR1czo4fSBwcm9kPXtpc19wcm9kfSIpCgpwcm9kX2RlcCA9IE5vbmUKbGF0ZXN0X21haW5fc3VjY2VzcyA9IE5vbmUKZm9yIHIgaW4gcmVzdWx0czoKICAgIGFsaWFzZXMgPSByLmdldCgnYWxpYXNlcycpIG9yIFtdCiAgICBpZiAnbWlrLWRhc2hib2FyZC5wYWdlcy5kZXYnIGluIHN0cihhbGlhc2VzKToKICAgICAgICBwcm9kX2RlcCA9IHIuZ2V0KCdpZCcsICcnKQogICAgYnJhbmNoICA9IHIuZ2V0KCdkZXBsb3ltZW50X3RyaWdnZXInLCB7fSkuZ2V0KCdtZXRhZGF0YScsIHt9KS5nZXQoJ2JyYW5jaCcsICcnKQogICAgc3RhdHVzICA9IHIuZ2V0KCdsYXRlc3Rfc3RhZ2UnLCB7fSkuZ2V0KCdzdGF0dXMnLCAnJykKICAgIGlmIGJyYW5jaCA9PSAnbWFpbicgYW5kIHN0YXR1cyA9PSAnc3VjY2VzcycgYW5kIGxhdGVzdF9tYWluX3N1Y2Nlc3MgaXMgTm9uZToKICAgICAgICBsYXRlc3RfbWFpbl9zdWNjZXNzID0gci5nZXQoJ2lkJywgJycpCgpwcmludChmIlxuQ3VycmVudCBwcm9kdWN0aW9uIGRlcGxveW1lbnQ6IHtwcm9kX2RlcFs6OF0gaWYgcHJvZF9kZXAgZWxzZSAnTk9ORSd9IikKcHJpbnQoZiJMYXRlc3Qgc3VjY2VzcyBvbiBtYWluOiAgICAgICAge2xhdGVzdF9tYWluX3N1Y2Nlc3NbOjhdIGlmIGxhdGVzdF9tYWluX3N1Y2Nlc3MgZWxzZSAnTk9ORSd9IikKCmlmIGxhdGVzdF9tYWluX3N1Y2Nlc3M6CiAgICBpZiBsYXRlc3RfbWFpbl9zdWNjZXNzID09IHByb2RfZGVwOgogICAgICAgIHByaW50KCJPSzogUHJvZHVjdGlvbiBhbHJlYWR5IHBvaW50cyB0byBsYXRlc3QgbWFpbiBzdWNjZXNzIGRlcGxveW1lbnQiKQogICAgZWxzZToKICAgICAgICBwcmludCgiQUNUSU9OOiBSZXRyeWluZyBkZXBsb3ltZW50IHRvIHJlLXByb21vdGUgdG8gcHJvZHVjdGlvbi4uLiIpCiAgICAgICAgdXJsID0gZiJodHRwczovL2FwaS5jbG91ZGZsYXJlLmNvbS9jbGllbnQvdjQvYWNjb3VudHMve2FjY3R9L3BhZ2VzL3Byb2plY3RzL21pay1kYXNoYm9hcmQvZGVwbG95bWVudHMve2xhdGVzdF9tYWluX3N1Y2Nlc3N9L3JldHJ5IgogICAgICAgIHJlcyA9IHN1YnByb2Nlc3MucnVuKFsnY3VybCcsICctcycsICctWCcsICdQT1NUJywgdXJsLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnLUgnLCBmJ0F1dGhvcml6YXRpb246IEJlYXJlciB7dG9rZW59JywKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJy1IJywgJ0NvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vanNvbiddLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgICAgICByZXN1bHQgPSBqc29uLmxvYWRzKHJlcy5zdGRvdXQpIGlmIHJlcy5zdGRvdXQuc3RyaXAoKSBlbHNlIHt9CiAgICAgICAgbmV3X2lkID0gJycKICAgICAgICBpZiBpc2luc3RhbmNlKHJlc3VsdC5nZXQoJ3Jlc3VsdCcpLCBkaWN0KToKICAgICAgICAgICAgbmV3X2lkID0gcmVzdWx0WydyZXN1bHQnXS5nZXQoJ2lkJywgJycpWzo4XQogICAgICAgIHdpdGggb3BlbignL3RtcC9yZXRyeS5qc29uJywgJ3cnKSBhcyBmOgogICAgICAgICAgICBqc29uLmR1bXAocmVzdWx0LCBmLCBpbmRlbnQ9MikKICAgICAgICBwcmludChmIlJldHJ5OiBzdWNjZXNzPXtyZXN1bHQuZ2V0KCdzdWNjZXNzJywnPycpfSBuZXdfZGVwbG95X2lkPXtuZXdfaWR9IikKZWxzZToKICAgIHByaW50KCJXQVJOSU5HOiBObyBzdWNjZXNzZnVsIG1haW4gYnJhbmNoIGRlcGxveW1lbnQgZm91bmQhIikK" | base64 -d > /tmp/verify_promote.py
+          python3 /tmp/verify_promote.py
 
       - name: Push diagnostics to deploy-output
         if: always()
@@ -103,7 +129,6 @@ jobs:
           GH_RUN: ${{ github.run_number }}
           GH_SHA: ${{ github.sha }}
         run: |
-          # Combine all logs into one plain text file
           {
             echo "=== RUN ${GH_RUN} SHA=${GH_SHA} ==="
             echo "--- CF GET ---"
@@ -112,45 +137,41 @@ jobs:
             echo "--- CF PATCH ---"
             cat /tmp/cf-patch.json 2>/dev/null || echo "missing"
             echo ""
+            echo "--- DEPS BEFORE ---"
+            cat /tmp/deps-before.json 2>/dev/null || echo "missing"
+            echo ""
+            echo "--- DEPS AFTER ---"
+            cat /tmp/deps-after.json 2>/dev/null || echo "missing"
+            echo ""
+            echo "--- RETRY ---"
+            cat /tmp/retry.json 2>/dev/null || echo "missing"
+            echo ""
             echo "--- WORKER LOG ---"
             cat /tmp/worker.log 2>/dev/null || echo "missing"
             echo ""
             echo "--- PAGES MAIN LOG ---"
             cat /tmp/pages-main.log 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- PAGES ORIG LOG ---"
-            cat /tmp/pages-orig.log 2>/dev/null || echo "missing"
           } > /tmp/diag.txt
-
-          # Base64 encode (no newlines)
           B64=$(base64 -w 0 /tmp/diag.txt)
-
-          # Try to create deploy-output branch (ignore error if it already exists)
           MAIN_SHA=$(git rev-parse HEAD)
           curl -s -X POST "https://api.github.com/repos/${GH_REPO}/git/refs" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "{\"ref\":\"refs/heads/deploy-output\",\"sha\":\"${MAIN_SHA}\"}" > /tmp/branch-create.log
-
-          # Get existing file SHA (needed for update if file already exists)
+            -d "{"ref":"refs/heads/deploy-output","sha":"${MAIN_SHA}"}" > /tmp/branch-create.log
           EXISTING_SHA=$(curl -s \
             "https://api.github.com/repos/${GH_REPO}/contents/diag.txt?ref=deploy-output" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("sha",""))' 2>/dev/null || echo "")
-
-          # Build PUT body - include sha only if file exists
           if [ -n "${EXISTING_SHA}" ]; then
-            PUT_BODY="{\"message\":\"diag run#${GH_RUN}\",\"content\":\"${B64}\",\"branch\":\"deploy-output\",\"sha\":\"${EXISTING_SHA}\"}"
+            PUT_BODY="{"message":"diag run#${GH_RUN}","content":"${B64}","branch":"deploy-output","sha":"${EXISTING_SHA}"}"
           else
-            PUT_BODY="{\"message\":\"diag run#${GH_RUN}\",\"content\":\"${B64}\",\"branch\":\"deploy-output\"}"
+            PUT_BODY="{"message":"diag run#${GH_RUN}","content":"${B64}","branch":"deploy-output"}"
           fi
-
           RESULT=$(curl -s -X PUT \
             "https://api.github.com/repos/${GH_REPO}/contents/diag.txt" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "${PUT_BODY}")
-
           STATUS=$(echo "${RESULT}" | python3 -c \
             'import json,sys; d=json.load(sys.stdin); print(d.get("content",{}).get("name","FAIL:"+str(d.get("message","?"))))' \
             2>/dev/null || echo "error")
