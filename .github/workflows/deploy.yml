@@ -33,19 +33,15 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx wrangler deploy
 
-      - name: Upload HTML to Cloudflare Pages (Direct Upload API)
+      - name: Deploy Pages (try main branch = production)
+        working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "=== Cloudflare Pages Direct Upload ==="
-          echo "Account: $CLOUDFLARE_ACCOUNT_ID"
-
-          # Step 1: Create a new deployment
-          DEPLOY_RESPONSE=$(curl -s -X POST \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard/deployments" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -F "files=@index.html;filename=index.html")
-
-          echo "=== Deploy Response ==="
-          echo "$DEPLOY_RESPONSE" | python3 -c "import json,sys; d=json.load(sys.stdin); print('Success:', d.get('success')); print('ID:', d.get('result',{}).get('id','')); print('URL:', d.get('result',{}).get('url','')); [print('ERROR:', e) for e in d.get('errors',[])]" || echo "$DEPLOY_RESPONSE"
+          echo "=== Deploying with --branch main ==="
+          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main 2>&1 || true
+          echo "=== Deploying with --branch master ==="
+          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch master 2>&1 || true
+          echo "=== Deploying without --branch (direct production) ==="
+          npx wrangler pages deploy ../frontend --project-name mik-dashboard 2>&1
