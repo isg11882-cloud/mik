@@ -33,9 +33,9 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx wrangler deploy
 
-      - name: Deploy HTML to Cloudflare Pages
+      - name: Deploy HTML to Cloudflare Pages (production)
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main
+        run: npx wrangler pages deploy ../frontend --project-name mik-dashboard
