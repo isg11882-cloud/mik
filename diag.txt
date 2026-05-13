@@ -1,4 +1,4 @@
-=== RUN 40 SHA=9360bfc5bad51312a7060d0bb7bb5361adea9ae3 ===
+=== RUN 41 SHA=be408947d7ca41fb74e0bf3359ae0a33bc4b1c3f ===
 --- CF GET ---
 {
   "result": {
@@ -33,33 +33,33 @@
       }
     },
     "latest_deployment": {
-      "id": "0eca38bd-8d9a-44ad-a238-8a1cea051e9b",
-      "short_id": "0eca38bd",
+      "id": "a74d0f21-89e8-4fcb-a9c5-605b693c70c0",
+      "short_id": "a74d0f21",
       "project_id": "4d000306-adec-4d34-a911-b9171ac356ba",
       "project_name": "mik-dashboard",
       "environment": "production",
-      "url": "https://0eca38bd.mik-dashboard.pages.dev",
-      "created_on": "2026-05-13T13:09:08.304363Z",
-      "modified_on": "2026-05-13T13:09:10.525994Z",
+      "url": "https://a74d0f21.mik-dashboard.pages.dev",
+      "created_on": "2026-05-13T18:05:54.002607Z",
+      "modified_on": "2026-05-13T18:05:55.776889Z",
       "latest_stage": {
         "name": "deploy",
         "started_on": null,
-        "ended_on": "2026-05-13T13:09:10.525994Z",
+        "ended_on": "2026-05-13T18:05:55.776889Z",
         "status": "success"
       },
       "deployment_trigger": {
         "type": "ad_hoc",
         "metadata": {
           "branch": "main",
-          "commit_hash": "f569d58e1d2f9a5071554df0644efadc72b4d99f",
-          "commit_message": "fix: Pages 배포 — main/master/noBranch 3가지 시도 (production 브랜치 탐지)",
-          "commit_dirty": true
+          "commit_hash": "9360bfc5bad51312a7060d0bb7bb5361adea9ae3",
+          "commit_message": "fix: node-version 20→22 (wrangler 4.90.1 requires Node 22+)",
+          "commit_dirty": false
         }
       },
       "stages": [
         {
           "name": "queued",
-          "started_on": "2026-05-13T13:09:08.304363Z",
+          "started_on": "2026-05-13T18:05:54.002607Z",
           "ended_on": null,
           "status": "active"
         },
@@ -84,7 +84,7 @@
         {
           "name": "deploy",
           "started_on": null,
-          "ended_on": "2026-05-13T13:09:10.525994Z",
+          "ended_on": "2026-05-13T18:05:55.776889Z",
           "status": "success"
         }
       ],
@@ -107,33 +107,33 @@
       "uses_functions": false
     },
     "canonical_deployment": {
-      "id": "0eca38bd-8d9a-44ad-a238-8a1cea051e9b",
-      "short_id": "0eca38bd",
+      "id": "a74d0f21-89e8-4fcb-a9c5-605b693c70c0",
+      "short_id": "a74d0f21",
       "project_id": "4d000306-adec-4d34-a911-b9171ac356ba",
       "project_name": "mik-dashboard",
       "environment": "production",
-      "url": "https://0eca38bd.mik-dashboard.pages.dev",
-      "created_on": "2026-05-13T13:09:08.304363Z",
-      "modified_on": "2026-05-13T13:09:10.525994Z",
+      "url": "https://a74d0f21.mik-dashboard.pages.dev",
+      "created_on": "2026-05-13T18:05:54.002607Z",
+      "modified_on": "2026-05-13T18:05:55.776889Z",
       "latest_stage": {
         "name": "deploy",
         "started_on": null,
-        "ended_on": "2026-05-13T13:09:10.525994Z",
+        "ended_on": "2026-05-13T18:05:55.776889Z",
         "status": "success"
       },
       "deployment_trigger": {
         "type": "ad_hoc",
         "metadata": {
           "branch": "main",
-          "commit_hash": "f569d58e1d2f9a5071554df0644efadc72b4d99f",
-          "commit_message": "fix: Pages 배포 — main/master/noBranch 3가지 시도 (production 브랜치 탐지)",
-          "commit_dirty": true
+          "commit_hash": "9360bfc5bad51312a7060d0bb7bb5361adea9ae3",
+          "commit_message": "fix: node-version 20→22 (wrangler 4.90.1 requires Node 22+)",
+          "commit_dirty": false
         }
       },
       "stages": [
         {
           "name": "queued",
-          "started_on": "2026-05-13T13:09:08.304363Z",
+          "started_on": "2026-05-13T18:05:54.002607Z",
           "ended_on": null,
           "status": "active"
         },
@@ -158,7 +158,7 @@
         {
           "name": "deploy",
           "started_on": null,
-          "ended_on": "2026-05-13T13:09:10.525994Z",
+          "ended_on": "2026-05-13T18:05:55.776889Z",
           "status": "success"
         }
       ],
@@ -227,33 +227,33 @@
       }
     },
     "latest_deployment": {
-      "id": "0eca38bd-8d9a-44ad-a238-8a1cea051e9b",
-      "short_id": "0eca38bd",
+      "id": "a74d0f21-89e8-4fcb-a9c5-605b693c70c0",
+      "short_id": "a74d0f21",
       "project_id": "4d000306-adec-4d34-a911-b9171ac356ba",
       "project_name": "mik-dashboard",
       "environment": "production",
-      "url": "https://0eca38bd.mik-dashboard.pages.dev",
-      "created_on": "2026-05-13T13:09:08.304363Z",
-      "modified_on": "2026-05-13T13:09:10.525994Z",
+      "url": "https://a74d0f21.mik-dashboard.pages.dev",
+      "created_on": "2026-05-13T18:05:54.002607Z",
+      "modified_on": "2026-05-13T18:05:55.776889Z",
       "latest_stage": {
         "name": "deploy",
         "started_on": null,
-        "ended_on": "2026-05-13T13:09:10.525994Z",
+        "ended_on": "2026-05-13T18:05:55.776889Z",
         "status": "success"
       },
       "deployment_trigger": {
         "type": "ad_hoc",
         "metadata": {
           "branch": "main",
-          "commit_hash": "f569d58e1d2f9a5071554df0644efadc72b4d99f",
-          "commit_message": "fix: Pages 배포 — main/master/noBranch 3가지 시도 (production 브랜치 탐지)",
-          "commit_dirty": true
+          "commit_hash": "9360bfc5bad51312a7060d0bb7bb5361adea9ae3",
+          "commit_message": "fix: node-version 20→22 (wrangler 4.90.1 requires Node 22+)",
+          "commit_dirty": false
         }
       },
       "stages": [
         {
           "name": "queued",
-          "started_on": "2026-05-13T13:09:08.304363Z",
+          "started_on": "2026-05-13T18:05:54.002607Z",
           "ended_on": null,
           "status": "active"
         },
@@ -278,7 +278,7 @@
         {
           "name": "deploy",
           "started_on": null,
-          "ended_on": "2026-05-13T13:09:10.525994Z",
+          "ended_on": "2026-05-13T18:05:55.776889Z",
           "status": "success"
         }
       ],
@@ -301,33 +301,33 @@
       "uses_functions": false
     },
     "canonical_deployment": {
-      "id": "0eca38bd-8d9a-44ad-a238-8a1cea051e9b",
-      "short_id": "0eca38bd",
+      "id": "a74d0f21-89e8-4fcb-a9c5-605b693c70c0",
+      "short_id": "a74d0f21",
       "project_id": "4d000306-adec-4d34-a911-b9171ac356ba",
       "project_name": "mik-dashboard",
       "environment": "production",
-      "url": "https://0eca38bd.mik-dashboard.pages.dev",
-      "created_on": "2026-05-13T13:09:08.304363Z",
-      "modified_on": "2026-05-13T13:09:10.525994Z",
+      "url": "https://a74d0f21.mik-dashboard.pages.dev",
+      "created_on": "2026-05-13T18:05:54.002607Z",
+      "modified_on": "2026-05-13T18:05:55.776889Z",
       "latest_stage": {
         "name": "deploy",
         "started_on": null,
-        "ended_on": "2026-05-13T13:09:10.525994Z",
+        "ended_on": "2026-05-13T18:05:55.776889Z",
         "status": "success"
       },
       "deployment_trigger": {
         "type": "ad_hoc",
         "metadata": {
           "branch": "main",
-          "commit_hash": "f569d58e1d2f9a5071554df0644efadc72b4d99f",
-          "commit_message": "fix: Pages 배포 — main/master/noBranch 3가지 시도 (production 브랜치 탐지)",
-          "commit_dirty": true
+          "commit_hash": "9360bfc5bad51312a7060d0bb7bb5361adea9ae3",
+          "commit_message": "fix: node-version 20→22 (wrangler 4.90.1 requires Node 22+)",
+          "commit_dirty": false
         }
       },
       "stages": [
         {
           "name": "queued",
-          "started_on": "2026-05-13T13:09:08.304363Z",
+          "started_on": "2026-05-13T18:05:54.002607Z",
           "ended_on": null,
           "status": "active"
         },
@@ -352,7 +352,7 @@
         {
           "name": "deploy",
           "started_on": null,
-          "ended_on": "2026-05-13T13:09:10.525994Z",
+          "ended_on": "2026-05-13T18:05:55.776889Z",
           "status": "success"
         }
       ],
@@ -399,11 +399,11 @@ env.AI                               AI
 env.ENVIRONMENT ("production")       Environment Variable      
 env.OLLAMA_MODEL ("qwen2.5:7b")      Environment Variable      
 
-Uploaded mik-worker (2.73 sec)
-Deployed mik-worker triggers (1.03 sec)
+Uploaded mik-worker (2.30 sec)
+Deployed mik-worker triggers (1.00 sec)
   https://mik-worker.isg11882.workers.dev
   schedule: 0 * * * *
-Current Version ID: 606509a6-b48c-4216-8eb5-71c43a1efc83
+Current Version ID: fe68b1cc-ce2b-4ef7-86c8-f32b8160aa20
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 
@@ -418,11 +418,12 @@ Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more
   Ignoring configuration file for now, and proceeding with project deploy.
 
 
+Uploading... (1/2)
 Uploading... (2/2)
-✨ Success! Uploaded 0 files (2 already uploaded) (0.37 sec)
+✨ Success! Uploaded 1 files (1 already uploaded) (1.15 sec)
 
 🌎 Deploying...
-✨ Deployment complete! Take a peek over at https://a74d0f21.mik-dashboard.pages.dev
+✨ Deployment complete! Take a peek over at https://984590c2.mik-dashboard.pages.dev
 
 --- PAGES ORIG LOG ---
 missing
