@@ -1,0 +1,39 @@
+name: Deploy MIK Worker to Cloudflare
+
+on:
+  push:
+    branches:
+      - main   # 또는 master — 실제 기본 브랜치명으로 맞춰주세요
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Secrets below are injected into the Worker at deploy time.
+          # They must be set in GitHub → Settings → Secrets and variables → Actions.
+          secrets: |
+            OLLAMA_URL
+            JWT_SECRET
+        env:
+          OLLAMA_URL: ${{ secrets.OLLAMA_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
