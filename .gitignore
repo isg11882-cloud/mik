@@ -1,0 +1,13 @@
+# Secrets — NEVER commit
+.dev.vars
+
+# Wrangler build artifacts
+.wrangler/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

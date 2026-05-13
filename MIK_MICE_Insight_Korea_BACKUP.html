@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIK — MICE Insight Korea</title>
+<style>
+  /* =========================================
+     CSS Reset & Variables
+  ========================================= */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2563EB;
+    --primary-light: #EFF6FF;
+    --primary-dark: #1E40AF;
+    --accent: #0EA5E9;
+    --accent2: #7C3AED;
+    --success: #10B981;
+    --warn: #F59E0B;
+    --danger: #EF4444;
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --border: #E2E8F0;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --text-muted: #94A3B8;
+    --sidebar-w: 64px;
+    --list-w: 380px;
+    --radius: 10px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+    --shadow: 0 4px 16px rgba(0,0,0,.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+
+    /* Category tag colors */
+    --cat-exhibition: #E0F2FE;
+    --cat-exhibition-text: #0369A1;
+    --cat-convention: #F0FDF4;
+    --cat-convention-text: #15803D;
+    --cat-incentive: #FFF7ED;
+    --cat-incentive-text: #C2410C;
+    --cat-tech: #F5F3FF;
+    --cat-tech-text: #6D28D9;
+    --cat-bio: #FFF0F6;
+    --cat-bio-text: #9D174D;
+    --cat-policy: #FFFBEB;
+    --cat-policy-text: #92400E;
+  }
+
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* =========================================
+     Left Sidebar
+  ========================================= */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    color: white;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(37,99,235,.3);
+  }
+
+  .sidebar-divider {
+    width: 32px;
+    height: 1px;
+    background: var(--border);
+    margin: 6px 0;
+  }
+
+  .sidebar-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 18px;
+    transition: all .15s ease;
+    position: relative;
+    border: none;
+    background: transparent;
+  }
+  .sidebar-btn:hover { background: var(--primary-light); color: var(--primary); }
+  .sidebar-btn.active { background: var(--primary-light); color: var(--primary); }
+  .sidebar-btn .badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--danger);
+    border: 1.5px solid white;
+  }
+
+  /* =========================================
+     News List Panel
+  ========================================= */
+  .list-panel {
+    width: var(--list-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .list-header {
+    padding: 16px 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    transition: border-color .15s;
+  }
+  .search-box:focus-within { border-color: var(--primary); background: white; }
+  .search-box input {
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    color: var(--text-primary);
+    outline: none;
+    width: 100%;
+  }
+  .search-box input::placeholder { color: var(--text-muted); }
+  .search-icon { color: var(--text-muted); font-size: 14px; }
+
+  /* Source tabs */
+  .source-tabs {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 0;
+  }
+  .source-tabs::-webkit-scrollbar { display: none; }
+  .source-tab {
+    padding: 7px 12px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    white-space: nowrap;
+    transition: all .15s;
+    flex-shrink: 0;
+  }
+  .source-tab:hover { color: var(--primary); }
+  .source-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+  /* Sub-filter */
+  .sub-filter {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .filter-pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    border: none;
+    background: var(--bg);
+    color: var(--text-secondary);
+  }
+  .filter-pill.active { background: var(--text-primary); color: white; }
+  .filter-pill:hover:not(.active) { background: var(--border); }
+
+  .sort-select {
+    margin-left: auto;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    background: white;
+    cursor: pointer;
+  }
+
+  /* Today's highlights */
+  .highlights {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%);
+  }
+  .highlights-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .highlight-card {
+    background: white;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    color: var(--text-primary);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all .15s;
+    line-height: 1.4;
+    box-shadow: var(--shadow-sm);
+  }
+  .highlight-card:hover { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+  .highlight-card .hc-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+
+  /* News items */
+  .news-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .news-list::-webkit-scrollbar { width: 4px; }
+  .news-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .news-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .news-item:hover { background: var(--primary-light); }
+  .news-item.active { background: var(--primary-light); border-left: 3px solid var(--primary); }
+
+  .news-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+
+  .news-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .news-item.active .news-item-title { color: var(--primary-dark); font-weight: 600; }
+
+  .news-item-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .news-item-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Tags */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+  .tag-exhibition { background: var(--cat-exhibition); color: var(--cat-exhibition-text); }
+  .tag-convention { background: var(--cat-convention); color: var(--cat-convention-text); }
+  .tag-incentive { background: var(--cat-incentive); color: var(--cat-incentive-text); }
+  .tag-tech { background: var(--cat-tech); color: var(--cat-tech-text); }
+  .tag-bio { background: var(--cat-bio); color: var(--cat-bio-text); }
+  .tag-policy { background: var(--cat-policy); color: var(--cat-policy-text); }
+
+  .time-ago { color: var(--text-muted); font-size: 11px; }
+  .view-count { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--text-muted); }
+
+  /* =========================================
+     Detail Panel
+  ========================================= */
+  .detail-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .detail-header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .detail-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .detail-title-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--text-secondary);
+    transition: all .15s;
+  }
+  .action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .action-btn.primary-btn {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  .action-btn.primary-btn:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+  .detail-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    scrollbar-width: thin;
+  }
+
+  /* AI Summary Card */
+  .ai-summary-card {
+    background: linear-gradient(135deg, #1E40AF 0%, #2563EB 60%, #0EA5E9 100%);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 20px;
+    color: white;
+    box-shadow: 0 4px 20px rgba(37,99,235,.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-summary-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+  }
+  .ai-summary-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -20px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.04);
+  }
+
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-summary-label {
+    font-size: 12px;
+    font-weight: 700;
+    opacity: .75;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-summary-points {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-summary-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    font-weight: 400;
+  }
+
+  .ai-point-num {
+    background: rgba(255,255,255,.2);
+    border-radius: 4px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .ai-insight-box {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-insight-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    opacity: .8;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .ai-insight-text {
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: .95;
+  }
+
+  /* Dual View */
+  .dual-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .dual-view-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .view-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .view-toggle-btn {
+    padding: 4px 10px;
+    font-size: 11.5px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all .15s;
+  }
+  .view-toggle-btn.active { background: white; color: var(--primary); font-weight: 600; box-shadow: var(--shadow-sm); }
+
+  .dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .article-col {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .article-col-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: var(--bg);
+  }
+
+  .lang-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .lang-en { background: #FEF3C7; color: #92400E; }
+  .lang-ko { background: #DBEAFE; color: #1E40AF; }
+
+  .article-col-body {
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text-primary);
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .article-col-body p { margin-bottom: 12px; }
+  .article-col-body p:last-child { margin-bottom: 0; }
+
+  .source-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    color: var(--primary);
+    text-decoration: none;
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--primary-light);
+    background: var(--primary-light);
+    transition: all .15s;
+  }
+  .source-link:hover { background: var(--primary); color: white; }
+
+  /* Article metadata */
+  .article-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Alert panel */
+  .alert-panel {
+    width: 280px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .alert-panel-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .alert-panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .alert-panel-desc {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  .alert-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+
+  .alert-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 10px;
+  }
+
+  .keyword-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .keyword-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all .15s;
+  }
+  .keyword-chip:hover { background: var(--primary); color: white; }
+  .keyword-chip .chip-x {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(37,99,235,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    cursor: pointer;
+  }
+  .keyword-chip:hover .chip-x { background: rgba(255,255,255,.3); }
+
+  .keyword-add-row {
+    display: flex;
+    gap: 6px;
+  }
+  .keyword-input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-size: 12px;
+    outline: none;
+    color: var(--text-primary);
+    transition: border-color .15s;
+    background: var(--bg);
+  }
+  .keyword-input:focus { border-color: var(--primary); background: white; }
+  .keyword-add-btn {
+    padding: 6px 10px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .keyword-add-btn:hover { background: var(--primary-dark); }
+
+  /* Alert notification */
+  .alert-noti-item {
+    display: flex;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .alert-noti-item:last-child { border-bottom: none; }
+  .alert-noti-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .alert-noti-content { flex: 1; min-width: 0; }
+  .alert-noti-keyword { font-size: 10.5px; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
+  .alert-noti-title { font-size: 11.5px; color: var(--text-primary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .alert-noti-time { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Media source list */
+  .media-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background .1s;
+  }
+  .media-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    flex-shrink: 0;
+  }
+  .media-dot.inactive { background: var(--text-muted); }
+  .media-name { font-size: 12px; color: var(--text-primary); flex: 1; }
+  .media-count { font-size: 11px; color: var(--text-muted); }
+
+  /* Alert panel scroll */
+  .alert-scroll { flex: 1; overflow-y: auto; scrollbar-width: thin; }
+
+  /* Loading state */
+  .loading-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: .3; transform: scale(.8); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Live indicator */
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    display: inline-block;
+    animation: livePulse 2s ease-in-out infinite;
+  }
+  @keyframes livePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,.5); }
+    50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+  }
+
+  /* Tooltip / placeholder when no article selected */
+  .no-article {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    gap: 12px;
+    padding: 40px;
+    text-align: center;
+  }
+  .no-article-icon { font-size: 52px; opacity: .3; }
+  .no-article-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); }
+  .no-article-desc { font-size: 13px; line-height: 1.5; }
+
+  /* Responsive adjustments */
+  @media (max-width: 1200px) {
+    .alert-panel { display: none; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Empty detail view */
+  .detail-inner { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .article-source-url {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 240px;
+  }
+</style>
+</head>
+<body>
+
+<!-- =========================================
+     LEFT SIDEBAR
+========================================= -->
+<aside class="sidebar">
+  <div class="sidebar-logo" title="MICE Insight Korea">MIK</div>
+
+  <button class="sidebar-btn active" title="뉴스 피드">
+    <span>📰</span>
+  </button>
+  <button class="sidebar-btn" title="즐겨찾기">
+    <span>🔖</span>
+  </button>
+  <button class="sidebar-btn" title="알림">
+    <span>🔔</span>
+    <span class="badge"></span>
+  </button>
+  <div class="sidebar-divider"></div>
+  <button class="sidebar-btn" title="MICE 매체 관리">
+    <span>🌐</span>
+  </button>
+  <button class="sidebar-btn" title="리포트">
+    <span>📊</span>
+  </button>
+  <button class="sidebar-btn" title="뉴스레터">
+    <span>📧</span>
+  </button>
+  <div class="sidebar-divider"></div>
+  <button class="sidebar-btn" title="설정" style="margin-top: auto;">
+    <span>⚙️</span>
+  </button>
+  <button class="sidebar-btn" title="내 계정">
+    <span>👤</span>
+  </button>
+</aside>
+
+<!-- =========================================
+     NEWS LIST PANEL
+========================================= -->
+<section class="list-panel">
+  <div class="list-header">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="키워드 검색 (예: PCMA, AI, CVB...)" id="searchInput" oninput="filterNews()">
+    </div>
+    <div class="source-tabs">
+      <div class="source-tab active" onclick="filterSource('all', this)">전체</div>
+      <div class="source-tab" onclick="filterSource('PCMA', this)">PCMA</div>
+      <div class="source-tab" onclick="filterSource('Skift', this)">Skift</div>
+      <div class="source-tab" onclick="filterSource('TTG', this)">TTG</div>
+      <div class="source-tab" onclick="filterSource('IBTM', this)">IBTM</div>
+      <div class="source-tab" onclick="filterSource('MPI', this)">MPI</div>
+      <div class="source-tab" onclick="filterSource('ICCA', this)">ICCA</div>
+    </div>
+  </div>
+
+  <!-- Sub filter -->
+  <div class="sub-filter">
+    <button class="filter-pill active" onclick="filterType('all', this)">전체</button>
+    <button class="filter-pill" onclick="filterType('전시', this)">전시</button>
+    <button class="filter-pill" onclick="filterType('컨벤션', this)">컨벤션</button>
+    <button class="filter-pill" onclick="filterType('인센티브', this)">인센티브</button>
+    <button class="filter-pill" onclick="filterType('테크', this)">테크</button>
+    <select class="sort-select" onchange="sortNews(this.value)">
+      <option value="latest">최신순</option>
+      <option value="views">인기순</option>
+    </select>
+  </div>
+
+  <!-- Today's highlights -->
+  <div class="highlights">
+    <div class="highlights-title">
+      🔥 오늘의 주요 인사이트
+      <span style="font-size:11px;font-weight:500;color:#6D28D9;margin-left:4px;">AI 선별</span>
+    </div>
+    <div class="highlight-card" onclick="showArticle(0)">
+      <div class="hc-meta">
+        <span class="tag tag-convention">컨벤션</span>
+        <span style="font-size:11px;color:#94A3B8;">PCMA · 2시간 전</span>
+      </div>
+      🏆 싱가포르 MICE 인센티브 확대… 한국 CVB에 주는 교훈
+    </div>
+  </div>
+
+  <!-- News feed -->
+  <div class="news-list" id="newsList">
+    <!-- Items injected by JS -->
+  </div>
+</section>
+
+<!-- =========================================
+     DETAIL PANEL
+========================================= -->
+<section class="detail-panel" id="detailPanel">
+  <!-- Default: no article selected -->
+  <div class="no-article" id="noArticle">
+    <div class="no-article-icon">🌏</div>
+    <div class="no-article-title">글로벌 MICE 인사이트 허브</div>
+    <div class="no-article-desc">
+      왼쪽 뉴스 목록에서 기사를 선택하면<br>
+      AI가 번역·요약한 전문가 인사이트를<br>듀얼 뷰로 확인할 수 있습니다.
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+    </div>
+    <div style="font-size:11.5px;color:#94A3B8;margin-top:4px;">실시간 수집 중</div>
+  </div>
+
+  <!-- Article detail (hidden until selected) -->
+  <div class="detail-inner" id="articleDetail" style="display:none;">
+    <div class="detail-header">
+      <div class="detail-header-left" style="min-width:0;flex:1;">
+        <div id="detailTagWrap"></div>
+        <div class="detail-title-text" id="detailTitleText" style="min-width:0;flex:1;"></div>
+      </div>
+      <div class="detail-actions">
+        <button class="action-btn" onclick="toggleBookmark()" id="bookmarkBtn">🔖 저장</button>
+        <button class="action-btn" onclick="shareArticle()">🔗 공유</button>
+        <button class="action-btn primary-btn" onclick="openOriginal()">🌐 원문</button>
+      </div>
+    </div>
+    <div class="detail-body">
+      <!-- Article metadata -->
+      <div class="article-meta-row" id="articleMeta"></div>
+
+      <!-- AI Summary Card -->
+      <div class="ai-summary-card">
+        <div class="ai-badge">✨ MIK AI 분석</div>
+        <div class="ai-summary-label">📋 3줄 핵심 요약</div>
+        <ul class="ai-summary-points" id="aiSummaryPoints"></ul>
+        <div class="ai-insight-box">
+          <div class="ai-insight-label">💡 한국 MICE 업계 시사점</div>
+          <div class="ai-insight-text" id="aiInsight"></div>
+        </div>
+      </div>
+
+      <!-- Dual View -->
+      <div class="dual-view-header">
+        <div class="dual-view-title">📄 원문 · 번역 비교 보기</div>
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" onclick="setView('dual', this)">듀얼</button>
+          <button class="view-toggle-btn" onclick="setView('en', this)">영문</button>
+          <button class="view-toggle-btn" onclick="setView('ko', this)">한국어</button>
+        </div>
+      </div>
+
+      <div class="dual-grid" id="dualGrid">
+        <!-- English column -->
+        <div class="article-col" id="enCol">
+          <div class="article-col-header">
+            <span class="lang-badge lang-en">🇺🇸 EN</span>
+            원문 (English)
+          </div>
+          <div class="article-col-body" id="enContent"></div>
+        </div>
+
+        <!-- Korean column -->
+        <div class="article-col" id="koCol">
+          <div class="article-col-header">
+            <span class="lang-badge lang-ko">🇰🇷 KO</span>
+            AI 번역 (Korean)
+          </div>
+          <div class="article-col-body" id="koContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================
+     RIGHT ALERT PANEL
+========================================= -->
+<aside class="alert-panel">
+  <div class="alert-panel-header">
+    <div class="alert-panel-title">
+      <span class="live-dot"></span>
+      키워드 알림
+    </div>
+    <div class="alert-panel-desc">설정한 키워드가 포함된 기사 발생 시 알림을 수신합니다.</div>
+  </div>
+
+  <div class="alert-scroll">
+    <!-- Keyword management -->
+    <div class="alert-section">
+      <div class="alert-section-title">내 관심 키워드</div>
+      <div class="keyword-chips" id="keywordChips"></div>
+      <div class="keyword-add-row">
+        <input class="keyword-input" type="text" placeholder="키워드 추가..." id="keywordInput" onkeydown="if(event.key==='Enter') addKeyword()">
+        <button class="keyword-add-btn" onclick="addKeyword()">+추가</button>
+      </div>
+    </div>
+
+    <!-- Recent alerts -->
+    <div class="alert-section">
+      <div class="alert-section-title">최근 알림</div>
+      <div id="recentAlerts"></div>
+    </div>
+
+    <!-- Media sources -->
+    <div class="alert-section">
+      <div class="alert-section-title">수집 매체 현황</div>
+      <div id="mediaList"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- =========================================
+     JAVASCRIPT
+========================================= -->
+<script>
+// ====== DATA ======
+const ARTICLES = [
+  {
+    id: 0,
+    source: 'PCMA',
+    cat: '컨벤션',
+    catClass: 'tag-convention',
+    type: '분석',
+    time: '2시간 전',
+    views: 312,
+    title: '싱가포르 MICE 인센티브 확대… 한국 CVB에 주는 교훈',
+    url: 'https://www.pcma.org',
+    author: 'PCMA Editorial',
+    date: '2026-04-16',
+    summaryPoints: [
+      '싱가포르 STB(싱가포르 관광청)가 2026년 MICE 유치 인센티브를 30% 확대하며 대형 국제회의 유치 공세를 강화함.',
+      '신규 인센티브는 1,000명 이상 참가자 행사에 행사비의 최대 15%를 보조금으로 지원하는 구조로 설계됨.',
+      'APAC 지역 MICE 유치 경쟁이 심화됨에 따라 한국도 KTO·각 지역 CVB 차원의 대응 전략 재정비가 시급.'
+    ],
+    insight: '한국 PCO 입장에서 싱가포르의 선제적 인센티브 확대는 직접적 경쟁 심화를 의미합니다. 특히 바이오·헬스케어 분야 국제회의 유치 시 싱가포르와의 경쟁이 불가피한 만큼, 오송 바이오 클러스터 등 한국만의 차별화 USP를 강화하고 KTO와 협력한 패키지형 인센티브 개발이 필요합니다.',
+    enText: `<p><strong>Singapore Tourism Board (STB) announced a significant expansion of its MICE incentive program for 2026, increasing the total funding envelope by 30% to attract more international congresses, conventions and corporate events.</strong></p>
+<p>The Business Events in Singapore (BEiS) scheme now offers subsidies covering up to 15% of qualifying event costs for events with over 1,000 attendees, a marked increase from the previous 10% cap. This move is part of Singapore's broader strategy to maintain its position as Asia Pacific's premier MICE destination amid intensifying competition from regional rivals.</p>
+<p>"We are committed to making Singapore the most compelling destination for world-class business events," said STB's Chief Executive. "This enhanced support will help event organizers deliver exceptional experiences while making Singapore a more cost-competitive choice."</p>
+<p>The announcement comes as APAC MICE spending is forecast to recover to pre-pandemic levels by mid-2026, with international arrivals for business events already up 23% year-on-year in Q1 2026. Industry analysts note that Singapore, Seoul, Tokyo, and Bangkok are engaged in an increasingly fierce battle for marquee international congresses, particularly in high-growth sectors such as biomedical sciences, financial technology, and sustainability.</p>
+<p>PCMA's Asia Pacific Advisory Board highlighted that destination selection committees are increasingly factoring in government subsidy levels when deciding between competing bids. "The financial support signal matters," noted one senior PCO based in Seoul. "It directly affects the overall cost competitiveness of a destination proposal."</p>
+<a class="source-link" href="https://www.pcma.org" target="_blank">🔗 원문 보기 (PCMA.org)</a>`,
+    koText: `<p><strong>싱가포르 관광청(STB)이 2026년 MICE 인센티브 프로그램을 대폭 확대, 국제 컨그레스·컨벤션 및 기업 행사 유치를 위한 총 지원 규모를 30% 증액한다고 발표했습니다.</strong></p>
+<p>'싱가포르 비즈니스 이벤트(BEiS)' 제도는 이제 1,000명 이상 참가하는 행사에 대해 적격 행사 비용의 최대 15%를 보조금으로 지원하며, 이는 기존 상한선인 10%에서 크게 상향된 것입니다. 이번 조치는 아태 지역 경쟁 심화 속에서 싱가포르가 MICE 최우선 목적지로서의 입지를 유지하기 위한 광범위한 전략의 일환입니다.</p>
+<p>STB 최고경영자는 "세계적 수준의 비즈니스 이벤트를 위한 가장 매력적인 목적지가 되기 위해 최선을 다하고 있다"고 밝히며, "이번 지원 강화는 행사 주최자들이 탁월한 경험을 제공하는 동시에 싱가포르를 비용 경쟁력 높은 선택지로 만드는 데 기여할 것"이라고 말했습니다.</p>
+<p>이번 발표는 아태 MICE 지출이 2026년 중반까지 코로나19 이전 수준으로 회복될 것으로 예측되는 시점에 나온 것으로, 2026년 1분기 비즈니스 이벤트 국제 방문객은 이미 전년 동기 대비 23% 증가했습니다. 업계 분석가들은 싱가포르, 서울, 도쿄, 방콕이 바이오의학, 핀테크, 지속가능성 등 고성장 분야 주요 국제 컨그레스를 두고 점점 더 치열한 경쟁을 벌이고 있다고 지적합니다.</p>
+<p>PCMA 아태 자문위원회는 목적지 선정 위원회가 경쟁 입찰을 검토할 때 정부 보조금 수준을 점점 더 중요한 요소로 반영하고 있음을 강조했습니다. 서울에 기반을 둔 한 시니어 PCO는 "재정 지원 신호는 중요하다"며 "이는 목적지 제안서의 전반적인 비용 경쟁력에 직접적인 영향을 미친다"고 언급했습니다.</p>
+<a class="source-link" href="https://www.pcma.org" target="_blank">🔗 원문 보기 (PCMA.org)</a>`
+  },
+  {
+    id: 1,
+    source: 'Skift',
+    cat: '테크',
+    catClass: 'tag-tech',
+    type: '속보',
+    time: '45분 전',
+    views: 189,
+    title: 'AI Event Tech 스타트업, 시리즈 B $45M 유치… 이벤트 자동화 가속',
+    url: 'https://skift.com',
+    author: 'Skift Meetings',
+    date: '2026-04-16',
+    summaryPoints: [
+      'AI 기반 행사 운영 플랫폼 \'EventMind\'가 시리즈 B 라운드에서 4,500만 달러 투자 유치에 성공, 기업 가치 3억 달러 돌파.',
+      '핵심 기능은 AI를 활용한 참가자 맞춤형 세션 추천, 실시간 동시통역, 네트워킹 매칭 등 행사 운영 전 과정의 자동화.',
+      '2026년 하반기 한국·일본·싱가포르 등 아시아 시장 진출을 공식화하며 글로벌 MICE 테크 판도 변화 예고.'
+    ],
+    insight: '국내 PCO 및 행사 기획사 입장에서 이 투자는 두 가지를 시사합니다. 첫째, AI 이벤트 테크 도입은 선택이 아닌 필수로 가속화되고 있습니다. 둘째, 아시아 시장 진출 시 로컬 파트너십 기회가 생길 수 있습니다. 선제적으로 파트너십을 검토하거나, 이에 대응하는 국내 솔루션 개발을 고려할 시점입니다.',
+    enText: `<p><strong>EventMind, an AI-powered event management platform, has closed a $45 million Series B funding round led by Andreessen Horowitz, pushing the company's valuation past the $300 million mark.</strong></p>
+<p>The platform's flagship product uses large language models to automate attendee personalization, matching each participant with curated session recommendations, networking connections, and content streams based on their professional profile and behavior patterns. The system reportedly reduces event staff workload by up to 40% while improving attendee satisfaction scores by an average of 28%.</p>
+<p>"We are at an inflection point for events technology," said EventMind's CEO. "AI is no longer a nice-to-have feature — it is becoming the operational backbone of how successful events are run."</p>
+<p>The new capital will primarily fund international expansion, with Asia Pacific named as the priority market. The company plans to establish offices in Seoul, Singapore, and Tokyo by Q3 2026, citing the region's MICE industry growth and strong enterprise technology adoption rates.</p>
+<p>Industry observers note that this signals a broader shift in the MICE supply chain: technology vendors are increasingly entering markets directly rather than through traditional distribution channels, potentially disrupting established relationships between PCOs and their vendor networks.</p>
+<a class="source-link" href="https://skift.com" target="_blank">🔗 원문 보기 (Skift.com)</a>`,
+    koText: `<p><strong>AI 기반 이벤트 관리 플랫폼 EventMind가 안드레센 호로위츠(a16z) 주도의 시리즈 B 라운드에서 4,500만 달러를 조달하며 기업 가치 3억 달러를 돌파했습니다.</strong></p>
+<p>이 플랫폼의 주력 제품은 대규모 언어 모델(LLM)을 활용해 참가자 개인화를 자동화하며, 전문가 프로필 및 행동 패턴에 기반해 각 참가자에게 맞춤형 세션 추천, 네트워킹 연결, 콘텐츠 스트림을 제공합니다. 이 시스템은 행사 스태프 업무량을 최대 40% 줄이면서도 참가자 만족도를 평균 28% 향상시키는 것으로 알려졌습니다.</p>
+<p>EventMind CEO는 "우리는 이벤트 기술의 변곡점에 서 있다"며 "AI는 더 이상 있으면 좋은 기능이 아니라 성공적인 행사 운영의 운영적 근간이 되고 있다"고 말했습니다.</p>
+<p>새로운 자본은 주로 국제 확장에 투입되며, 아태 지역이 우선 시장으로 지정됐습니다. 회사는 해당 지역의 MICE 산업 성장과 높은 엔터프라이즈 기술 도입률을 근거로 2026년 3분기까지 서울, 싱가포르, 도쿄에 사무소를 설립할 계획입니다.</p>
+<p>업계 관계자들은 이번 동향이 MICE 공급망의 더 광범위한 변화를 시사한다고 분석합니다. 기술 벤더들이 기존 유통 채널을 통하지 않고 직접 시장에 진입하는 방식이 늘어남에 따라, PCO와 벤더 네트워크 간의 기존 관계가 변화할 수 있습니다.</p>
+<a class="source-link" href="https://skift.com" target="_blank">🔗 원문 보기 (Skift.com)</a>`
+  },
+  {
+    id: 2,
+    source: 'IBTM',
+    cat: '전시',
+    catClass: 'tag-exhibition',
+    type: '분석',
+    time: '1시간 30분 전',
+    views: 241,
+    title: 'IBTM World 2026 개최지 바르셀로나 확정… 지속가능성 테마 전면',
+    url: 'https://www.ibtmworld.com',
+    author: 'IBTM World',
+    date: '2026-04-16',
+    summaryPoints: [
+      'IBTM World 2026이 11월 바르셀로나 피라 그란비아에서 개최 확정, 올해 테마는 \'Sustainable Futures, Boundless Events\'.',
+      '전시 면적 30% 확대 및 AI·지속가능성 전문 전시 구역(Innovation Hub) 신설 예정.',
+      '국내 PCO·DMC의 아웃바운드 시장 개척 기회: 글로벌 바이어와의 B2B 미팅 신청 시 국가관 참여 논의 필요.'
+    ],
+    insight: 'IBTM World는 글로벌 MICE 바이어-셀러 연결의 핵심 플랫폼입니다. 지속가능성 테마 강화는 한국 관광공사와 코엑스 등이 ESG 기반 MICE 목적지 스토리텔링을 강화해야 할 신호입니다. 특히 K-그린(탄소중립 행사 인프라)을 차별화 요소로 활용하는 홍보 전략 검토를 권장합니다.',
+    enText: `<p><strong>Reed Exhibitions has confirmed that IBTM World 2026 will return to Fira Gran Via in Barcelona, Spain, from November 18–20, 2026, with sustainability as the central pillar of this year's event theme: "Sustainable Futures, Boundless Events."</strong></p>
+<p>The flagship global MICE trade show will expand its exhibition floor by 30%, adding a dedicated Innovation Hub featuring exhibitors and demos focused on AI, event technology, and sustainable event management solutions. More than 3,000 hosted buyer appointments are expected, up 15% from the 2025 edition.</p>
+<p>The event's Education Programme will feature a new sustainability certification track, allowing attendees to gain recognized credentials in sustainable event planning. Partnerships with leading academic institutions will enable a series of case study presentations from real-world sustainable MICE projects across Europe and Asia.</p>
+<p>APAC representation at IBTM has grown year-over-year, with South Korea, Japan, and Singapore among the top five sending nations for hosted buyers. Korean DMO and CVB participants reported high satisfaction rates with hosted buyer matching in the 2025 edition, citing productive meetings with European corporate clients exploring Asia as a future MICE destination.</p>
+<a class="source-link" href="https://www.ibtmworld.com" target="_blank">🔗 원문 보기 (ibtmworld.com)</a>`,
+    koText: `<p><strong>리드 익시비션(Reed Exhibitions)은 IBTM World 2026이 2026년 11월 18~20일 스페인 바르셀로나 피라 그란비아에서 개최될 것이라고 공식 확인했으며, 올해의 중심 테마는 '지속 가능한 미래, 경계 없는 이벤트(Sustainable Futures, Boundless Events)'입니다.</strong></p>
+<p>세계적인 MICE 트레이드쇼의 전시 면적은 30% 확대되며, AI, 이벤트 기술 및 지속 가능한 행사 관리 솔루션에 초점을 맞춘 전시업체와 데모를 위한 전용 Innovation Hub가 신설됩니다. 호스티드 바이어 미팅은 2025년 대비 15% 증가한 3,000건 이상이 예상됩니다.</p>
+<p>교육 프로그램에는 지속 가능한 행사 기획 분야의 공인 자격을 취득할 수 있는 새로운 지속가능성 인증 트랙이 추가됩니다. 주요 학술기관과의 파트너십을 통해 유럽 및 아시아 전역의 실제 지속 가능한 MICE 프로젝트 사례 발표 시리즈도 진행됩니다.</p>
+<p>IBTM에서 아태 지역의 존재감은 꾸준히 성장해왔으며, 한국, 일본, 싱가포르가 호스티드 바이어 파견 상위 5개국 중에 포함됩니다. 한국 DMO 및 CVB 참가자들은 2025년 행사에서 호스티드 바이어 매칭에 높은 만족도를 보고했으며, 아시아를 미래 MICE 목적지로 검토 중인 유럽 기업 고객과의 생산적인 미팅을 긍정적으로 평가했습니다.</p>
+<a class="source-link" href="https://www.ibtmworld.com" target="_blank">🔗 원문 보기 (ibtmworld.com)</a>`
+  },
+  {
+    id: 3,
+    source: 'TTG',
+    cat: '인센티브',
+    catClass: 'tag-incentive',
+    type: '속보',
+    time: '3시간 전',
+    views: 98,
+    title: '미국 기업 인센티브 여행 예산 12% 증가… 아시아 목적지 선호도 급상승',
+    url: 'https://www.ttgmice.com',
+    author: 'TTG MICE',
+    date: '2026-04-16',
+    summaryPoints: [
+      '미국 Incentive Research Foundation(IRF) 보고서: 2026년 기업 인센티브 여행 예산 평균 12% 증가, 여행 트렌드는 \'고품격 소규모(Small Luxe)\'.',
+      '아시아 목적지 선호도가 전년 대비 18%p 상승, 특히 한국·일본·베트남이 상위권 진입.',
+      '인센티브 그룹 평균 규모는 축소(대형→30~50명 소규모)되는 반면, 1인당 예산은 증가하는 양극화 현상 뚜렷.'
+    ],
+    insight: '한국 인센티브 시장에 직접적인 호재입니다. \'소규모 럭셔리\' 트렌드는 제주 하이엔드 리조트, 고궁 프라이빗 디너, K-컬처 체험 등 한국만의 독보적 콘텐츠와 정확히 맞아떨어집니다. 영어권 인센티브 기획사를 타겟으로 한 소규모 팸투어(10~15명 기획사 초청) 프로그램 운영을 KTO와 협의해볼 것을 권장합니다.',
+    enText: `<p><strong>The Incentive Research Foundation's (IRF) 2026 Incentive Travel Index reveals that US corporate incentive travel budgets have increased by an average of 12% year-over-year, with demand patterns shifting toward smaller, ultra-premium group experiences.</strong></p>
+<p>The report, based on surveys of over 500 corporate travel buyers and incentive house professionals, identifies the "Small Luxe" trend as the dominant force reshaping the sector. Groups are getting smaller — average group size has declined from 80 to between 30 and 50 participants — while per-person spending has increased by 22%, reflecting a flight to quality over quantity.</p>
+<p>Asia Pacific emerged as the fastest-growing destination region for US-originated incentive programs, with a net preference score 18 percentage points higher than in 2025. South Korea registered its highest-ever ranking, breaking into the global Top 10 for the first time, driven largely by the K-culture phenomenon, strong airlift connectivity, and competitive value proposition compared to Japan.</p>
+<p>"South Korea has arrived as a serious contender in the premium incentive space," said IRF President. "Clients are asking for immersive K-culture programs — temple stays, private Hanok dinners, K-beauty experiences — that can't be replicated elsewhere."</p>
+<a class="source-link" href="https://www.ttgmice.com" target="_blank">🔗 원문 보기 (TTG MICE)</a>`,
+    koText: `<p><strong>인센티브 리서치 재단(IRF)의 2026년 인센티브 여행 지수 보고서에 따르면, 미국 기업 인센티브 여행 예산이 전년 대비 평균 12% 증가했으며, 수요 패턴은 소규모 초프리미엄 그룹 경험 방향으로 이동하고 있습니다.</strong></p>
+<p>500명 이상의 기업 여행 구매자 및 인센티브 기획사 전문가 설문을 기반으로 한 이 보고서는 업계를 재편하는 지배적인 트렌드로 '소규모 럭셔리(Small Luxe)'를 꼽습니다. 그룹 규모는 줄어들고 있으며(평균 그룹 규모 80명에서 30~50명으로 감소), 1인당 지출은 22% 증가해 양보다 질을 추구하는 흐름이 뚜렷합니다.</p>
+<p>아태 지역은 미국 발 인센티브 프로그램의 가장 빠르게 성장하는 목적지 지역으로 부상했으며, 순 선호도 점수는 2025년 대비 18%p 높습니다. 한국은 K-컬처 현상, 강력한 항공 연결성, 일본 대비 경쟁력 있는 가격 가치를 바탕으로 역대 최고 순위를 기록하며 처음으로 글로벌 TOP 10에 진입했습니다.</p>
+<p>IRF 회장은 "한국이 프리미엄 인센티브 시장의 진지한 경쟁자로 부상했다"며 "고객들이 다른 곳에서는 재현할 수 없는 몰입형 K-컬처 프로그램 — 템플 스테이, 프라이빗 한옥 만찬, K-뷰티 체험 등 — 을 요청하고 있다"고 말했습니다.</p>
+<a class="source-link" href="https://www.ttgmice.com" target="_blank">🔗 원문 보기 (TTG MICE)</a>`
+  },
+  {
+    id: 4,
+    source: 'MPI',
+    cat: '컨벤션',
+    catClass: 'tag-convention',
+    type: '분석',
+    time: '4시간 전',
+    views: 156,
+    title: 'MPI 보고서: 하이브리드 이벤트, 온사이트 참가 수요에 밀려 축소 추세',
+    url: 'https://www.mpi.org',
+    author: 'MPI Foundation',
+    date: '2026-04-16',
+    summaryPoints: [
+      'MPI 글로벌 미팅 및 이벤트 전망 보고서: 하이브리드 행사 비중 2024년 대비 19% 감소, 온사이트 직접 참가 선호도 회귀.',
+      '\'연결·몰입\' 경험에 대한 강한 욕구가 온라인 대체를 거부하는 핵심 동인으로 분석됨.',
+      '단, 일부 세션의 온디맨드(VOD) 제공은 행사 가치를 높이는 보완재로 지속 활용될 전망.'
+    ],
+    insight: '팬데믹 이후 \'하이브리드 필수\' 시대의 종언을 알리는 신호입니다. 한국 PCO들이 하이브리드 기술 인프라에 과잉 투자하거나 이를 필수 제안 요소로 제시할 필요성이 줄어듭니다. 오히려 현장 경험의 품질(베뉴, 케이터링, 네트워킹 설계)에 집중하는 전략이 더 효과적일 수 있으며, 행사 후 VOD 콘텐츠 활용 방안을 부가 서비스로 제안하는 방식이 유효합니다.',
+    enText: `<p><strong>Meeting Professionals International (MPI) released its 2026 Global Meetings and Events Outlook, reporting a 19% decline in hybrid event formats year-over-year, as in-person attendance demand surges back to and beyond pre-pandemic benchmarks.</strong></p>
+<p>The study, comprising responses from 3,200 meeting planners globally, found that 71% of respondents are now primarily planning fully in-person events, compared to 52% in 2024. The desire for genuine human connection, immersive experience, and what researchers term "co-presence energy" emerged as the primary drivers of the shift away from hybrid formats.</p>
+<p>"Participants have clearly decided that being in the room matters," said MPI CEO. "The screen cannot replicate the serendipitous hallway conversation, the shared meal, or the energy of a packed general session. Our members are reporting that clients are willing to invest more to ensure quality in-person experiences."</p>
+<p>However, the report distinguishes between live streaming (declining) and on-demand content (stable or growing). Post-event VOD libraries and recorded session access continue to provide value as content extensions rather than live alternatives, with 67% of planners planning to offer some form of post-event content access.</p>
+<a class="source-link" href="https://www.mpi.org" target="_blank">🔗 원문 보기 (MPI.org)</a>`,
+    koText: `<p><strong>MPI(미팅 프로페셔널스 인터내셔널)가 발표한 2026년 글로벌 미팅 및 이벤트 전망 보고서에 따르면, 하이브리드 이벤트 형식이 전년 대비 19% 감소했으며, 대면 참가 수요는 코로나19 이전 기준을 회복하고 초월하고 있습니다.</strong></p>
+<p>전 세계 3,200명의 미팅 기획자 응답으로 구성된 이 연구에서 응답자의 71%가 현재 주로 완전 대면 행사를 기획하고 있다고 답했으며, 이는 2024년의 52%에서 증가한 수치입니다. 하이브리드 형식에서 벗어나는 주요 동인으로는 진정한 인간적 연결, 몰입적 경험, 연구자들이 '공동 현존 에너지(co-presence energy)'라고 부르는 요소에 대한 욕구가 꼽혔습니다.</p>
+<p>MPI CEO는 "참가자들은 현장에 있는 것이 중요하다는 결론을 분명히 내렸다"며 "화면은 복도에서의 우연한 대화, 함께하는 식사, 꽉 찬 전체 세션의 에너지를 재현할 수 없다. 우리 회원들은 고객들이 고품질 대면 경험을 보장하기 위해 더 많은 투자를 기꺼이 하려 한다고 보고하고 있다"고 말했습니다.</p>
+<p>그러나 보고서는 라이브 스트리밍(감소)과 온디맨드 콘텐츠(안정적 또는 성장) 간의 차이를 구별합니다. 행사 후 VOD 라이브러리와 녹화 세션 접근성은 라이브 대안이 아닌 콘텐츠 확장으로서 가치를 계속 제공하고 있으며, 기획자의 67%가 행사 후 콘텐츠 접근 방식을 제공할 계획입니다.</p>
+<a class="source-link" href="https://www.mpi.org" target="_blank">🔗 원문 보기 (MPI.org)</a>`
+  },
+  {
+    id: 5,
+    source: 'ICCA',
+    cat: '컨벤션',
+    catClass: 'tag-convention',
+    type: '분석',
+    time: '5시간 전',
+    views: 203,
+    title: 'ICCA 통계 2025: 서울, 국제회의 개최 글로벌 5위 탈환',
+    url: 'https://www.iccaworld.org',
+    author: 'ICCA Research',
+    date: '2026-04-16',
+    summaryPoints: [
+      'ICCA 발표 2025년 국제회의 통계: 서울 국제회의 개최 건수 기준 글로벌 5위 복귀 (전년 8위).',
+      '한국 전체로는 16위 (서울, 부산, 제주, 인천 등 포함), 부산과 인천의 CVB 역할이 국제 인지도 상승에 기여.',
+      'ICCA 기준 상위권 유지는 향후 대형 입찰(bid) 유치 시 레퍼런스로 직접 활용 가능.'
+    ],
+    insight: 'ICCA 순위는 국제 회의 유치 경쟁에서 가장 강력한 신뢰도 지표입니다. 서울 5위 복귀는 한국관광공사 및 각 지역 CVB가 입찰 제안서에서 강조해야 할 핵심 수치입니다. 또한 지방 도시(부산·인천·제주)의 순위 상승은 수도권 집중에서 벗어난 한국 MICE의 다양성을 보여주는 자료로 활용하세요.',
+    enText: `<p><strong>ICCA (International Congress and Convention Association) has released its 2025 Association Meeting Statistics, revealing Seoul's return to the global Top 5 rankings for international association meetings, recovering from 8th place in 2024.</strong></p>
+<p>Seoul hosted 287 ICCA-classified international association meetings in 2025, a 34% increase from the previous year. The South Korean capital surpassed Hong Kong, Vienna, and Madrid in overall rankings, securing fifth place behind Barcelona, Singapore, Lisbon, and Paris.</p>
+<p>South Korea as a country ranked 16th globally, with contributions from Busan (43rd), Jeju (67th), and Incheon (89th), reflecting the growing maturity of regional CVBs beyond Seoul. Industry officials attribute the rise to sustained government investment in convention infrastructure, the expansion of Coex and KINTEX venues, and an increasingly professional PCO ecosystem.</p>
+<p>ICCA Secretary General noted: "South Korea's performance reflects a strategic, long-term commitment to building a comprehensive MICE ecosystem rather than relying on a single flagship city."</p>
+<a class="source-link" href="https://www.iccaworld.org" target="_blank">🔗 원문 보기 (ICCA)</a>`,
+    koText: `<p><strong>국제컨벤션협회(ICCA)가 발표한 2025년 협회 회의 통계에서 서울이 국제 협회 회의 글로벌 상위 5위권에 복귀한 것으로 나타났습니다. 2024년 8위에서 상승한 결과입니다.</strong></p>
+<p>서울은 2025년 ICCA 분류 기준 국제 협회 회의 287건을 개최하며 전년 대비 34% 증가를 기록했습니다. 한국의 수도는 종합 순위에서 홍콩, 빈, 마드리드를 제치고 바르셀로나, 싱가포르, 리스본, 파리에 이어 5위를 차지했습니다.</p>
+<p>국가 기준으로 한국은 세계 16위를 기록했으며, 부산(43위), 제주(67위), 인천(89위)의 기여가 서울을 넘어 지역 CVB의 성장하는 역량을 반영합니다. 업계 관계자들은 컨벤션 인프라에 대한 지속적인 정부 투자, 코엑스 및 킨텍스 시설 확장, 점점 전문화되는 PCO 생태계를 순위 상승의 주요 요인으로 꼽습니다.</p>
+<p>ICCA 사무총장은 "한국의 성과는 단일 대표 도시에 의존하기보다 포괄적인 MICE 생태계를 구축하려는 전략적이고 장기적인 헌신을 반영한다"고 언급했습니다.</p>
+<a class="source-link" href="https://www.iccaworld.org" target="_blank">🔗 원문 보기 (ICCA)</a>`
+  },
+  {
+    id: 6,
+    source: 'Skift',
+    cat: '테크',
+    catClass: 'tag-tech',
+    type: '분석',
+    time: '6시간 전',
+    views: 134,
+    title: '바이오·헬스케어 컨그레스 2026 캘린더: 한국 PCO 필수 체크 리스트',
+    url: 'https://skift.com',
+    author: 'Skift Research',
+    date: '2026-04-16',
+    summaryPoints: [
+      '2026년 하반기 주요 국제 바이오·헬스케어 컨그레스 일정 총정리: BIO International (보스턴), EAS (제네바), ICMR (두바이) 등 15개 주요 행사.',
+      '바이오 컨그레스 평균 참가자 수 전년 대비 8% 증가, 특히 항암·디지털 헬스 분야 세션 참가율 최고치 경신.',
+      '한국 바이오 업계의 글로벌 컨그레스 참가율이 아직 낮아 네트워킹 기회 손실이 크다는 지적.'
+    ],
+    insight: '오송 바이오 포럼 기획 시 글로벌 바이오 컨그레스 일정과의 충돌 및 시너지를 동시에 고려해야 합니다. 특히 BIO International 직후 한국 관련 사이드 이벤트를 유치하거나, 주요 컨그레스 참가자들을 오송으로 유인하는 Fam Trip 연계 프로그램을 검토해볼 것을 권장합니다.',
+    enText: `<p><strong>Skift Research has compiled a comprehensive 2026 H2 calendar of major international biomedical and healthcare congresses, identifying 15 must-track events for Asian PCOs and destination marketing organizations seeking to engage the global biomedical MICE segment.</strong></p>
+<p>The analysis highlights that biomedical congresses represent the fastest-growing segment of international association meetings, with average attendance up 8% year-over-year and exhibitor demand increasing by 12%. Sessions dedicated to oncology, digital health, and gene therapy are experiencing record attendee engagement rates.</p>
+<p>Key events include: BIO International Convention (Boston, June), European Association for the Study of the Liver (Geneva, September), International Cancer Microenvironment Research (Dubai, October), and World Congress on Precision Medicine (Copenhagen, November).</p>
+<p>Korean participation at international biomedical congresses remains comparatively low relative to the country's pharmaceutical and biotech industry size. Industry consultants estimate that Korea-based biomedical companies attend international congresses at roughly 60% of the rate of equivalent-sized Japanese and German counterparts, representing a significant untapped networking and brand-building opportunity.</p>
+<a class="source-link" href="https://skift.com" target="_blank">🔗 원문 보기 (Skift)</a>`,
+    koText: `<p><strong>Skift 리서치가 2026년 하반기 주요 국제 바이오의학 및 헬스케어 컨그레스 종합 캘린더를 공개했습니다. 글로벌 바이오의학 MICE 분야를 공략하려는 아시아 PCO 및 목적지 마케팅 기관을 위한 필수 추적 행사 15개를 선정했습니다.</strong></p>
+<p>분석에 따르면 바이오의학 컨그레스는 국제 협회 회의 중 가장 빠르게 성장하는 분야로, 평균 참가자 수는 전년 대비 8% 증가했으며 전시업체 수요는 12% 증가했습니다. 종양학, 디지털 헬스, 유전자 치료에 관한 세션은 역대 최고의 참가자 참여율을 기록하고 있습니다.</p>
+<p>주요 행사로는 BIO 국제 컨벤션(보스턴, 6월), 유럽간연구학회(제네바, 9월), 국제 암 미세환경 연구(두바이, 10월), 세계 정밀의학 컨그레스(코펜하겐, 11월) 등이 있습니다.</p>
+<p>한국의 국제 바이오의학 컨그레스 참가율은 국내 제약 및 바이오테크 산업 규모에 비해 상대적으로 낮습니다. 업계 컨설턴트들은 한국 바이오의학 기업들이 국제 컨그레스에 참가하는 비율이 비슷한 규모의 일본 및 독일 기업들의 약 60% 수준에 불과하다고 추정하며, 이는 상당한 네트워킹 및 브랜드 구축 기회가 활용되지 않고 있음을 의미합니다.</p>
+<a class="source-link" href="https://skift.com" target="_blank">🔗 원문 보기 (Skift)</a>`
+  }
+];
+
+const KEYWORDS_DEFAULT = ['Bio', 'CVB', 'Sustainability', 'AI Event', 'Korea MICE', 'PCO'];
+const MEDIA_SOURCES = [
+  { name: 'PCMA', active: true, count: 12 },
+  { name: 'Skift Meetings', active: true, count: 8 },
+  { name: 'TTG MICE', active: true, count: 6 },
+  { name: 'IBTM World', active: true, count: 4 },
+  { name: 'MPI Foundation', active: true, count: 9 },
+  { name: 'ICCA', active: true, count: 5 },
+  { name: 'C&IT Magazine', active: true, count: 3 },
+  { name: 'Meetings & Conventions', active: false, count: 0 },
+  { name: 'Event Manager Blog', active: true, count: 7 },
+  { name: 'Northstar Meetings', active: false, count: 0 },
+];
+
+const ALERTS = [
+  { icon: '🧬', keyword: 'Bio', title: 'BIO North America 2026, 서울 바이오 업계 최대 파견단 구성 추진', time: '18분 전' },
+  { icon: '🤖', keyword: 'AI Event', title: 'EventMind 한국 파트너십 협의 시작, 서울 오피스 Q3 오픈 예정', time: '1시간 전' },
+  { icon: '🌱', keyword: 'Sustainability', title: 'UNFCCC, 2028 COP 개최지 후보에 부산 포함 – 공식 발표 임박', time: '2시간 전' },
+  { icon: '🏢', keyword: 'CVB', title: '인천관광공사 CVB 기능 강화… 국제회의 유치 전담팀 신설', time: '3시간 전' },
+];
+
+// ====== STATE ======
+let currentSource = 'all';
+let currentType = 'all';
+let currentSort = 'latest';
+let currentArticleId = null;
+let keywords = [...KEYWORDS_DEFAULT];
+let filteredArticles = [...ARTICLES];
+
+// ====== INIT ======
+function init() {
+  renderNewsList();
+  renderKeywords();
+  renderAlerts();
+  renderMedia();
+}
+
+// ====== RENDER NEWS LIST ======
+function renderNewsList() {
+  const container = document.getElementById('newsList');
+  container.innerHTML = '';
+
+  filteredArticles.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'news-item' + (currentArticleId === a.id ? ' active' : '');
+    div.onclick = () => showArticle(a.id);
+    div.innerHTML = `
+      <div class="news-item-meta">
+        <span class="tag ${a.catClass}">${a.cat}</span>
+        <span style="font-size:10.5px;color:#94A3B8;font-weight:600;">${a.source}</span>
+        <span style="font-size:10.5px;padding:1px 5px;background:#F1F5F9;border-radius:3px;color:#64748B;font-weight:500;">${a.type}</span>
+      </div>
+      <div class="news-item-title">${a.title}</div>
+      <div class="news-item-footer">
+        <div class="news-item-footer-left">
+          <span class="time-ago">🕐 ${a.time}</span>
+        </div>
+        <div class="view-count">👁 ${a.views.toLocaleString()}</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ====== SHOW ARTICLE ======
+function showArticle(id) {
+  currentArticleId = id;
+  const a = ARTICLES.find(x => x.id === id);
+  if (!a) return;
+
+  // Update list selection
+  document.querySelectorAll('.news-item').forEach(el => el.classList.remove('active'));
+  const items = document.querySelectorAll('.news-item');
+  filteredArticles.forEach((fa, i) => {
+    if (fa.id === id) items[i]?.classList.add('active');
+  });
+
+  // Show detail
+  document.getElementById('noArticle').style.display = 'none';
+  document.getElementById('articleDetail').style.display = 'flex';
+  document.getElementById('articleDetail').style.flexDirection = 'column';
+
+  // Header
+  document.getElementById('detailTagWrap').innerHTML = `<span class="tag ${a.catClass}" style="flex-shrink:0;margin-right:2px;">${a.cat}</span>`;
+  document.getElementById('detailTitleText').textContent = a.title;
+
+  // Meta row
+  document.getElementById('articleMeta').innerHTML = `
+    <div class="meta-item">📰 <span>${a.source}</span></div>
+    <div class="meta-item">👤 <span>${a.author}</span></div>
+    <div class="meta-item">📅 <span>${a.date}</span></div>
+    <div class="meta-item">🕐 <span>${a.time}</span></div>
+    <div class="meta-item">👁 <span>${a.views.toLocaleString()} views</span></div>
+  `;
+
+  // AI Summary
+  const ul = document.getElementById('aiSummaryPoints');
+  ul.innerHTML = a.summaryPoints.map((pt, i) => `
+    <li><span class="ai-point-num">${i+1}</span><span>${pt}</span></li>
+  `).join('');
+  document.getElementById('aiInsight').textContent = a.insight;
+
+  // Content
+  document.getElementById('enContent').innerHTML = a.enText;
+  document.getElementById('koContent').innerHTML = a.koText;
+
+  // Store current article url
+  window._currentUrl = a.url;
+}
+
+// ====== FILTER ======
+function filterSource(source, el) {
+  currentSource = source;
+  document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function filterType(type, el) {
+  currentType = type;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function filterNews() {
+  applyFilters();
+}
+
+function sortNews(val) {
+  currentSort = val;
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  filteredArticles = ARTICLES.filter(a => {
+    const matchSource = currentSource === 'all' || a.source === currentSource;
+    const matchType = currentType === 'all' || a.cat === currentType;
+    const matchSearch = !search || a.title.toLowerCase().includes(search) || a.source.toLowerCase().includes(search);
+    return matchSource && matchType && matchSearch;
+  });
+
+  if (currentSort === 'views') {
+    filteredArticles.sort((a, b) => b.views - a.views);
+  }
+
+  renderNewsList();
+}
+
+// ====== VIEW TOGGLE ======
+function setView(mode, el) {
+  document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const enCol = document.getElementById('enCol');
+  const koCol = document.getElementById('koCol');
+  const grid = document.getElementById('dualGrid');
+
+  if (mode === 'dual') {
+    grid.style.gridTemplateColumns = '1fr 1fr';
+    enCol.style.display = ''; koCol.style.display = '';
+  } else if (mode === 'en') {
+    grid.style.gridTemplateColumns = '1fr';
+    enCol.style.display = ''; koCol.style.display = 'none';
+  } else {
+    grid.style.gridTemplateColumns = '1fr';
+    enCol.style.display = 'none'; koCol.style.display = '';
+  }
+}
+
+// ====== KEYWORDS ======
+function renderKeywords() {
+  const container = document.getElementById('keywordChips');
+  container.innerHTML = keywords.map(k => `
+    <span class="keyword-chip" onclick="removeKeyword('${k}')">
+      ${k} <span class="chip-x">×</span>
+    </span>
+  `).join('');
+}
+
+function addKeyword() {
+  const input = document.getElementById('keywordInput');
+  const val = input.value.trim();
+  if (val && !keywords.includes(val)) {
+    keywords.push(val);
+    renderKeywords();
+  }
+  input.value = '';
+}
+
+function removeKeyword(k) {
+  keywords = keywords.filter(x => x !== k);
+  renderKeywords();
+}
+
+// ====== ALERTS ======
+function renderAlerts() {
+  const container = document.getElementById('recentAlerts');
+  container.innerHTML = ALERTS.map(a => `
+    <div class="alert-noti-item">
+      <div class="alert-noti-icon">${a.icon}</div>
+      <div class="alert-noti-content">
+        <div class="alert-noti-keyword">${a.keyword}</div>
+        <div class="alert-noti-title">${a.title}</div>
+        <div class="alert-noti-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ====== MEDIA ======
+function renderMedia() {
+  const container = document.getElementById('mediaList');
+  container.innerHTML = MEDIA_SOURCES.map(m => `
+    <div class="media-item">
+      <div class="media-dot ${m.active ? '' : 'inactive'}"></div>
+      <span class="media-name">${m.name}</span>
+      <span class="media-count">${m.active ? m.count + '건' : '비활성'}</span>
+    </div>
+  `).join('');
+}
+
+// ====== ACTIONS ======
+function toggleBookmark() {
+  const btn = document.getElementById('bookmarkBtn');
+  const saved = btn.dataset.saved === '1';
+  if (saved) {
+    btn.textContent = '🔖 저장';
+    btn.dataset.saved = '0';
+    btn.classList.remove('primary-btn');
+  } else {
+    btn.innerHTML = '✅ 저장됨';
+    btn.dataset.saved = '1';
+    btn.classList.add('primary-btn');
+  }
+}
+
+function shareArticle() {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(window.location.href);
+  }
+  const btn = event.target.closest('.action-btn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '✅ 복사됨';
+  setTimeout(() => { btn.innerHTML = orig; }, 2000);
+}
+
+function openOriginal() {
+  if (window._currentUrl) {
+    window.open(window._currentUrl, '_blank');
+  }
+}
+
+// ====== START ======
+init();
+
+// Auto-select first article for demo
+setTimeout(() => { showArticle(0); }, 400);
+</script>
+</body>
+</html>

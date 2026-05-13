@@ -1,0 +1,30 @@
+name = "mik-worker"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+# Cron Triggers — run every hour
+[triggers]
+crons = ["0 * * * *"]
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "mik_db"
+database_id = "bf91713c-3474-4e48-8ece-9a759707754b"
+
+# Cloudflare Workers AI binding (free tier — used for title translation fallback)
+[ai]
+binding = "AI"
+
+# Environment variables (non-secret)
+[vars]
+ENVIRONMENT = "production"
+# Ollama model to use for AI analysis and translation
+OLLAMA_MODEL = "qwen2.5:7b"
+
+# Secrets — set via CLI before deploying:
+#   wrangler secret put OLLAMA_URL
+#   wrangler secret put JWT_SECRET
+#
+# OLLAMA_URL example: https://your-tunnel.trycloudflare.com
+# (expose local Ollama via: cloudflared tunnel --url http://localhost:11434)
