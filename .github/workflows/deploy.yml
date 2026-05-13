@@ -33,15 +33,21 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx wrangler deploy
 
-      - name: Deploy Pages (try main branch = production)
-        working-directory: worker
+      - name: Set Pages production branch to main & Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "=== Deploying with --branch main ==="
-          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main 2>&1 || true
-          echo "=== Deploying with --branch master ==="
-          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch master 2>&1 || true
-          echo "=== Deploying without --branch (direct production) ==="
-          npx wrangler pages deploy ../frontend --project-name mik-dashboard 2>&1
+          set -e
+          echo "=== Step 1: Set production_branch=main on CF Pages project ==="
+          PATCH_RESP=$(curl -s -X PATCH \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"production_branch":"main"}')
+          echo "Patch response: $(echo $PATCH_RESP | python3 -c 'import json,sys; d=json.load(sys.stdin); print("success=", d.get("success"), "prod_branch=", d.get("result",{}).get("production_branch","?"))')" || echo "Patch raw: $PATCH_RESP"
+
+          echo ""
+          echo "=== Step 2: Deploy HTML to CF Pages (production) ==="
+          cd worker
+          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main 2>&1
