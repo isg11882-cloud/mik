@@ -38,7 +38,4 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          mkdir -p ../dist
-          cp ../MIK_MICE_Insight_Korea.html ../dist/index.html
-          npx wrangler pages deploy ../dist --project-name mik-dashboard --branch main
+        run: npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main

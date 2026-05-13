@@ -113,25 +113,36 @@
   }
 
   .sidebar-btn {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 52px;
+    height: auto;
+    min-height: 44px;
+    padding: 6px 4px;
+    border-radius: 8px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: transparent;
-    border: none;
-    color: #94A3B8;
+    gap: 2px;
     cursor: pointer;
-    transition: all 0.2s;
+    color: var(--text-muted);
+    font-size: 18px;
+    transition: all .15s ease;
     position: relative;
-  }
-  .sidebar-btn span {
-    pointer-events: none; /* Icons should not block clicks */
-    font-size: 20px;
+    border: none;
+    background: transparent;
   }
   .sidebar-btn:hover { background: var(--primary-light); color: var(--primary); }
   .sidebar-btn.active { background: var(--primary-light); color: var(--primary); }
+  .sidebar-btn small {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+    line-height: 1;
+    color: inherit;
+    display: block;
+    text-align: center;
+    max-width: 48px;
+  }
   .sidebar-btn .badge {
     position: absolute;
     top: 6px; right: 6px;
@@ -155,9 +166,17 @@
   }
 
   .list-header {
-    padding: 16px 16px 0;
+    padding: 0;
     border-bottom: 1px solid var(--border);
   }
+  .list-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 8px;
+    gap: 8px;
+  }
+  .list-header-top .search-box { flex: 1; }
 
   .search-box {
     display: flex;
@@ -859,6 +878,108 @@
     .alert-panel { display: none; }
   }
 
+  /* ===== MOBILE RESPONSIVE (768px) ===== */
+  @media (max-width: 768px) {
+    :root {
+      --sidebar-w: 60px;
+    }
+
+    /* Bottom navigation bar */
+    .sidebar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 60px;
+      flex-direction: row;
+      justify-content: space-around;
+      padding: 0 8px;
+      gap: 0;
+      border-right: none;
+      border-top: 1px solid var(--border);
+      z-index: 200;
+    }
+    .sidebar-logo { display: none; }
+    .sidebar-bottom { display: none; }
+    .sidebar-btn {
+      width: auto;
+      flex: 1;
+      max-width: 60px;
+      padding: 4px 2px;
+      border-radius: 6px;
+    }
+    .sidebar-btn small {
+      font-size: 8px;
+    }
+
+    /* Main content full width */
+    .main-content, .content, main, .app-main {
+      margin-left: 0 !important;
+      padding-bottom: 70px;
+    }
+
+    /* Header adjustments */
+    .header, .top-bar {
+      padding: 8px 12px;
+    }
+
+    /* Cards: single column */
+    .news-grid, .card-grid, .articles-grid {
+      grid-template-columns: 1fr !important;
+      gap: 8px;
+    }
+    .card, .news-card, .article-card {
+      border-radius: 8px;
+    }
+
+    /* Source tabs: horizontal scroll */
+    .source-tabs {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-wrap: nowrap;
+      gap: 4px;
+      padding-bottom: 4px;
+    }
+    .source-tab {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Article detail: full screen */
+    .article-detail, .article-view {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 60px;
+      z-index: 150;
+      overflow-y: auto;
+      border-radius: 0;
+    }
+
+    /* Search box: full width */
+    .search-box {
+      width: 100%;
+      margin: 0;
+    }
+
+    /* Modal: full screen on mobile */
+    .modal-content {
+      width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      margin: 5vh auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .card-tags, .article-tags { display: none; }
+    .insight-box { font-size: 13px; }
+    .summary-list li { font-size: 13px; }
+    .card-title, .article-title { font-size: 15px; }
+  }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -874,302 +995,181 @@
     overflow: hidden;
     max-width: 240px;
   }
-  /* --- My Page Overlay --- */
-  .mypage-overlay {
+
+  /* ===== AUTH MODAL ===== */
+  .auth-modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(8px);
-    z-index: 2000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  .mypage-overlay.active {
-    display: flex;
-    opacity: 1;
-  }
-  .mypage-container {
-    width: 100%;
-    max-width: 520px;
-    max-height: 90vh;
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    overflow-y: auto;
-    position: relative;
-    padding: 0;
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  @keyframes slideUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  .mypage-header {
-    padding: 32px;
-    background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
-    color: white;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .mypage-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.2);
-    border: none;
-    color: white;
-    cursor: pointer;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 101; /* Above header content */
-    transition: background 0.2s;
+    padding: 16px;
   }
-  .mypage-close:hover { background: rgba(0,0,0,0.4); }
-  .mypage-body { padding: 24px 32px 40px; }
-  .mp-section { margin-bottom: 32px; }
-  .mp-section-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1E293B;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .mp-card {
-    background: #F8FAFC;
-    border: 1px solid #E2E8F0;
-    border-radius: 16px;
-    padding: 20px;
-  }
-  .mp-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-  }
-  .mp-row:not(:last-child) { border-bottom: 1px solid #F1F5F9; }
-  .mp-label { font-size: 14px; color: #475569; }
-  .mp-sublabel { font-size: 12px; color: #94A3B8; margin-top: 2px; }
-  
-  /* Toggle Switch */
-  .switch {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-  }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #CBD5E1;
-    transition: .4s;
-    border-radius: 34px;
-  }
-  .slider:before {
-    position: absolute;
-    content: "";
-    height: 18px; width: 18px;
-    left: 3px; bottom: 3px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-  }
-  input:checked + .slider { background-color: #3B82F6; }
-  input:checked + .slider:before { transform: translateX(20px); }
-
-  /* Time Range Picker */
-  .time-range-box {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 12px;
-  }
-  .time-input {
-    padding: 8px 12px;
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #1E293B;
-    background: white;
-  }
-
-  .mp-btn-group {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-  }
-  /* Tabs Wrapper with Navigation Buttons */
-  .tabs-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  
-  .source-tabs {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 10px;
-    overflow-x: auto;
-    padding: 4px 40px 12px; /* Extra padding for buttons */
-    margin: 0;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth; /* Smooth scroll when clicking buttons */
-    width: 100%;
-  }
-  .source-tabs::-webkit-scrollbar { display: none; }
-
-  .nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    background: white;
+  .auth-modal-content {
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 50%;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    overflow: hidden;
+  }
+  .privacy-content { max-width: 560px; }
+  .auth-tabs {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding: 4px 16px 0;
+    gap: 4px;
+  }
+  .auth-tab {
+    background: none;
+    border: none;
+    padding: 12px 16px 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .auth-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .auth-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 8px;
+  }
+  .auth-panel { padding: 20px; }
+  .auth-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    text-align: center;
+  }
+  .oauth-btn {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    z-index: 5;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.2s;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
     font-size: 14px;
-    color: var(--text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background .15s;
   }
-  .nav-btn:hover { background: #F8FAFC; color: var(--primary); border-color: var(--primary); }
-  .nav-btn.hidden { opacity: 0; pointer-events: none; }
-  
-  .nav-btn.prev { left: 0; }
-  .nav-btn.next { right: 0; }
-
-  /* Gradient Fades to show more content */
-  .tabs-wrapper::before, .tabs-wrapper::after {
+  .google-btn { background: var(--surface); color: var(--text); }
+  .google-btn:hover { background: var(--bg); }
+  .kakao-btn { background: #FEE500; color: #3C1E1E; border-color: #FEE500; }
+  .kakao-btn:hover { background: #F0D800; }
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .auth-divider::before, .auth-divider::after {
     content: '';
-    position: absolute;
-    top: 0;
-    width: 60px;
-    height: calc(100% - 8px);
-    pointer-events: none;
-    z-index: 3;
-    transition: opacity 0.3s;
+    flex: 1;
+    height: 1px;
+    background: var(--border);
   }
-  .tabs-wrapper::before {
-    left: 0;
-    background: linear-gradient(to right, white 20%, rgba(255,255,255,0));
-    opacity: 0; /* Default hidden */
+  .auth-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+    outline: none;
   }
-  .tabs-wrapper::after {
-    right: 0;
-    background: linear-gradient(to left, white 20%, rgba(255,255,255,0));
+  .auth-input:focus { border-color: var(--accent); }
+  .auth-submit {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: opacity .15s;
   }
-  .tabs-wrapper.can-scroll-left::before { opacity: 1; }
-  .tabs-wrapper.can-scroll-right::after { opacity: 1; }
+  .auth-submit:hover { opacity: .88; }
+  .auth-footer {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 12px 0 0;
+  }
+  .auth-footer a { color: var(--accent); cursor: pointer; }
+  .auth-privacy {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 8px 0;
+  }
+  .auth-privacy input[type=checkbox] { margin-right: 6px; }
 
-  .source-tab {
-    flex-shrink: 0; /* CRITICAL: Prevents tabs from squeezing */
-    white-space: nowrap;
-    padding: 8px 18px;
+  /* Login button in header */
+  .btn-login {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--accent);
+    background: none;
+    color: var(--accent);
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-secondary);
-    border-radius: 100px;
     cursor: pointer;
-    background: #F1F5F9;
-    border: 1px solid transparent;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    user-select: none;
+    transition: all .15s;
   }
-  .source-tab:hover {
-    background: #E2E8F0;
-    color: var(--primary);
-  }
-  .source-tab.active {
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
-    transform: translateY(-1px);
-  }
-
-  /* Sub filter pills */
-  .sub-filter {
+  .btn-login:hover { background: var(--accent); color: #fff; }
+  .user-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 20px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-  }
-  .sub-filter::-webkit-scrollbar { display: none; }
-  
-  .filter-pill {
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 500;
-    background: white;
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
-  .filter-pill.active {
-    background: var(--primary-light);
-    border-color: var(--primary);
-    color: var(--primary);
+    border: none;
   }
 
-  .mp-pill-btn {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    border: 1px solid #E2E8F0;
-    background: white;
-    color: #64748B;
-    cursor: pointer;
-  }
-  .mp-pill-btn.active {
-    background: #3B82F6;
-    color: white;
-    border-color: #3B82F6;
-  }
-
-  .activity-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #F1F5F9;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .activity-item:hover { border-color: #3B82F6; background: #F0F7FF; }
-  .activity-icon { font-size: 18px; }
-  .activity-text { font-size: 13px; font-weight: 500; color: #1E293B; flex: 1; }
+/* === MIK API & Mobile Enhancements === */
+.news-pending-badge{background:#2d333b;color:#8b949e;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+.news-ai-badge{background:#0d1f0d;color:#3fb950;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+.news-trans-badge{background:#0d1c34;color:#58a6ff;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+#mobileDetailOverlay{display:none;}
+.source-tabs{padding-left:0!important;}
+@media(max-width:768px){
+  .article-detail,.article-view,#articleDetail,.news-detail{display:none!important;}
+  .news-list,.news-panel,.left-panel{width:100%!important;flex:1!important;max-width:none!important;border-right:none!important;}
+  .main-layout,.content-layout,.news-layout{flex-direction:column!important;}
+  .source-tabs{padding:0 0 8px!important;}
+  .news-item{cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .news-item:active{background:#21262d!important;}
+}
 </style>
 </head>
 <body>
@@ -1180,32 +1180,32 @@
 <aside class="sidebar">
   <div class="sidebar-logo" title="MICE Insight Korea">MIK</div>
 
-  <button class="sidebar-btn active" id="btnFeed" data-view="feed" title="뉴스 피드">
-    <span>📰</span>
+  <button class="sidebar-btn active" title="뉴스 피드">
+    <span>📰</span><small>뉴스</small>
   </button>
-  <button class="sidebar-btn" id="btnBookmark" data-view="bookmarks" title="즐겨찾기">
-    <span>🔖</span>
+  <button class="sidebar-btn" title="즐겨찾기">
+    <span>🔖</span><small>즐겨찾기</small>
   </button>
-  <button class="sidebar-btn" id="btnAlert" data-action="alert" title="알림">
-    <span>🔔</span>
-    <span class="badge" id="alertBadge"></span>
-  </button>
-  <div class="sidebar-divider"></div>
-  <button class="sidebar-btn" id="btnMedia" data-action="media" title="MICE 매체 관리">
-    <span>🌐</span>
-  </button>
-  <button class="sidebar-btn" id="btnReport" data-action="report" title="리포트">
-    <span>📊</span>
-  </button>
-  <button class="sidebar-btn" id="btnNewsletter" data-action="newsletter" title="뉴스레터">
-    <span>📧</span>
+  <button class="sidebar-btn" title="알림">
+    <span>🔔</span><small>알림</small>
+    <span class="badge"></span>
   </button>
   <div class="sidebar-divider"></div>
-  <button class="sidebar-btn" id="btnSettings" data-action="settings" title="설정" style="margin-top: auto;">
-    <span>⚙️</span>
+  <button class="sidebar-btn" title="MICE 매체 관리">
+    <span>🌐</span><small>매체</small>
   </button>
-  <button class="sidebar-btn" id="btnMyPage" data-action="mypage" title="내 계정">
-    <span>👤</span>
+  <button class="sidebar-btn" title="리포트">
+    <span>📊</span><small>리포트</small>
+  </button>
+  <button class="sidebar-btn" title="뉴스레터">
+    <span>📧</span><small>레터</small>
+  </button>
+  <div class="sidebar-divider"></div>
+  <button class="sidebar-btn" title="설정" style="margin-top: auto;">
+    <span>⚙️</span><small>설정</small>
+  </button>
+  <button class="sidebar-btn" title="내 계정">
+    <span>👤</span><small>계정</small>
   </button>
 </aside>
 
@@ -1214,23 +1214,16 @@
 ========================================= -->
 <section class="list-panel">
   <div class="list-header">
-    <div class="search-box">
+    <div class="list-header-top">
+      <div class="search-box">
       <span class="search-icon">🔍</span>
       <input type="text" placeholder="키워드 검색 (예: PCMA, AI, CVB...)" id="searchInput" oninput="filterNews()">
-    </div>
-    <div class="tabs-wrapper" id="tabsWrapper">
-      <button class="nav-btn prev hidden" id="prevTabBtn" onclick="scrollSourceTabs(-200)">❮</button>
-      <div class="source-tabs" id="sourceTabs" onscroll="updateTabNav()">
-        <div class="source-tab active" onclick="filterSource('all', this)">전체</div>
-        <div class="source-tab" onclick="filterSource('Skift Meetings', this)">Skift</div>
-        <div class="source-tab" onclick="filterSource('Event Industry News', this)">EIN</div>
-        <div class="source-tab" onclick="filterSource('Smart Meetings', this)">Smart</div>
-        <div class="source-tab" onclick="filterSource('PCMA Convene', this)">PCMA</div>
-        <div class="source-tab" onclick="filterSource('TradeShow News Network', this)">TSNN</div>
-        <div class="source-tab" onclick="filterSource('Exhibition World', this)">EW</div>
-        <div class="source-tab" onclick="filterSource('The MICE Blog', this)">MICE</div>
-      </div>
-      <button class="nav-btn next" id="nextTabBtn" onclick="scrollSourceTabs(200)">❯</button>
+    </div><!-- end search-box -->
+      <button class="btn-login" id="headerLoginBtn" onclick="openAuthModal('login')">로그인</button>
+      <button class="user-avatar" id="headerUserBtn" style="display:none" onclick="openAuthModal('login')" title="내 계정"></button>
+    </div><!-- end list-header-top -->
+    <div class="source-tabs" id="sourceTabs" style="padding: 0 16px 12px;">
+      <div class="source-tab active" onclick="filterSource('all', this)">전체</div>
     </div>
   </div>
 
@@ -1247,22 +1240,7 @@
     </select>
   </div>
 
-  <!-- Today's highlights -->
-  <div class="highlights">
-    <div class="highlights-title">
-      🔥 오늘의 주요 인사이트
-      <span style="font-size:11px;font-weight:500;color:#6D28D9;margin-left:4px;">AI 선별</span>
-    </div>
-    <div id="highlightCards">
-      <!-- Dynamically injected by JS -->
-      <div class="highlight-card" style="opacity:0.5;">
-        <div class="hc-meta">
-          <span class="tag tag-convention">로딩 중</span>
-        </div>
-        데이터를 불러오는 중입니다...
-      </div>
-    </div>
-  </div>
+
 
   <!-- News feed -->
   <div class="news-list" id="newsList">
@@ -1282,12 +1260,7 @@
       왼쪽 뉴스 목록에서 기사를 선택하면<br>
       AI가 번역·요약한 전문가 인사이트를<br>듀얼 뷰로 확인할 수 있습니다.
     </div>
-    <div style="display:flex;gap:6px;margin-top:8px;">
-      <span class="loading-dot"></span>
-      <span class="loading-dot"></span>
-      <span class="loading-dot"></span>
-    </div>
-    <div style="font-size:11.5px;color:#94A3B8;margin-top:4px;">실시간 수집 중</div>
+    <div style="font-size:13px;color:#8b949e;margin-top:12px;">기사를 선택하면 상세 내용이 여기에 표시됩니다</div>
   </div>
 
   <!-- Article detail (hidden until selected) -->
@@ -1347,52 +1320,6 @@
           <div class="article-col-body" id="koContent"></div>
         </div>
       </div>
-
-      <!-- Source Link Bottom -->
-      <!-- Likes & Comments Section -->
-      <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #E2E8F0;">
-        <div style="display: flex; gap: 16px; margin-bottom: 32px;">
-          <button id="likeBtn" class="action-btn" onclick="toggleLike()" style="padding: 10px 24px; font-size: 14px; background: white; border: 1px solid #E2E8F0; border-radius: 20px;">
-            🤍 좋아요 <span id="likeCount" style="margin-left: 4px; font-weight: 600;">0</span>
-          </button>
-          <button class="action-btn" onclick="document.getElementById('commentInput').focus()" style="padding: 10px 24px; font-size: 14px; background: white; border: 1px solid #E2E8F0; border-radius: 20px;">
-            💬 댓글 쓰기
-          </button>
-        </div>
-        
-        <div style="margin-bottom: 24px;">
-          <div style="font-weight: 700; color: #1E293B; margin-bottom: 16px;">전문가 의견 <span style="color: #3B82F6;">1</span></div>
-          <div style="display: flex; gap: 12px; margin-bottom: 24px;">
-            <div style="width: 36px; height: 36px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">👤</div>
-            <div style="flex: 1;">
-              <textarea id="commentInput" placeholder="이 기사에 대한 인사이트를 남겨주세요..." style="width: 100%; height: 80px; padding: 12px; border: 1px solid #E2E8F0; border-radius: 12px; resize: none; font-family: inherit; font-size: 14px; margin-bottom: 8px;"></textarea>
-              <div style="text-align: right;">
-                <button class="primary-btn" style="padding: 8px 24px; font-size: 13px;" onclick="alert('데이터베이스 연동 전입니다. 곧 댓글 작성 기능이 추가됩니다.')">등록</button>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Mock Comment -->
-          <div style="display: flex; gap: 12px; padding: 16px; background: #F8FAFC; border-radius: 12px;">
-            <div style="width: 36px; height: 36px; border-radius: 50%; background: #3B82F6; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">MIK</div>
-            <div>
-              <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;">
-                <div style="font-size: 13px; font-weight: 700; color: #1E293B;">SAVE 팀</div>
-                <div style="font-size: 11px; color: #94A3B8;">방금 전</div>
-              </div>
-              <div style="font-size: 13px; color: #475569; line-height: 1.5;">
-                해당 이슈는 MICE 산업 전반에 큰 영향을 미칠 것으로 보입니다. 특히 행사 기획 단계에서의 예산 재분배 전략이 필요합니다.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top:24px; padding-top:24px; border-top:1px dashed #E2E8F0; display:flex; justify-content:center;">
-        <button class="action-btn primary-btn" onclick="openOriginal()" style="padding:12px 32px; font-size:14px; gap:8px;">
-          🌐 원문 기사 전체 읽기 (Source Page)
-        </button>
-      </div>
     </div>
   </div>
 </section>
@@ -1437,451 +1364,199 @@
 <!-- =========================================
      JAVASCRIPT
 ========================================= -->
-<script src="api-client.js"></script>
 <script>
-// ====== DEMO DATA (shown when API is unavailable) ======
-const DEMO_ARTICLES = [
-  {
-    id: 0, source: 'PCMA', cat: '컨벤션', catClass: 'tag-convention', type: '분석',
-    time: '2시간 전', views: 312,
-    title: '싱가포르 MICE 인센티브 확대… 한국 CVB에 주는 교훈',
-    url: 'https://www.pcma.org', author: 'PCMA Editorial', date: '2026-04-16',
-    summaryPoints: [
-      '싱가포르 STB(싱가포르 관광청)가 2026년 MICE 유치 인센티브를 30% 확대하며 대형 국제회의 유치 공세를 강화함.',
-      '신규 인센티브는 1,000명 이상 참가자 행사에 행사비의 최대 15%를 보조금으로 지원하는 구조로 설계됨.',
-      'APAC 지역 MICE 유치 경쟁이 심화됨에 따라 한국도 KTO·각 지역 CVB 차원의 대응 전략 재정비가 시급.'
-    ],
-    insight: '한국 PCO 입장에서 싱가포르의 선제적 인센티브 확대는 직접적 경쟁 심화를 의미합니다. 특히 바이오·헬스케어 분야 국제회의 유치 시 싱가포르와의 경쟁이 불가피한 만큼, 오송 바이오 클러스터 등 한국만의 차별화 USP를 강화하고 KTO와 협력한 패키지형 인센티브 개발이 필요합니다.',
-    enText: `<p><strong>Singapore Tourism Board (STB) announced a significant expansion of its MICE incentive program for 2026, increasing the total funding envelope by 30% to attract more international congresses, conventions and corporate events.</strong></p>
-<p>The Business Events in Singapore (BEiS) scheme now offers subsidies covering up to 15% of qualifying event costs for events with over 1,000 attendees, a marked increase from the previous 10% cap.</p>
-<p>"We are committed to making Singapore the most compelling destination for world-class business events," said STB's Chief Executive.</p>
-<p>PCMA's Asia Pacific Advisory Board highlighted that destination selection committees are increasingly factoring in government subsidy levels when deciding between competing bids.</p>
-<a class="source-link" href="https://www.pcma.org" target="_blank">🔗 원문 보기 (PCMA.org)</a>`,
-    koText: `<p><strong>싱가포르 관광청(STB)이 2026년 MICE 인센티브 프로그램을 대폭 확대, 국제 컨그레스·컨벤션 및 기업 행사 유치를 위한 총 지원 규모를 30% 증액한다고 발표했습니다.</strong></p>
-<p>'싱가포르 비즈니스 이벤트(BEiS)' 제도는 이제 1,000명 이상 참가하는 행사에 대해 적격 행사 비용의 최대 15%를 보조금으로 지원합니다.</p>
-<p>STB 최고경영자는 "세계적 수준의 비즈니스 이벤트를 위한 가장 매력적인 목적지가 되기 위해 최선을 다하고 있다"고 밝혔습니다.</p>
-<p>PCMA 아태 자문위원회는 목적지 선정 위원회가 경쟁 입찰을 검토할 때 정부 보조금 수준을 점점 더 중요한 요소로 반영하고 있음을 강조했습니다.</p>
-<a class="source-link" href="https://www.pcma.org" target="_blank">🔗 원문 보기 (PCMA.org)</a>`
-  },
-  {
-    id: 1, source: 'Skift Meetings', cat: '테크', catClass: 'tag-tech', type: '속보',
-    time: '45분 전', views: 189,
-    title: 'AI Event Tech 스타트업, 시리즈 B $45M 유치… 이벤트 자동화 가속',
-    url: 'https://skift.com', author: 'Skift Meetings', date: '2026-04-16',
-    summaryPoints: [
-      'AI 기반 행사 운영 플랫폼 EventMind가 시리즈 B 4,500만 달러 투자 유치 성공.',
-      '핵심 기능: AI 참가자 맞춤형 세션 추천, 실시간 동시통역, 네트워킹 매칭 자동화.',
-      '2026년 하반기 한국·일본·싱가포르 아시아 시장 진출 공식화.'
-    ],
-    insight: '국내 PCO 및 행사 기획사 입장에서 AI 이벤트 테크 도입은 선택이 아닌 필수로 가속화되고 있습니다. 선제적 파트너십 검토 또는 국내 솔루션 개발을 고려할 시점입니다.',
-    enText: `<p><strong>EventMind, an AI-powered event management platform, has closed a $45 million Series B funding round.</strong></p><p>The platform uses large language models to automate attendee personalization and reduce event staff workload by up to 40%.</p><a class="source-link" href="https://skift.com" target="_blank">🔗 원문 보기 (Skift.com)</a>`,
-    koText: `<p><strong>AI 기반 이벤트 관리 플랫폼 EventMind가 시리즈 B 라운드에서 4,500만 달러를 조달했습니다.</strong></p><p>이 플랫폼은 대규모 언어 모델(LLM)을 활용해 참가자 개인화를 자동화하며, 행사 스태프 업무량을 최대 40% 줄입니다.</p><a class="source-link" href="https://skift.com" target="_blank">🔗 원문 보기 (Skift.com)</a>`
-  },
-  {
-    id: 2, source: 'Event Industry News', cat: '전시', catClass: 'tag-exhibition', type: '분석',
-    time: '1시간 30분 전', views: 241,
-    title: 'IBTM World 2026 바르셀로나 확정… 지속가능성 테마 전면',
-    url: 'https://www.ibtmworld.com', author: 'IBTM World', date: '2026-04-16',
-    summaryPoints: [
-      'IBTM World 2026이 11월 바르셀로나 피라 그란비아 개최 확정.',
-      '전시 면적 30% 확대 및 AI·지속가능성 전문 전시 구역(Innovation Hub) 신설.',
-      '국내 PCO·DMC의 글로벌 바이어 B2B 미팅 기회.'
-    ],
-    insight: 'IBTM World는 글로벌 MICE 바이어-셀러 연결의 핵심 플랫폼입니다. 지속가능성 테마 강화는 K-그린(탄소중립 행사 인프라)을 차별화 요소로 활용하는 홍보 전략 검토를 권장합니다.',
-    enText: `<p><strong>IBTM World 2026 returns to Fira Gran Via in Barcelona, November 18–20, 2026.</strong></p><p>Exhibition floor expanded by 30% with a new Innovation Hub.</p><a class="source-link" href="https://www.ibtmworld.com" target="_blank">🔗 원문 보기 (ibtmworld.com)</a>`,
-    koText: `<p><strong>IBTM World 2026이 2026년 11월 18~20일 바르셀로나에서 개최됩니다.</strong></p><p>전시 면적 30% 확대, Innovation Hub 신설 예정.</p><a class="source-link" href="https://www.ibtmworld.com" target="_blank">🔗 원문 보기 (ibtmworld.com)</a>`
-  },
-  {
-    id: 3, source: 'Smart Meetings', cat: '인센티브', catClass: 'tag-incentive', type: '속보',
-    time: '3시간 전', views: 98,
-    title: '미국 기업 인센티브 여행 예산 12% 증가… 아시아 목적지 선호도 급상승',
-    url: 'https://smartmeetings.com', author: 'Smart Meetings', date: '2026-04-16',
-    summaryPoints: [
-      '2026년 기업 인센티브 여행 예산 평균 12% 증가, 트렌드는 고품격 소규모(Small Luxe).',
-      '아시아 목적지 선호도 전년 대비 18%p 상승, 한국·일본·베트남 상위권.',
-      '인센티브 그룹 소규모화(30~50명) 반면 1인당 예산 증가 양극화.'
-    ],
-    insight: '한국 인센티브 시장에 직접적인 호재입니다. 소규모 럭셔리 트렌드는 한국만의 독보적 콘텐츠와 정확히 맞아떑어집니다.',
-    enText: `<p><strong>US corporate incentive travel budgets increased by 12% YoY with "Small Luxe" trend.</strong></p><a class="source-link" href="https://smartmeetings.com" target="_blank">🔗 원문 보기</a>`,
-    koText: `<p><strong>미국 기업 인센티브 여행 예산이 전년 대비 12% 증가했습니다.</strong></p><a class="source-link" href="https://smartmeetings.com" target="_blank">🔗 원문 보기</a>`
-  }
-];
+// ====== DATA ======
+const WORKER_URL = 'https://mik-worker.isg11882.workers.dev';
+const CAT_LABELS = {
+  'exhibition':'전시', 'convention':'컨벤션', 'incentive':'인센티브',
+  'tech':'테크', 'bio':'바이오', 'policy':'정책', 'general':'일반'
+};
+const CAT_CLASSES = {
+  'exhibition':'tag-exhibition', 'convention':'tag-convention',
+  'incentive':'tag-incentive', 'tech':'tag-tech',
+  'bio':'tag-bio', 'policy':'tag-policy', 'general':'tag-convention'
+};
+let ARTICLES = [];
+let IS_LOADING = false;
 
-const DEMO_MEDIA = [
-  { name: 'Skift Meetings', active: true, count: 8 },
-  { name: 'Event Industry News', active: true, count: 6 },
-  { name: 'Smart Meetings', active: true, count: 5 },
-  { name: 'PCMA Convene', active: true, count: 4 },
-  { name: 'TradeShow News Network', active: true, count: 3 },
-  { name: 'The MICE Blog', active: true, count: 2 },
-];
+function formatTime(d) {
+  if (!d) return '';
+  try {
+    const dt = new Date(d), now = new Date(), diff = now - dt;
+    if (isNaN(diff)) return d;
+    if (diff < 3600000) return Math.floor(diff/60000) + '분 전';
+    if (diff < 86400000) return Math.floor(diff/3600000) + '시간 전';
+    if (diff < 604800000) return Math.floor(diff/86400000) + '일 전';
+    return dt.toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
+  } catch(e) { return ''; }
+}
+
+async function fetchArticles(params = {}) {
+  if (IS_LOADING) return;
+  IS_LOADING = true;
+  const grid = document.getElementById('newsGrid');
+  if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;"><div style="font-size:24px;margin-bottom:8px;">⏳<' + '/div>기사를 불러오는 중...<' + '/div>';
+  try {
+    const sp = new URLSearchParams(params);
+    const res = await fetch(WORKER_URL + '/api/articles?' + sp.toString(), {
+      mode: 'cors', headers: { 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    ARTICLES = (data.articles || data || []).map(a => ({
+      id: a.id, source: a.source||'',
+      cat: CAT_LABELS[a.category] || a.category || '일반',
+      catClass: CAT_CLASSES[a.category] || a.cat_class || 'tag-convention',
+      type: a.article_type||'분석',
+      time: formatTime(a.pub_date||a.created_at), views: a.views||0,
+      title: a.title||'', title_ko: a.title_ko||a.title||'',
+      url: a.link||'#', content_ko: a.content_ko||'',
+      insight: a.insight||'',
+      summary_json: (()=>{ try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
+    }));
+    renderNewsList(ARTICLES);
+    renderSourceTabs(ARTICLES);
+    if (ARTICLES.length > 0) showArticle(ARTICLES[0].id);
+  } catch(e) {
+    console.error('[MIK] API error:', e);
+    if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#f85149;"><div style="font-size:24px;margin-bottom:8px;">⚠️<' + '/div>기사를 불러올 수 없습니다.<br><small style="color:#8b949e">Worker API 상태를 확인해 주세요.<' + '/small><' + '/div>';
+  } finally { IS_LOADING = false; }
+}
 
 const KEYWORDS_DEFAULT = ['Bio', 'CVB', 'Sustainability', 'AI Event', 'Korea MICE', 'PCO'];
+const MEDIA_SOURCES = []; // 동적으로 API에서 로드
+
+const ALERTS = []; // 알림은 키워드 설정 후 동적으로 수신
 
 // ====== STATE ======
 let currentSource = 'all';
 let currentType = 'all';
 let currentSort = 'latest';
-let articlesData = [];
 let currentArticleId = null;
-let currentView = 'feed'; // 'feed' or 'bookmarks'
-let bookmarkedIds = JSON.parse(localStorage.getItem('mik_bookmarks') || '[]');
 let keywords = [...KEYWORDS_DEFAULT];
-let allArticles = [];      // all loaded articles
-let filteredArticles = [];  // after filters applied
-let isApiConnected = false;
-let isLoading = false;
-
-/**
- * Switch between Feed and Bookmarks view
- */
-function switchView(view) {
-  console.log('[MIK] Switching view to:', view);
-  currentView = view;
-  
-  // Update UI active state
-  const btnFeed = document.getElementById('btnFeed');
-  const btnBookmark = document.getElementById('btnBookmark');
-  
-  if (btnFeed) btnFeed.classList.toggle('active', view === 'feed');
-  if (btnBookmark) btnBookmark.classList.toggle('active', view === 'bookmarks');
-  
-  // Update header title
-  const headerTitle = document.querySelector('.panel-header h2');
-  if (headerTitle) {
-    headerTitle.textContent = view === 'feed' ? '뉴스 피드' : '즐겨찾기';
-  }
-  
-  renderNewsList(articlesData);
-}
-
-/**
- * Toggle the right alert panel
- */
-function toggleAlertPanel() {
-  const panel = document.querySelector('.alert-panel');
-  if (!panel) return;
-  const currentDisplay = window.getComputedStyle(panel).display;
-  panel.style.display = currentDisplay === 'none' ? 'block' : 'none';
-}
-
-/**
- * Show dummy settings alert
- */
-/**
- * Show My Page / Settings
- */
-function showSettings() {
-  showMyPage();
-}
-
-/**
- * Bind Sidebar Events using Global Interceptor
- */
-function bindSidebarEvents() {
-  // Use window click to catch events even if overlapping exists
-  window.addEventListener('click', (e) => {
-    const btn = e.target.closest('.sidebar-btn');
-    if (!btn) return;
-
-    console.log('[MIK] Sidebar button clicked:', btn.id || btn.title);
-    
-    const view = btn.dataset.view;
-    const action = btn.dataset.action;
-
-    if (view) {
-      switchView(view);
-    } else if (action === 'alert') {
-      toggleAlertPanel();
-    } else if (action === 'settings') {
-      showSettings();
-    } else if (action === 'media') {
-      populateMediaToggles();
-      openModal('mediaOverlay');
-    } else if (action === 'report') {
-      openModal('reportOverlay');
-    } else if (action === 'newsletter') {
-      openModal('newsletterOverlay');
-    } else if (action === 'mypage') {
-      showMyPage();
-    }
-  });
-
-  // Background click to close modals
-  document.querySelectorAll('.mypage-overlay').forEach(overlay => {
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        closeModal(overlay.id);
-      }
-    });
-  });
-
-  // ESC key to close modals
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      const activeOverlay = document.querySelector('.mypage-overlay.active');
-      if (activeOverlay) closeModal(activeOverlay.id);
-    }
-  });
-  
-  console.log('[MIK] Global sidebar interceptor active');
-}
-
-function populateMediaToggles() {
-  const container = document.getElementById('mediaTogglesContainer');
-  if (!container) return;
-  const sources = [...new Set(allArticles.map(a => a.source))];
-  
-  if (sources.length === 0) {
-    container.innerHTML = '<div style="color:#94A3B8;font-size:13px;">불러온 매체가 없습니다.</div>';
-    return;
-  }
-
-  container.innerHTML = sources.map(s => `
-    <div class="mp-row">
-      <div class="mp-label" style="font-weight: 500;">${s}</div>
-      <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-    </div>
-  `).join('');
-}
-
-// Expose to window for extra safety
-window.switchView = switchView;
-window.toggleAlertPanel = toggleAlertPanel;
-window.showSettings = showSettings;
+let filteredArticles = [...ARTICLES];
 
 // ====== INIT ======
-async function init() {
-  bindSidebarEvents();
-  renderAlerts();
-  renderKeywords();
-  
-  await tryLoadFromApi();
-
-  // Auto-select first article after a short delay
-  setTimeout(() => {
-    if (filteredArticles.length > 0) {
-      showArticle(filteredArticles[0].id);
-    }
-  }, 500);
-}
-
-/**
- * Try loading data from the Worker API.
- */
-async function tryLoadFromApi() {
-  try {
-    showLoadingState(true);
-    
-    // Fetch articles
-    const data = await MIK_API.getArticles({ sort: currentSort, limit: 30 });
-    
-    if (data && data.articles && data.articles.length > 0) {
-      articlesData = data.articles;
-      allArticles = data.articles;
-      filteredArticles = [...allArticles];
-      isApiConnected = true;
-      
-      renderNewsList(articlesData);
-      showConnectionStatus(true);
-      
-      // Fetch highlights
-      try {
-        const highlights = await MIK_API.getHighlights();
-        renderHighlights(highlights);
-      } catch { 
-        renderHighlights(allArticles.slice(0, 1));
-      }
-
-      // Fetch sources for media panel
-      try {
-        const sources = await MIK_API.getSources();
-        renderMediaFromApi(sources);
-      } catch {
-        renderMedia(DEMO_MEDIA);
-      }
-
-      showLoadingState(false);
-      return true;
-    }
-    
-    showLoadingState(false);
-    return false;
-  } catch (err) {
-    console.warn('[MIK] API connection failed:', err.message);
-    showLoadingState(false);
-    return false;
-  }
-}
-
-/**
- * Show connection status indicator.
- */
-function showConnectionStatus(connected) {
-  const statusEl = document.querySelector('.no-article-desc');
-  if (statusEl && !currentArticleId) {
-    if (connected) {
-      statusEl.innerHTML = '✅ Worker API 연결됨<br>왼쪽 뉴스 목록에서 기사를 선택하세요.';
-    } else {
-      statusEl.innerHTML = '⚠️ 데모 모드 (Worker API 미연결)<br>실시간 데이터는 Worker 배포 후 활성화됩니다.';
-    }
-  }
-}
-
-/**
- * Show/hide loading state in news list.
- */
-function showLoadingState(loading) {
-  isLoading = loading;
-  const container = document.getElementById('newsList');
-  if (loading) {
-    container.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px;">
-        <div style="display:flex;gap:6px;">
-          <span class="loading-dot"></span>
-          <span class="loading-dot"></span>
-          <span class="loading-dot"></span>
-        </div>
-        <div style="font-size:12px;color:#94A3B8;">뉴스를 불러오는 중...</div>
-      </div>
-    `;
-  }
+function init() {
+  updateAuthUI();
+  fetchArticles({ limit: 30, sort: 'latest' });
 }
 
 // ====== RENDER NEWS LIST ======
-function renderNewsList(articles) {
-  const listContainer = document.getElementById('newsList');
-  
-  // Filter by view
-  let filtered = articles;
-  if (currentView === 'bookmarks') {
-    filtered = articles.filter(a => bookmarkedIds.includes(a.id));
-  }
-  
-  if (filtered.length === 0) {
-    listContainer.innerHTML = `
-      <div style="padding: 40px; text-align: center; color: var(--text-muted);">
-        <div style="font-size: 40px; margin-bottom: 10px;">${currentView === 'bookmarks' ? '🔖' : '📭'}</div>
-        <p>${currentView === 'bookmarks' ? '저장된 기사가 없습니다.' : '기사가 없습니다.'}</p>
-      </div>
-    `;
-    return;
-  }
-
-  listContainer.innerHTML = filtered.map(a => {
-    // Only show bookmark if ID exists and is in the list
-    const isSaved = a.id && bookmarkedIds.includes(a.id);
-    return `
-      <div class="news-item ${currentArticleId === a.id ? 'active' : ''}" onclick="showArticle(${a.id})">
-        <div class="news-item-meta">
-          <span class="tag ${a.catClass || 'tag-convention'}">${a.cat || a.category || '일반'}</span>
-          <span style="font-size:10.5px;color:#94A3B8;font-weight:600;">${a.source}</span>
-          ${isSaved ? '<span style="margin-left: auto; font-size: 14px;" title="저장됨">🔖</span>' : ''}
-        </div>
-        <div class="news-item-title">${a.titleKo || a.title_ko || a.title}</div>
-        <div class="news-item-footer">
-            <span class="time-ago">🕐 ${a.time || a.pub_date || ''}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
+function renderSourceTabs(articles) {
+  const tabs = document.getElementById('sourceTabs');
+  if (!tabs) return;
+  // Collect unique sources from loaded articles
+  const sources = [...new Set((articles || ARTICLES).map(a => a.source).filter(Boolean))].sort();
+  tabs.innerHTML = '<div class="source-tab active" onclick="filterSource('all', this)">전체<' + '/div>' +
+    sources.map(s => {
+      // Shorten long source names for display
+      const label = s.replace(' Meetings','').replace(' News','').replace(' Blog','').replace(' Index','');
+      return '<div class="source-tab" onclick="filterSource('' + s + '', this)">' + label + '<' + '/div>';
+    }).join('');
 }
 
-// ====== RENDER HIGHLIGHTS ======
-function renderHighlights(articles) {
-  const container = document.getElementById('highlightCards');
+function renderNewsList(articles) {
+  const grid = document.getElementById('newsGrid');
+  if (!grid) return;
   if (!articles || articles.length === 0) {
-    container.innerHTML = '<div style="font-size:12px;color:#94A3B8;">하이라이트 데이터가 없습니다.</div>';
+    grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;">' +
+      '<div style="font-size:32px;margin-bottom:12px;">📭<' + '/div>' +
+      '<div style="font-weight:600;margin-bottom:6px;">기사가 없습니다<' + '/div>' +
+      '<div style="font-size:12px;">RSS 크롤링 후 기사가 표시됩니다.<' + '/div><' + '/div>';
     return;
   }
-
-  container.innerHTML = articles.slice(0, 2).map(a => `
-    <div class="highlight-card" onclick="showArticle(${a.id})" style="margin-bottom:6px;">
-      <div class="hc-meta">
-        <span class="tag ${a.catClass}">${a.cat}</span>
-        <span style="font-size:11px;color:#94A3B8;">${a.source} · ${a.time}</span>
-      </div>
-      🏆 ${a.titleKo || a.title}
-    </div>
-  `).join('');
+  grid.innerHTML = articles.map(a => {
+    const title = a.title_ko || a.title || '제목 없음';
+    const badge = a.insight ? '<span class="news-ai-badge">AI분석</span>' :
+                  a.content_ko ? '<span class="news-trans-badge">번역완료</span>' :
+                  '<span class="news-pending-badge">번역대기</span>';
+    return '<div class="news-item" data-id="' + a.id + '" onclick="showArticle(' + a.id + ')">' +
+      '<div class="news-item-header"><span class="news-tag ' + (a.catClass||'tag-convention') + '">' + (a.cat||'') + '<' + '/span>' +
+      '<span class="news-type">' + (a.type||'') + '<' + '/span><span class="news-time">' + (a.time||'') + '<' + '/span><' + '/div>' +
+      '<div class="news-title">' + title + '<' + '/div>' +
+      '<div class="news-meta"><span class="news-source">' + (a.source||'') + '<' + '/span>' +
+      '<span class="news-views">👁 ' + (a.views||0) + '<' + '/span>' + badge + '<' + '/div><' + '/div>';
+  }).join('');
 }
 
 // ====== SHOW ARTICLE ======
 function showArticle(id) {
-  let article = articlesData.find(x => x.id === id);
-  if (!article) return;
+  currentArticleId = id;
+  const a = ARTICLES.find(x => x.id === id);
+  if (!a) return;
+  document.querySelectorAll('.news-item').forEach(el => el.classList.remove('active'));
+  const item = document.querySelector('[data-id="' + id + '"]');
+  if (item) { item.classList.add('active'); item.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+  a.views = (a.views||0) + 1;
+  const vEl = item && item.querySelector('.news-views');
+  if (vEl) vEl.textContent = '👁 ' + a.views;
+  if (window.innerWidth <= 768) { showMobileDetail(a); return; }
+  renderDetailPanel(a);
+}
 
-  // Show detail
-  document.getElementById('noArticle').style.display = 'none';
-  document.getElementById('articleDetail').style.display = 'flex';
-  document.getElementById('articleDetail').style.flexDirection = 'column';
+function buildDetailHTML(a) {
+  const title = a.title_ko || a.title || '';
+  const sum = a.summary_json && a.summary_json.length > 0;
+  let h = '';
+  if (sum) h += '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:16px;">' +
+    '<div style="font-size:12px;color:#58a6ff;font-weight:600;margin-bottom:8px;">📋 핵심 요약<' + '/div>' +
+    a.summary_json.map((s,i)=>'<div style="font-size:14px;color:#c9d1d9;padding:4px 0;">'+(i+1)+'. '+s+'<' + '/div>').join('') + '<' + '/div>';
+  if (a.insight) h += '<div style="background:#0d1f0d;border:1px solid #238636;border-radius:8px;padding:16px;margin-bottom:16px;">' +
+    '<div style="font-size:12px;color:#3fb950;font-weight:600;margin-bottom:8px;">💡 AI MICE 인사이트<' + '/div>' +
+    '<div style="font-size:14px;color:#c9d1d9;line-height:1.6;">' + a.insight + '<' + '/div><' + '/div>';
+  h += a.content_ko ?
+    '<div style="font-size:14px;color:#c9d1d9;line-height:1.8;">' + a.content_ko + '<' + '/div>' :
+    '<div style="color:#8b949e;font-size:13px;text-align:center;padding:24px;background:#161b22;border-radius:8px;">⏳ AI 번역 처리 중입니다. 잠시 후 확인해 주세요.<' + '/div>';
+  return {title, h};
+}
 
-  // Header
-  document.getElementById('detailTagWrap').innerHTML = `<span class="tag ${article.catClass}" style="flex-shrink:0;margin-right:2px;">${article.cat}</span>`;
-  document.getElementById('detailTitleText').innerHTML = `
-    <div style="font-size:1.1em; color:#0F172A; margin-bottom:4px;">${article.titleKo || article.title}</div>
-    <div style="font-size:0.85em; color:#64748B; font-weight:normal; line-height:1.4;">${article.title}</div>
-  `;
-
-  // Meta row
-  document.getElementById('articleMeta').innerHTML = `
-    <div class="meta-item">📰 <span>${article.source}</span></div>
-    <div class="meta-item">👤 <span>${article.author || article.source}</span></div>
-    <div class="meta-item">📅 <span>${article.date || ''}</span></div>
-    <div class="meta-item">🕐 <span>${article.time}</span></div>
-    <div class="meta-item">👁 <span>${(article.views || 0).toLocaleString()} views</span></div>
-  `;
-
-  // AI Summary
-  const summaryPoints = article.summaryPoints || [];
-  const ul = document.getElementById('aiSummaryPoints');
-  ul.innerHTML = summaryPoints.map((pt, i) => `
-    <li><span class="ai-point-num">${i+1}</span><span>${pt}</span></li>
-  `).join('');
-  document.getElementById('aiInsight').textContent = article.insight || '';
-
-  // Content
-  document.getElementById('enContent').innerHTML = article.enText || '<p style="color:#94A3B8;">원문 데이터가 없습니다.</p>';
-  document.getElementById('koContent').innerHTML = article.koText || '<p style="color:#94A3B8;">AI 번역 대기 중입니다.</p>';
-
-  // Store current article url
-  window._currentUrl = article.url;
-
-  // Persist
-  localStorage.setItem('mik_bookmarks', JSON.stringify(bookmarkedIds));
-  
-  // Set bookmark state
-  const isSaved = bookmarkedIds.includes(article.id);
-  const bookmarkBtn = document.getElementById('bookmarkBtn');
-  if (bookmarkBtn) {
-    if (isSaved) {
-      bookmarkBtn.innerHTML = '✅ 저장됨';
-      bookmarkBtn.dataset.saved = '1';
-      bookmarkBtn.classList.add('primary-btn');
-    } else {
-      bookmarkBtn.innerHTML = '🔖 저장';
-      bookmarkBtn.dataset.saved = '0';
-      bookmarkBtn.classList.remove('primary-btn');
-    }
+function showMobileDetail(a) {
+  let ov = document.getElementById('mobileDetailOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'mobileDetailOverlay';
+    ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#0d1117;z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;';
+    document.body.appendChild(ov);
   }
+  const {title, h} = buildDetailHTML(a);
+  ov.innerHTML = '<div style="position:sticky;top:0;background:#161b22;padding:12px 16px;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:12px;z-index:1;">' +
+    '<button onclick="closeMobileDetail()" style="background:none;border:none;color:#8b949e;font-size:22px;cursor:pointer;line-height:1;">←<' + '/button>' +
+    '<span style="font-size:13px;color:#8b949e;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (a.source||'') + '<' + '/span>' +
+    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#238636;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;">원문 →<' + '/a><' + '/div>' +
+    '<div style="padding:20px 16px;">' +
+    '<div style="margin-bottom:12px;"><span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
+    '<span style="color:#8b949e;font-size:12px;margin-left:8px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
+    '<h2 style="font-size:18px;font-weight:700;color:#e6edf3;line-height:1.4;margin:0 0 16px;">' + title + '<' + '/h2>' + h + '<' + '/div>';
+  ov.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
 
-    // Reset Like UI
-    const likeBtn = document.getElementById('likeBtn');
-    if (likeBtn) {
-      likeBtn.innerHTML = `🤍 좋아요 <span id="likeCount" style="margin-left: 4px; font-weight: 600;">${Math.floor(Math.random() * 50) + 5}</span>`;
-      likeBtn.style.background = 'white';
-      likeBtn.style.color = '#1E293B';
-      likeBtn.dataset.liked = '0';
-    }
+function closeMobileDetail() {
+  const ov = document.getElementById('mobileDetailOverlay');
+  if (ov) ov.style.display = 'none';
+  document.body.style.overflow = '';
+}
 
-  // Update current ID
-  currentArticleId = article.id;
-  renderNewsList(articlesData);
-
-  // If API connected, also fetch detailed view (increments view count)
-  if (isApiConnected) {
-    MIK_API.getArticleById(id).catch(() => {});
-  }
+function renderDetailPanel(a) {
+  const noArt = document.getElementById('noArticle');
+  if (noArt) noArt.style.display = 'none';
+  const panel = document.getElementById('articleDetail') ||
+    document.querySelector('.article-detail, .article-view, .news-detail');
+  if (!panel) return;
+  panel.style.display = 'flex';
+  panel.style.flexDirection = 'column';
+  const {title, h} = buildDetailHTML(a);
+  panel.innerHTML = '<div style="padding:20px;border-bottom:1px solid #30363d;">' +
+    '<div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+    '<span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
+    '<span style="color:#8b949e;font-size:12px;">' + (a.source||'') + '<' + '/span>' +
+    '<span style="color:#8b949e;font-size:12px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
+    '<h2 style="font-size:17px;font-weight:700;color:#e6edf3;line-height:1.4;margin:0 0 12px;">' + title + '<' + '/h2>' +
+    '<div style="display:flex;gap:8px;">' +
+    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#238636;color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none;">원문 보기 →<' + '/a>' +
+    '<button onclick="toggleBookmark(' + a.id + ')" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;">🔖 저장<' + '/button><' + '/div><' + '/div>' +
+    '<div style="padding:20px;overflow-y:auto;">' + h + '<' + '/div>';
 }
 
 // ====== FILTER ======
@@ -1908,42 +1583,20 @@ function sortNews(val) {
   applyFilters();
 }
 
-async function applyFilters() {
-  if (isApiConnected) {
-    // Use server-side filtering
-    try {
-      const categoryMap = { '전시': '전시', '컨벤션': '컨벤션', '인센티브': '인센티브', '테크': '테크' };
-      const search = document.getElementById('searchInput').value.trim();
-      
-      const data = await MIK_API.getArticles({
-        source: currentSource,
-        category: categoryMap[currentType] || currentType,
-        search: search || undefined,
-        sort: currentSort,
-      });
-      
-      articlesData = data.articles || [];
-      renderNewsList(articlesData);
-      return;
-    } catch (err) {
-      console.warn('[MIK] API filter failed, falling back to client-side');
-    }
-  }
-
-  // Client-side filtering (demo mode or API fallback)
+function applyFilters() {
   const search = document.getElementById('searchInput').value.toLowerCase();
-  filteredArticles = allArticles.filter(a => {
-    const matchSource = currentSource === 'all' || a.source === currentSource || a.source.includes(currentSource);
+  filteredArticles = ARTICLES.filter(a => {
+    const matchSource = currentSource === 'all' || a.source === currentSource;
     const matchType = currentType === 'all' || a.cat === currentType;
     const matchSearch = !search || a.title.toLowerCase().includes(search) || a.source.toLowerCase().includes(search);
     return matchSource && matchType && matchSearch;
   });
 
   if (currentSort === 'views') {
-    filteredArticles.sort((a, b) => (b.views || 0) - (a.views || 0));
+    filteredArticles.sort((a, b) => b.views - a.views);
   }
 
-  renderNewsList(filteredArticles);
+  renderNewsList();
 }
 
 // ====== VIEW TOGGLE ======
@@ -1993,13 +1646,6 @@ function removeKeyword(k) {
 
 // ====== ALERTS ======
 function renderAlerts() {
-  const ALERTS = [
-    { icon: '🧬', keyword: 'Bio', title: 'BIO North America 2026, 서울 바이오 업계 최대 파견단 구성 추진', time: '18분 전' },
-    { icon: '🤖', keyword: 'AI Event', title: 'EventMind 한국 파트너십 협의 시작, 서울 오피스 Q3 오픈 예정', time: '1시간 전' },
-    { icon: '🌱', keyword: 'Sustainability', title: 'UNFCCC, 2028 COP 개최지 후보에 부산 포함 – 공식 발표 임박', time: '2시간 전' },
-    { icon: '🏢', keyword: 'CVB', title: '인천관광공사 CVB 기능 강화… 국제회의 유치 전담팀 신설', time: '3시간 전' },
-  ];
-
   const container = document.getElementById('recentAlerts');
   container.innerHTML = ALERTS.map(a => `
     <div class="alert-noti-item">
@@ -2013,76 +1659,31 @@ function renderAlerts() {
   `).join('');
 }
 
-// ====== MEDIA SOURCES ======
-function renderMedia(sources) {
+// ====== MEDIA ======
+function renderMedia() {
   const container = document.getElementById('mediaList');
-  container.innerHTML = sources.map(m => `
+  container.innerHTML = MEDIA_SOURCES.map(m => `
     <div class="media-item">
-      <div class="media-dot ${m.active !== false ? '' : 'inactive'}"></div>
+      <div class="media-dot ${m.active ? '' : 'inactive'}"></div>
       <span class="media-name">${m.name}</span>
-      <span class="media-count">${m.active !== false ? (m.count || 0) + '건' : '비활성'}</span>
-    </div>
-  `).join('');
-}
-
-function renderMediaFromApi(sources) {
-  const container = document.getElementById('mediaList');
-  container.innerHTML = sources.map(m => `
-    <div class="media-item">
-      <div class="media-dot"></div>
-      <span class="media-name">${m.source}</span>
-      <span class="media-count">${m.count}건</span>
+      <span class="media-count">${m.active ? m.count + '건' : '비활성'}</span>
     </div>
   `).join('');
 }
 
 // ====== ACTIONS ======
-function toggleLike() {
-  const btn = document.getElementById('likeBtn');
-  const countSpan = document.getElementById('likeCount');
-  if (!btn || !countSpan) return;
-
-  let count = parseInt(countSpan.textContent.replace(/,/g, ''));
-  const isLiked = btn.dataset.liked === '1';
-
-  if (isLiked) {
-    btn.dataset.liked = '0';
-    btn.innerHTML = `🤍 좋아요 <span id="likeCount" style="margin-left: 4px; font-weight: 600;">${count - 1}</span>`;
-    btn.style.background = 'white';
-    btn.style.color = '#1E293B';
-  } else {
-    btn.dataset.liked = '1';
-    btn.innerHTML = `❤️ 좋아요 <span id="likeCount" style="margin-left: 4px; font-weight: 600;">${count + 1}</span>`;
-    btn.style.background = '#FEF2F2';
-    btn.style.color = '#EF4444';
-  }
-}
-
 function toggleBookmark() {
-  if (!currentArticleId) return;
-
-  const index = bookmarkedIds.indexOf(currentArticleId);
   const btn = document.getElementById('bookmarkBtn');
-  
-  if (index > -1) {
-    // Remove from bookmarks
-    bookmarkedIds.splice(index, 1);
-    btn.innerHTML = '🔖 저장';
+  const saved = btn.dataset.saved === '1';
+  if (saved) {
+    btn.textContent = '🔖 저장';
     btn.dataset.saved = '0';
     btn.classList.remove('primary-btn');
   } else {
-    // Add to bookmarks
-    bookmarkedIds.push(currentArticleId);
     btn.innerHTML = '✅ 저장됨';
     btn.dataset.saved = '1';
     btn.classList.add('primary-btn');
   }
-  
-  // Persist
-  localStorage.setItem('mik_bookmarks', JSON.stringify(bookmarkedIds));
-  
-  // Refresh list to update bookmark icons
-  renderNewsList(articlesData);
 }
 
 function shareArticle() {
@@ -2101,516 +1702,230 @@ function openOriginal() {
   }
 }
 
-// ====== MANUAL CRAWL (for admin use) ======
-async function triggerManualCrawl() {
-  if (!isApiConnected) {
-    alert('Worker API에 연결되지 않았습니다.');
-    return;
-  }
-  try {
-    const result = await MIK_API.triggerCrawl();
-    console.log('[MIK] Crawl result:', result);
-    alert(`크롤링 완료: ${result.stored || 0}건 저장됨`);
-    await tryLoadFromApi();
-  } catch (err) {
-    alert('크롤링 실행 실패: ' + err.message);
-  }
-}
-
 // ====== START ======
 init();
+
+// Auto-select first article for demo
+setTimeout(() => { showArticle(0); }, 400);
+
+// ===== AUTH SYSTEM =====
+const MIK_USER_KEY = 'mik_user';
+
+function getUser() {
+  try { return JSON.parse(localStorage.getItem(MIK_USER_KEY)); } catch(e) { return null; }
+}
+function saveUser(user) {
+  localStorage.setItem(MIK_USER_KEY, JSON.stringify(user));
+}
+function clearUser() {
+  localStorage.removeItem(MIK_USER_KEY);
+}
+
+function openAuthModal(tab) {
+  document.getElementById('authModal').style.display = 'flex';
+  if (tab) switchAuthTab(tab);
+}
+function closeAuthModal() {
+  document.getElementById('authModal').style.display = 'none';
+}
+function switchAuthTab(tab) {
+  document.getElementById('panelLogin').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('panelSignup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+}
+function showPrivacy() {
+  document.getElementById('privacyModal').style.display = 'flex';
+}
+
+function loginGoogle() {
+  // Google OAuth - redirect to Google sign-in
+  // In production: replace CLIENT_ID with actual Google OAuth client ID
+  const clientId = 'YOUR_GOOGLE_CLIENT_ID';
+  const redirectUri = encodeURIComponent(window.location.origin + '/auth/google/callback');
+  const scope = encodeURIComponent('openid email profile');
+  if (clientId === 'YOUR_GOOGLE_CLIENT_ID') {
+    alert('Google OAuth 클라이언트 ID를 설정해주세요.\n(개발 중: 이메일 로그인을 이용해주세요)');
+    return;
+  }
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+}
+
+function loginKakao() {
+  const clientId = 'YOUR_KAKAO_APP_KEY';
+  const redirectUri = encodeURIComponent(window.location.origin + '/auth/kakao/callback');
+  if (clientId === 'YOUR_KAKAO_APP_KEY') {
+    alert('카카오 앱 키를 설정해주세요.\n(개발 중: 이메일 로그인을 이용해주세요)');
+    return;
+  }
+  window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+}
+
+function loginEmail() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) {
+    alert('이메일과 비밀번호를 입력해주세요.');
+    return;
+  }
+  // Check stored users
+  const users = JSON.parse(localStorage.getItem('mik_users') || '[]');
+  const user = users.find(u => u.email === email);
+  if (!user) {
+    alert('등록되지 않은 이메일입니다. 회원가입을 해주세요.');
+    switchAuthTab('signup');
+    return;
+  }
+  if (user.password !== btoa(password)) {
+    alert('비밀번호가 올바르지 않습니다.');
+    return;
+  }
+  saveUser({name: user.name, email: user.email, affiliation: user.affiliation, title: user.title});
+  closeAuthModal();
+  updateAuthUI();
+  showToast('로그인되었습니다. 환영합니다, ' + (user.name || user.email) + '!');
+}
+
+function submitSignup() {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const affiliation = document.getElementById('signupAffiliation').value.trim();
+  const title = document.getElementById('signupTitle').value.trim();
+  const contact = document.getElementById('signupContact').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const privacyOk = document.getElementById('privacyCheck').checked;
+
+  if (!email || !affiliation || !password) {
+    alert('이메일, 소속, 비밀번호는 필수 항목입니다.');
+    return;
+  }
+  if (password.length < 8) {
+    alert('비밀번호는 8자 이상이어야 합니다.');
+    return;
+  }
+  if (!privacyOk) {
+    alert('개인정보처리방침에 동의해주세요.');
+    return;
+  }
+  const users = JSON.parse(localStorage.getItem('mik_users') || '[]');
+  if (users.find(u => u.email === email)) {
+    alert('이미 등록된 이메일입니다. 로그인해주세요.');
+    switchAuthTab('login');
+    return;
+  }
+  users.push({name, email, affiliation, title, contact, password: btoa(password), joinedAt: new Date().toISOString()});
+  localStorage.setItem('mik_users', JSON.stringify(users));
+  saveUser({name, email, affiliation, title});
+  closeAuthModal();
+  updateAuthUI();
+  showToast('가입이 완료되었습니다. 환영합니다, ' + (name || email) + '!');
+}
+
+function logout() {
+  clearUser();
+  updateAuthUI();
+  showToast('로그아웃되었습니다.');
+}
+
+function updateAuthUI() {
+  const user = getUser();
+  const loginBtn = document.getElementById('headerLoginBtn');
+  const userBtn = document.getElementById('headerUserBtn');
+  if (loginBtn) loginBtn.style.display = user ? 'none' : 'block';
+  if (userBtn) {
+    userBtn.style.display = user ? 'flex' : 'none';
+    if (user) userBtn.textContent = (user.name || user.email || '?')[0].toUpperCase();
+  }
+}
+
+function showToast(msg) {
+  let t = document.getElementById('mik-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'mik-toast';
+    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:99999;transition:opacity .3s;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+}
+
+// Init auth UI on load
+document.addEventListener('DOMContentLoaded', updateAuthUI);
+
 </script>
-<!-- =========================================
-     MY PAGE OVERLAY
-========================================= -->
-<div class="mypage-overlay" id="mypageOverlay">
-  <div class="mypage-container">
-    <button class="mypage-close" onclick="closeMyPage()" style="z-index: 9999;">✕</button>
-    
-    <div class="mypage-header">
-      <div id="profileSection">
-        <div style="font-size: 13px; opacity: 0.8; margin-bottom: 4px;">Premium Member</div>
-        <div style="font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-          <span id="userName">MICE Expert</span> <span style="font-size: 16px; font-weight: normal; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px;">Lv.4</span>
-        </div>
-        <div style="margin-top: 16px; display: flex; gap: 20px;">
-          <div><div style="font-size: 11px; opacity: 0.7;">받은 좋아요</div><div style="font-size: 18px; font-weight: 700;">1,240</div></div>
-          <div><div style="font-size: 11px; opacity: 0.7;">북마크</div><div style="font-size: 18px; font-weight: 700;" id="bookmarkCount">0</div></div>
-        </div>
-      </div>
-      
-      <div id="loginPromptSection" style="display: none;">
-        <div style="font-size: 22px; font-weight: 800; margin-bottom: 8px;">로그인이 필요합니다</div>
-        <p style="font-size: 13px; opacity: 0.8; margin-bottom: 16px;">개인화 설정을 저장하려면 로그인해 주세요.</p>
-        <button class="action-btn" onclick="showLoginModal()" style="background: white; color: #1E293B; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700;">로그인 / 회원가입</button>
-      </div>
+
+<!-- ========== LOGIN / SIGNUP MODAL ========== -->
+<div id="authModal" class="auth-modal" style="display:none;" onclick="if(event.target===this)closeAuthModal()">
+  <div class="auth-modal-content">
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">로그인</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">회원가입</button>
+      <button class="auth-close" onclick="closeAuthModal()">✕</button>
     </div>
 
-    <div class="mypage-body">
-      <!-- 알림 설정 -->
-      <div class="mp-section">
-        <div class="mp-section-title">🔔 알림 설정</div>
-        <div class="mp-card">
-          <div class="mp-label">알림 시간</div>
-          <div class="mp-sublabel">선택한 시간 범위 내에서만 알림을 받아요</div>
-          <div class="time-range-box">
-            <input type="time" class="time-input" id="timeStart" value="09:00">
-            <span>~</span>
-            <input type="time" class="time-input" id="timeEnd" value="21:00">
-          </div>
+    <!-- Login Panel -->
+    <div id="panelLogin" class="auth-panel">
+      <p class="auth-sub">MICE 인사이트 코리아에 오신 것을 환영합니다</p>
+      <button class="oauth-btn google-btn" onclick="loginGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+        Google로 계속하기
+      </button>
+      <button class="oauth-btn kakao-btn" onclick="loginKakao()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#3C1E1E" d="M9 1.5C4.86 1.5 1.5 4.08 1.5 7.27c0 2.04 1.34 3.83 3.37 4.87L4.1 15a.3.3 0 0 0 .45.33l3.5-2.3c.31.04.63.06.95.06 4.14 0 7.5-2.58 7.5-5.77S13.14 1.5 9 1.5z"/></svg>
+        카카오로 계속하기
+      </button>
+      <div class="auth-divider"><span>또는 이메일로</span></div>
+      <input type="email" id="loginEmail" placeholder="이메일" class="auth-input">
+      <input type="password" id="loginPassword" placeholder="비밀번호" class="auth-input">
+      <button class="auth-submit" onclick="loginEmail()">로그인</button>
+      <p class="auth-footer">계정이 없으신가요? <a onclick="switchAuthTab('signup')">회원가입</a></p>
+    </div>
 
-          <div style="height: 24px;"></div>
-
-          <div class="mp-row">
-            <div>
-              <div class="mp-label">SAVE 뉴스 알림</div>
-              <div class="mp-sublabel">주요 뉴스 알림 수신 방식을 설정해요</div>
-              <div class="mp-btn-group" id="saveNewsAlertGroup">
-                <button class="mp-pill-btn active" data-val="all" onclick="updatePill(this, 'saveNewsAlertGroup')">모두 받기</button>
-                <button class="mp-pill-btn" data-val="some" onclick="updatePill(this, 'saveNewsAlertGroup')">일부만</button>
-                <button class="mp-pill-btn" data-val="off" onclick="updatePill(this, 'saveNewsAlertGroup')">끄기</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="mp-row">
-            <div>
-              <div class="mp-label">제휴 뉴스 알림</div>
-              <div class="mp-sublabel">로이터, 파이낸셜뉴스 등 제휴사 알림</div>
-            </div>
-            <label class="switch"><input type="checkbox" id="partnershipAlert" checked><span class="slider"></span></label>
-          </div>
-
-          <div class="mp-row">
-            <div>
-              <div class="mp-label">리포트 및 댓글 알림</div>
-              <div class="mp-sublabel">새 리포트 및 내 글 반응 알림</div>
-            </div>
-            <label class="switch"><input type="checkbox" id="reportAlert" checked><span class="slider"></span></label>
-          </div>
-          
-          <button class="primary-btn" style="width: 100%; margin-top: 20px; padding: 12px;" onclick="saveUserSettings()">설정 저장하기</button>
-        </div>
+    <!-- Signup Panel -->
+    <div id="panelSignup" class="auth-panel" style="display:none;">
+      <p class="auth-sub">MICE 전문가 커뮤니티에 합류하세요</p>
+      <button class="oauth-btn google-btn" onclick="loginGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+        Google로 가입하기
+      </button>
+      <button class="oauth-btn kakao-btn" onclick="loginKakao()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#3C1E1E" d="M9 1.5C4.86 1.5 1.5 4.08 1.5 7.27c0 2.04 1.34 3.83 3.37 4.87L4.1 15a.3.3 0 0 0 .45.33l3.5-2.3c.31.04.63.06.95.06 4.14 0 7.5-2.58 7.5-5.77S13.14 1.5 9 1.5z"/></svg>
+        카카오로 가입하기
+      </button>
+      <div class="auth-divider"><span>또는 이메일로 가입</span></div>
+      <input type="text" id="signupName" placeholder="이름" class="auth-input">
+      <input type="email" id="signupEmail" placeholder="이메일 *" class="auth-input">
+      <input type="text" id="signupAffiliation" placeholder="소속 기관/회사 *" class="auth-input">
+      <input type="text" id="signupTitle" placeholder="직함/직위 (예: PCO 팀장)" class="auth-input">
+      <input type="tel" id="signupContact" placeholder="연락처 (선택)" class="auth-input">
+      <input type="password" id="signupPassword" placeholder="비밀번호 (8자 이상) *" class="auth-input">
+      <div class="auth-privacy">
+        <label><input type="checkbox" id="privacyCheck"> 
+          <a onclick="showPrivacy()" style="cursor:pointer;color:var(--accent)">개인정보처리방침</a>에 동의합니다 (필수)
+        </label>
       </div>
-
-      <!-- 환경 설정 -->
-      <div class="mp-section">
-        <div class="mp-section-title">🌓 환경 설정</div>
-        <div class="mp-card">
-          <div class="mp-row">
-            <div>
-              <div class="mp-label">다크 모드 설정</div>
-              <div class="mp-sublabel">라이트·다크 모드를 선택해요</div>
-            </div>
-            <label class="switch"><input type="checkbox" id="darkModeToggle"><span class="slider"></span></label>
-          </div>
-        </div>
-      </div>
-
-      <!-- 활동 및 관리 -->
-      <div class="mp-section">
-        <div class="mp-section-title">📝 활동 및 관리</div>
-        <div class="activity-item" onclick="alert('내가 쓴 글 목록을 불러옵니다.')">
-          <div class="activity-icon">✍️</div>
-          <div class="activity-text">내가 쓴 글 관리</div>
-          <div style="font-size: 12px; color: #94A3B8;">0건 ❯</div>
-        </div>
-        <div class="activity-item" onclick="switchView('bookmarks'); closeMyPage();">
-          <div class="activity-icon">🔖</div>
-          <div class="activity-text">저장한 글 관리</div>
-          <div style="font-size: 12px; color: #94A3B8;" id="bookmarkCountSub">0건 ❯</div>
-        </div>
-        <div class="activity-item" onclick="showAppGuide()">
-          <div class="activity-icon">💡</div>
-          <div class="activity-text">앱 사용법 가이드</div>
-          <div style="font-size: 12px; color: #94A3B8;">보기 ❯</div>
-        </div>
-        <div class="activity-item" onclick="alert('문의하기 양식으로 연결됩니다.')">
-          <div class="activity-icon">📧</div>
-          <div class="activity-text">SAVE팀에 문의하기</div>
-          <div style="font-size: 12px; color: #94A3B8;">❯</div>
-        </div>
-      </div>
-
-      <!-- 계정 정보 -->
-      <div class="mp-section">
-        <div class="mp-section-title">📄 계정 및 약관</div>
-        <div class="mp-card" style="font-size: 13px; color: #64748B; cursor: pointer;" onclick="showTerms()">
-          이용약관 및 개인정보 처리방침 (AdSense 최적화) ❯
-        </div>
-      </div>
-      
-      <div style="text-align: center; font-size: 12px; color: #CBD5E1; margin-top: 20px;">
-        MIK Dashboard v1.2.0 | © 2026 SAVE Team
-      </div>
+      <button class="auth-submit" onclick="submitSignup()">가입하기</button>
     </div>
   </div>
 </div>
 
-<!-- =========================================
-     APP GUIDE (ONBOARDING)
-========================================= -->
-<div class="mypage-overlay" id="guideOverlay">
-  <div class="mypage-container" style="max-width: 450px; text-align: center; padding: 40px 32px;">
-    <div style="font-size: 40px; margin-bottom: 24px;">🚀</div>
-    <h2 style="margin-bottom: 12px;">MIK: MICE Insight Korea</h2>
-    <p style="font-size: 14px; color: #64748B; line-height: 1.6; margin-bottom: 32px;">
-      "Modern Industry Knowledge & Excellence"<br>
-      글로벌 MICE 뉴스를 AI가 실시간으로 분석하여<br>대한민국 전문가들에게 가장 빠른 인사이트를 전달합니다.
-    </p>
-    <div style="background: #F1F5F9; border-radius: 12px; padding: 20px; text-align: left; font-size: 13px; color: #475569; margin-bottom: 32px;">
-      ✅ <b>AI 3줄 요약</b>: 핵심만 빠르게 파악<br>
-      ✅ <b>전문가 인사이트</b>: 실무 적용 포인트 제공<br>
-      ✅ <b>맞춤 알림</b>: 내 관심 키워드 실시간 푸시
-    </div>
-    <button class="primary-btn" style="width: 100%; padding: 14px;" onclick="closeModal('guideOverlay')">시작하기</button>
-  </div>
-</div>
-
-<!-- =========================================
-     MEDIA MANAGEMENT
-========================================= -->
-<div class="mypage-overlay" id="mediaOverlay">
-  <div class="mypage-container">
-    <div class="mypage-header">
-      <button class="mypage-close" onclick="closeModal('mediaOverlay')">✕</button>
-      <div style="font-size: 20px; font-weight: 800;">🌐 MICE 글로벌 매체 관리</div>
-      <div style="font-size: 13px; opacity: 0.8; margin-top: 8px;">관심 있는 해외 MICE 전문 매체만 선택하여 피드를 구성하세요.</div>
-    </div>
-    <div class="mypage-body">
-      <div class="mp-card" id="mediaTogglesContainer">
-        <!-- Will be populated by JS -->
-      </div>
-      <button class="primary-btn" style="width: 100%; margin-top: 24px; padding: 14px;" onclick="closeModal('mediaOverlay'); alert('매체 설정이 저장되었습니다.');">저장하기</button>
+<!-- Privacy Policy Modal -->
+<div id="privacyModal" class="auth-modal" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="auth-modal-content privacy-content">
+    <div class="auth-tabs"><h3 style="margin:0;flex:1">개인정보처리방침</h3><button class="auth-close" onclick="document.getElementById('privacyModal').style.display='none'">✕</button></div>
+    <div style="padding:20px;overflow-y:auto;max-height:70vh;font-size:13px;line-height:1.7;color:var(--text-muted)">
+      <p><strong>1. 수집 항목</strong><br>이름, 이메일, 소속 기관, 직함, 연락처</p>
+      <p><strong>2. 수집 목적</strong><br>MICE Insight Korea 서비스 제공, 뉴스레터 발송, 이용자 식별</p>
+      <p><strong>3. 보유 기간</strong><br>회원 탈퇴 시까지. 단, 관계 법령에 따라 보존이 필요한 경우 해당 기간 보관</p>
+      <p><strong>4. 제3자 제공</strong><br>원칙적으로 외부 제공 없음. 법령에 의한 경우 예외</p>
+      <p><strong>5. 동의 거부 권리</strong><br>동의를 거부할 수 있으나, 서비스 이용이 제한될 수 있습니다</p>
+      <p><strong>문의</strong>: premierplanlab@gmail.com</p>
     </div>
   </div>
 </div>
-
-<!-- =========================================
-     REPORT VAULT
-========================================= -->
-<div class="mypage-overlay" id="reportOverlay">
-  <div class="mypage-container">
-    <div class="mypage-header" style="background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);">
-      <button class="mypage-close" onclick="closeModal('reportOverlay')">✕</button>
-      <div style="font-size: 20px; font-weight: 800;">📊 MICE 인사이트 리포트</div>
-      <div style="font-size: 13px; opacity: 0.8; margin-top: 8px;">AI가 분석한 주간/월간 MICE 산업 동향 리포트 보관함입니다.</div>
-    </div>
-    <div class="mypage-body">
-      <div class="activity-item">
-        <div class="activity-icon">📄</div>
-        <div class="activity-text">[주간] 2026년 4월 4주차 글로벌 MICE 동향</div>
-        <div style="font-size: 12px; color: #3B82F6;">다운로드</div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-icon">📄</div>
-        <div class="activity-text">[월간] AI가 바꾸는 이벤트 테크놀로지 심층 분석</div>
-        <div style="font-size: 12px; color: #3B82F6;">다운로드</div>
-      </div>
-      <div class="activity-item" style="opacity: 0.5;">
-        <div class="activity-icon">🔒</div>
-        <div class="activity-text">[분기] 2026 Q1 CVB 유치 전략 리포트</div>
-        <div style="font-size: 12px; color: #94A3B8;">Lv.5 전용</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- =========================================
-     NEWSLETTER SUBSCRIPTION
-========================================= -->
-<div class="mypage-overlay" id="newsletterOverlay">
-  <div class="mypage-container">
-    <div class="mypage-header" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">
-      <button class="mypage-close" onclick="closeModal('newsletterOverlay')">✕</button>
-      <div style="font-size: 20px; font-weight: 800;">📧 관심 키워드 뉴스레터</div>
-      <div style="font-size: 13px; opacity: 0.8; margin-top: 8px;">매일 아침, 내가 설정한 키워드의 핵심 기사만 메일로 받아보세요.</div>
-    </div>
-    <div class="mypage-body">
-      <div class="mp-card">
-        <div class="mp-label" style="margin-bottom: 12px;">수신 이메일</div>
-        <input type="email" class="time-input" id="newsletterEmail" style="width: 100%; margin-bottom: 24px;" value="mice_expert@example.com">
-        
-        <div class="mp-label" style="margin-bottom: 12px;">구독 키워드</div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
-          <span class="keyword-chip" style="padding: 6px 12px;">CVB</span>
-          <span class="keyword-chip" style="padding: 6px 12px;">AI Event</span>
-          <span class="keyword-chip" style="padding: 6px 12px;">Sustainability</span>
-          <span class="keyword-chip" style="background: #F1F5F9; border: 1px dashed #CBD5E1; color: #94A3B8; cursor: pointer; padding: 6px 12px;">+ 키워드 추가</span>
-        </div>
-      </div>
-      <button class="primary-btn" style="width: 100%; margin-top: 24px; padding: 14px;" onclick="closeModal('newsletterOverlay'); alert('뉴스레터 설정이 완료되었습니다.');">구독 설정 업데이트</button>
-    </div>
-  </div>
-</div>
-
-<!-- =========================================
-     LOGIN MODAL
-========================================= -->
-<div class="mypage-overlay" id="loginModal">
-  <div class="mypage-container" style="max-width: 400px; padding: 0;">
-    <div class="mypage-header">
-      <button class="mypage-close" onclick="closeModal('loginModal')">✕</button>
-      <div style="font-size: 20px; font-weight: 800;">로그인 / 회원가입</div>
-      <div style="font-size: 13px; opacity: 0.8; margin-top: 8px;">MIK의 모든 기능을 이용하세요.</div>
-    </div>
-    <div class="mypage-body">
-      <div style="margin-bottom: 20px;">
-        <label class="mp-label">이메일 주소</label>
-        <input type="email" id="authEmail" class="time-input" style="width: 100%; margin-top: 8px;" placeholder="example@email.com">
-      </div>
-      <div style="margin-bottom: 24px;">
-        <label class="mp-label">비밀번호</label>
-        <input type="password" id="authPassword" class="time-input" style="width: 100%; margin-top: 8px;" placeholder="••••••••">
-      </div>
-      <button class="primary-btn" style="width: 100%; padding: 14px; margin-bottom: 12px;" onclick="handleAuth('login')">로그인</button>
-      <button class="action-btn" style="width: 100%; padding: 14px; background: #F8FAFC;" onclick="handleAuth('signup')">이메일로 회원가입</button>
-    </div>
-  </div>
-</div>
-
-<!-- =========================================
-     TERMS OF SERVICE (ADSENSE)
-========================================= -->
-<div class="mypage-overlay" id="termsOverlay">
-  <div class="mypage-container">
-    <button class="mypage-close" onclick="closeModal('termsOverlay')">✕</button>
-    <div class="mypage-header" style="background: #1E293B;">
-      <div style="font-size: 20px; font-weight: 800;">📄 이용약관 및 개인정보 처리방침</div>
-    </div>
-    <div class="mypage-body" style="font-size: 13px; color: #475569; line-height: 1.6;">
-      <h3 style="color: #1E293B; margin-bottom: 8px;">제1조 (목적)</h3>
-      <p style="margin-bottom: 16px;">본 약관은 MIK(이하 "회사")가 제공하는 서비스의 이용조건 및 절차, 회사와 회원 간의 권리, 의무 등을 규정함을 목적으로 합니다.</p>
-      
-      <h3 style="color: #1E293B; margin-bottom: 8px;">제2조 (구글 애드센스 및 맞춤형 광고)</h3>
-      <p style="margin-bottom: 16px;">
-        회사는 Google AdSense를 포함한 제3자 광고 제공업체의 서비스를 이용하여 사이트에 광고를 게재할 수 있습니다.<br>
-        1. Google을 포함한 제3자 공급업체는 쿠키를 사용하여 사용자의 이전 웹사이트 방문 기록을 기반으로 광고를 게재합니다.<br>
-        2. Google의 광고 쿠키(DART 쿠키 등) 사용을 통해 Google 및 파트너는 인터넷에서 회사 사이트 및 기타 사이트 방문 기록을 기반으로 사용자에게 맞춤 광고를 게재할 수 있습니다.<br>
-        3. 사용자는 <a href="https://www.google.com/settings/ads" target="_blank" style="color: #3B82F6; text-decoration: none;">광고 설정</a>을 방문하여 맞춤광고를 선택 해제할 수 있습니다.
-      </p>
-
-      <h3 style="color: #1E293B; margin-bottom: 8px;">제3조 (개인정보 수집 및 이용)</h3>
-      <p style="margin-bottom: 16px;">회사는 서비스 제공을 위해 최소한의 개인정보를 수집하며, 사용자의 동의 없이 제3자에게 제공하지 않습니다. 단, 법령에 의한 요구가 있을 경우는 예외로 합니다.</p>
-      
-      <button class="primary-btn" style="width: 100%; margin-top: 16px; padding: 12px;" onclick="closeModal('termsOverlay')">확인</button>
-    </div>
-  </div>
-</div>
-
-<script>
-const API_BASE_URL = 'https://mik-worker.isg11882.workers.dev';
-let currentUser = JSON.parse(localStorage.getItem('mik_user') || 'null');
-let authToken = localStorage.getItem('mik_token') || '';
-
-/**
- * Modal Controls
- */
-function openModal(id) {
-  const overlay = document.getElementById(id);
-  if (!overlay) return;
-  overlay.style.display = 'flex';
-  setTimeout(() => overlay.classList.add('active'), 10);
-}
-
-function closeModal(id) {
-  const overlay = document.getElementById(id);
-  if (!overlay) return;
-  overlay.classList.remove('active');
-  setTimeout(() => overlay.style.display = 'none', 300);
-}
-
-function closeMyPage() {
-  closeModal('mypageOverlay');
-}
-
-function showMyPage() {
-  openModal('mypageOverlay');
-  updateMyPageUI();
-}
-
-function updateMyPageUI() {
-  const profileSection = document.getElementById('profileSection');
-  const loginPromptSection = document.getElementById('loginPromptSection');
-  const userNameEl = document.getElementById('userName');
-  const bookmarkCountEl = document.getElementById('bookmarkCount');
-  const bookmarkCountSubEl = document.getElementById('bookmarkCountSub');
-
-  if (currentUser) {
-    profileSection.style.display = 'block';
-    loginPromptSection.style.display = 'none';
-    if (userNameEl) userNameEl.textContent = currentUser.name || 'MICE Expert';
-    if (bookmarkCountEl) bookmarkCountEl.textContent = (typeof bookmarkedIds !== 'undefined') ? bookmarkedIds.length : 0;
-    if (bookmarkCountSubEl) bookmarkCountSubEl.textContent = (typeof bookmarkedIds !== 'undefined') ? `${bookmarkedIds.length}건 ❯` : '0건 ❯';
-  } else {
-    if (profileSection) profileSection.style.display = 'none';
-    if (loginPromptSection) loginPromptSection.style.display = 'block';
-  }
-}
-
-function showLoginModal() {
-  openModal('loginModal');
-}
-
-async function handleAuth(type) {
-  const email = document.getElementById('authEmail').value;
-  const password = document.getElementById('authPassword').value;
-
-  if (!email || !password) return alert('이메일과 비밀번호를 입력해주세요.');
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/${type}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      if (type === 'login') {
-        currentUser = data.user;
-        authToken = data.token;
-        localStorage.setItem('mik_user', JSON.stringify(currentUser));
-        localStorage.setItem('mik_token', authToken);
-        closeModal('loginModal');
-        updateMyPageUI();
-        alert(`${currentUser.name}님, 환영합니다!`);
-        location.reload(); // Refresh to load settings
-      } else {
-        alert('회원가입이 완료되었습니다. 로그인을 진행해주세요.');
-      }
-    } else {
-      alert(data.error || '인증에 실패했습니다.');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('서버 연결에 실패했습니다.');
-  }
-}
-
-async function saveUserSettings() {
-  if (!currentUser) return showLoginModal();
-
-  const settings = {
-    dark_mode: document.getElementById('darkModeToggle').checked,
-    notify_time_start: document.getElementById('timeStart').value,
-    notify_time_end: document.getElementById('timeEnd').value,
-    save_news_alert: document.querySelector('#saveNewsAlertGroup .mp-pill-btn.active').dataset.val,
-    partnership_alert: document.getElementById('partnershipAlert').checked,
-    report_alert: document.getElementById('reportAlert').checked
-  };
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/user/settings`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
-      },
-      body: JSON.stringify(settings)
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert('설정이 저장되었습니다.');
-    } else {
-      alert('저장에 실패했습니다.');
-    }
-  } catch (err) {
-    alert('서버 연결 실패');
-  }
-}
-
-function updatePill(btn, groupId) {
-  const group = document.getElementById(groupId);
-  group.querySelectorAll('.mp-pill-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-async function loadUserSettings() {
-  if (!currentUser || !authToken) return;
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/user/profile`, {
-      headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-    const data = await res.json();
-    if (data.settings) {
-      const s = data.settings;
-      document.getElementById('darkModeToggle').checked = s.dark_mode === 1;
-      document.getElementById('timeStart').value = s.notify_time_start;
-      document.getElementById('timeEnd').value = s.notify_time_end;
-      
-      const newsAlertBtn = document.querySelector(`#saveNewsAlertGroup .mp-pill-btn[data-val="${s.save_news_alert}"]`);
-      if (newsAlertBtn) updatePill(newsAlertBtn, 'saveNewsAlertGroup');
-      
-      document.getElementById('partnershipAlert').checked = s.partnership_alert === 1;
-      document.getElementById('reportAlert').checked = s.report_alert === 1;
-
-      if (s.dark_mode === 1) document.body.classList.add('dark-mode');
-    }
-  } catch (err) {
-    console.warn('Could not load user settings', err);
-  }
-}
-
-function showAppGuide() {
-  closeMyPage();
-  openModal('guideOverlay');
-}
-
-function showTerms() {
-  closeMyPage();
-  openModal('termsOverlay');
-}
-
-/**
- * Update bindSidebarEvents for My Page
- */
-const originalBindSidebarEvents = bindSidebarEvents;
-bindSidebarEvents = function() {
-  originalBindSidebarEvents();
-  const btnMyPage = document.getElementById('btnMyPage');
-  if (btnMyPage) btnMyPage.addEventListener('click', showMyPage);
-};
-
-// ====== TABS NAVIGATION ======
-function scrollSourceTabs(dist) {
-  const container = document.getElementById('sourceTabs');
-  if (container) container.scrollLeft += dist;
-}
-
-function updateTabNav() {
-  const container = document.getElementById('sourceTabs');
-  const wrapper = document.getElementById('tabsWrapper');
-  const prevBtn = document.getElementById('prevTabBtn');
-  const nextBtn = document.getElementById('nextTabBtn');
-  
-  if (!container || !wrapper || !prevBtn || !nextBtn) return;
-  
-  const scrollLeft = container.scrollLeft;
-  const maxScroll = container.scrollWidth - container.clientWidth;
-  
-  // Show/Hide Buttons
-  if (scrollLeft <= 5) prevBtn.classList.add('hidden');
-  else prevBtn.classList.remove('hidden');
-  
-  if (scrollLeft >= maxScroll - 5) nextBtn.classList.add('hidden');
-  else nextBtn.classList.remove('hidden');
-  
-  // Show/Hide Fades
-  if (scrollLeft > 5) wrapper.classList.add('can-scroll-left');
-  else wrapper.classList.remove('can-scroll-left');
-  
-  if (scrollLeft < maxScroll - 5) wrapper.classList.add('can-scroll-right');
-  else wrapper.classList.remove('can-scroll-right');
-}
-
-// Ensure nav state is correct on init and resize
-window.addEventListener('resize', updateTabNav);
-setTimeout(updateTabNav, 500);
-
-// Load settings on init
-loadUserSettings();
-</script>
 </body>
 </html>
