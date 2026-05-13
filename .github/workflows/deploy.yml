@@ -41,22 +41,13 @@ jobs:
           npx wrangler deploy 2>&1 | tee /tmp/worker.log
           echo "worker_exit:${PIPESTATUS[0]}"
 
-      - name: Nuclear - Delete and recreate CF Pages project
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MsIHRpbWUKCnRva2VuID0gb3MuZW52aXJvblsnQ0xPVURGTEFSRV9BUElfVE9LRU4nXQphY2N0ICA9IG9zLmVudmlyb25bJ0NMT1VERkxBUkVfQUNDT1VOVF9JRCddCkJBU0UgID0gZiJodHRwczovL2FwaS5jbG91ZGZsYXJlLmNvbS9jbGllbnQvdjQvYWNjb3VudHMve2FjY3R9L3BhZ2VzL3Byb2plY3RzIgoKZGVmIGNmKG1ldGhvZCwgcGF0aCwgZGF0YT1Ob25lLCBiYXNlPUJBU0UpOgogICAgYXJncyA9IFsnY3VybCcsICctcycsICctWCcsIG1ldGhvZCwgYmFzZSArIHBhdGgsCiAgICAgICAgICAgICctSCcsIGYnQXV0aG9yaXphdGlvbjogQmVhcmVyIHt0b2tlbn0nLAogICAgICAgICAgICAnLUgnLCAnQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9qc29uJ10KICAgIGlmIGRhdGEgaXMgbm90IE5vbmU6CiAgICAgICAgYXJncyArPSBbJy1kJywganNvbi5kdW1wcyhkYXRhKV0KICAgIHIgPSBzdWJwcm9jZXNzLnJ1bihhcmdzLCBjYXB0dXJlX291dHB1dD1UcnVlLCB0ZXh0PVRydWUpCiAgICB0cnk6CiAgICAgICAgcmV0dXJuIGpzb24ubG9hZHMoci5zdGRvdXQpCiAgICBleGNlcHQ6CiAgICAgICAgcmV0dXJuIHsncmF3Jzogci5zdGRvdXRbOjIwMF19CgpwcmludCgiPT09IERlbGV0aW5nIG1pay1kYXNoYm9hcmQgQ0YgUGFnZXMgcHJvamVjdCA9PT0iKQpyID0gY2YoJ0RFTEVURScsICcvbWlrLWRhc2hib2FyZCcpCnByaW50KGYiRGVsZXRlOiBzdWNjZXNzPXtyLmdldCgnc3VjY2VzcycpfSBlcnJvcnM9e3IuZ2V0KCdlcnJvcnMnLCdub25lJyl9IikKCnRpbWUuc2xlZXAoNSkKCnByaW50KCJcbj09PSBSZWNyZWF0aW5nIG1pay1kYXNoYm9hcmQgQ0YgUGFnZXMgcHJvamVjdCA9PT0iKQpyMiA9IGNmKCdQT1NUJywgJycsIHsnbmFtZSc6ICdtaWstZGFzaGJvYXJkJywgJ3Byb2R1Y3Rpb25fYnJhbmNoJzogJ21haW4nfSkKcHJpbnQoZiJDcmVhdGU6IHN1Y2Nlc3M9e3IyLmdldCgnc3VjY2VzcycpfSIpCnByaW50KGYiRXJyb3JzOiB7cjIuZ2V0KCdlcnJvcnMnKX0iKQppZiBpc2luc3RhbmNlKHIyLmdldCgncmVzdWx0JyksIGRpY3QpOgogICAgcHJpbnQoZiIgIGlkPXtyMlsncmVzdWx0J10uZ2V0KCdpZCcsJz8nKVs6OF19IikKICAgIHByaW50KGYiICBzdWJkb21haW49e3IyWydyZXN1bHQnXS5nZXQoJ3N1YmRvbWFpbicsJz8nKX0iKQogICAgcHJpbnQoZiIgIHByb2R1Y3Rpb25fYnJhbmNoPXtyMlsncmVzdWx0J10uZ2V0KCdwcm9kdWN0aW9uX2JyYW5jaCcsJz8nKX0iKQoKdGltZS5zbGVlcCgzKQpwcmludCgiUHJvamVjdCByZWFkeSBmb3IgZnJlc2ggZGVwbG95bWVudCIpCg==" | base64 -d > /tmp/nuclear.py
-          python3 /tmp/nuclear.py 2>&1 | tee /tmp/nuclear.log
-
-      - name: Deploy Pages - fresh
+      - name: Deploy Pages
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -o pipefail
-          echo "=== Fresh deploy to new mik-dashboard project ==="
           npx wrangler pages deploy ../frontend \
             --project-name mik-dashboard \
             --branch main \
@@ -66,20 +57,11 @@ jobs:
           echo "pages_main_exit:${MAIN_EXIT}"
           DEPLOY_URL=$(grep -oP 'https://[a-f0-9]+\.mik-dashboard\.pages\.dev' /tmp/pages-main.log | tail -1 || echo "")
           echo "DEPLOY_URL=${DEPLOY_URL}" >> $GITHUB_ENV
-          echo "New deployment URL: ${DEPLOY_URL}"
+          echo "Deployment URL: ${DEPLOY_URL}"
           if [ "${MAIN_EXIT}" -ne 0 ]; then
             cat /tmp/pages-main.log
             exit "${MAIN_EXIT}"
           fi
-
-      - name: Verify production URL
-        run: |
-          sleep 5
-          echo "=== Fetching mik-dashboard.pages.dev ==="
-          curl -s -L --max-time 15 https://mik-dashboard.pages.dev \
-            -w "\nHTTP_CODE:%{http_code}" | tee /tmp/prod-check.txt
-          echo ""
-          grep -oP '<!--.*?MIK.*?-->' /tmp/prod-check.txt || echo "No MIK comment found"
 
       - name: Push diagnostics to deploy-output
         if: always()
@@ -88,20 +70,16 @@ jobs:
           GH_REPO: ${{ github.repository }}
           GH_RUN: ${{ github.run_number }}
           GH_SHA: ${{ github.sha }}
+          DEPLOY_URL: ${{ env.DEPLOY_URL }}
         run: |
           {
             echo "=== RUN ${GH_RUN} SHA=${GH_SHA} ==="
-            echo "--- NUCLEAR LOG ---"
-            cat /tmp/nuclear.log 2>/dev/null || echo "missing"
+            echo "deploy_url=${DEPLOY_URL}"
+            echo "--- WORKER LOG ---"
+            cat /tmp/worker.log 2>/dev/null || echo "missing"
             echo ""
             echo "--- PAGES MAIN LOG ---"
             cat /tmp/pages-main.log 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- PROD CHECK ---"
-            cat /tmp/prod-check.txt 2>/dev/null || echo "missing"
-            echo ""
-            echo "--- WORKER LOG ---"
-            cat /tmp/worker.log 2>/dev/null || echo "missing"
           } > /tmp/diag.txt
           B64=$(base64 -w 0 /tmp/diag.txt)
           MAIN_SHA=$(git rev-parse HEAD)
@@ -123,5 +101,7 @@ jobs:
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "${PUT_BODY}")
-          STATUS=$(echo "${RESULT}" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("content",{}).get("name","FAIL:"+str(d.get("message","?"))))' 2>/dev/null || echo "error")
+          STATUS=$(echo "${RESULT}" | python3 -c \
+            'import json,sys; d=json.load(sys.stdin); print(d.get("content",{}).get("name","FAIL:"+str(d.get("message","?"))))' \
+            2>/dev/null || echo "error")
           echo "upload: ${STATUS}"
