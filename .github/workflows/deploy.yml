@@ -48,7 +48,6 @@ jobs:
           CF_GET=$(curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
           echo "$CF_GET" > /tmp/cf-get.json
           echo "GET: $(echo $CF_GET | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result",{}); print("success="+str(d.get("success"))+" prod_branch="+str(r.get("production_branch","?")))')"
-
           CF_PATCH=$(curl -s -X PATCH "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json" -d '{"production_branch":"main"}')
           echo "PATCH: $(echo $CF_PATCH | python3 -c 'import json,sys; d=json.load(sys.stdin); print("success="+str(d.get("success"))+" errors="+str(d.get("errors"))+" new_prod="+str(d.get("result",{}).get("production_branch","?")))')"
 
@@ -78,13 +77,14 @@ jobs:
           TIMESTAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin deploy-output 2>/dev/null || true
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}"
           git checkout --orphan deploy-output-tmp
           git rm -rf . 2>/dev/null || true
           for f in /tmp/worker.log /tmp/cf-get.json /tmp/pages-main.log /tmp/pages-master.log; do
-            [ -f "$f" ] && cp "$f" . || echo "missing $f" > "$(basename $f)"
+            [ -f "$f" ] && cp "$f" . || echo "missing" > "$(basename $f)"
           done
           echo "sha=${{ github.sha }} time=$TIMESTAMP run=${{ github.run_number }}" > meta.txt
           git add -A
           git commit -m "logs: $TIMESTAMP run#${{ github.run_number }}"
           git push origin HEAD:deploy-output --force
+
