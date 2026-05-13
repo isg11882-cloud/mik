@@ -4,16 +4,21 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,51 +31,60 @@ jobs:
         working-directory: worker
         run: npm install
 
-      - name: Deploy Worker to Cloudflare Workers
-        working-directory: worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy
-
-      - name: Get current CF Pages production_branch
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          GET_RESP=$(curl -s \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
-          echo "GET response snippet: $(echo "$GET_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); r=d.get('result',{}); print('success=',d.get('success'),'prod_branch=',r.get('production_branch','?'),'deployment_configs=',list(r.get('deployment_configs',{}).keys()))" 2>/dev/null || echo "parse failed: $GET_RESP")"
-
-      - name: Patch CF Pages production_branch to main
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          PATCH_RESP=$(curl -s -X PATCH \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d '{"production_branch":"main"}')
-          echo "PATCH result: $(echo "$PATCH_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print('success=',d.get('success'),'prod_branch=',d.get('result',{}).get('production_branch','?'))" 2>/dev/null || echo "parse failed")"
-
-      - name: Deploy HTML to CF Pages (main = production after PATCH)
+      - name: Deploy Worker
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "Deploying ../frontend with --branch main"
-          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main
-          echo "Exit: $?"
+          npx wrangler deploy 2>&1 | tee /tmp/worker.log
+          echo "worker_exit:$?"
 
-      - name: Deploy HTML to CF Pages (master = fallback production)
+      - name: Get and patch CF Pages project
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          CF_GET=$(curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
+          echo "$CF_GET" > /tmp/cf-get.json
+          echo "GET: $(echo $CF_GET | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result",{}); print("success="+str(d.get("success"))+" prod_branch="+str(r.get("production_branch","?")))')"
+
+          CF_PATCH=$(curl -s -X PATCH "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json" -d '{"production_branch":"main"}')
+          echo "PATCH: $(echo $CF_PATCH | python3 -c 'import json,sys; d=json.load(sys.stdin); print("success="+str(d.get("success"))+" errors="+str(d.get("errors"))+" new_prod="+str(d.get("result",{}).get("production_branch","?")))')"
+
+      - name: Deploy Pages branch=main
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "Deploying ../frontend with --branch master (covers old production_branch=master)"
-          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch master || true
-          echo "Done"
+          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main 2>&1 | tee /tmp/pages-main.log
+          echo "pages_main_exit:$?"
+
+      - name: Deploy Pages branch=master (fallback)
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch master 2>&1 | tee /tmp/pages-master.log || true
+          echo "pages_master_exit:$?"
+
+      - name: Push deploy logs to deploy-output branch
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TIMESTAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin deploy-output 2>/dev/null || true
+          git checkout --orphan deploy-output-tmp
+          git rm -rf . 2>/dev/null || true
+          for f in /tmp/worker.log /tmp/cf-get.json /tmp/pages-main.log /tmp/pages-master.log; do
+            [ -f "$f" ] && cp "$f" . || echo "missing $f" > "$(basename $f)"
+          done
+          echo "sha=${{ github.sha }} time=$TIMESTAMP run=${{ github.run_number }}" > meta.txt
+          git add -A
+          git commit -m "logs: $TIMESTAMP run#${{ github.run_number }}"
+          git push origin HEAD:deploy-output --force
