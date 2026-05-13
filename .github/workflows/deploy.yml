@@ -66,10 +66,7 @@ jobs:
           PROD_BRANCH=$(echo "$CF_GET" | python3 -c \
             'import json,sys; d=json.load(sys.stdin); print(d.get("result",{}).get("production_branch","MISSING"))' \
             2>/dev/null || echo "parse_error")
-          CF_SUCCESS=$(echo "$CF_GET" | python3 -c \
-            'import json,sys; d=json.load(sys.stdin); print(d.get("success","?"))' \
-            2>/dev/null || echo "parse_error")
-          echo "CF GET: success=${CF_SUCCESS} production_branch=${PROD_BRANCH}"
+          echo "CF GET: production_branch=${PROD_BRANCH}"
           echo "PROD_BRANCH=${PROD_BRANCH}" >> $GITHUB_ENV
           CF_PATCH=$(curl -s -X PATCH \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
@@ -80,10 +77,7 @@ jobs:
           PATCH_OK=$(echo "$CF_PATCH" | python3 -c \
             'import json,sys; d=json.load(sys.stdin); print(d.get("success","?"))' \
             2>/dev/null || echo "parse_error")
-          NEW_PROD=$(echo "$CF_PATCH" | python3 -c \
-            'import json,sys; d=json.load(sys.stdin); print(d.get("result",{}).get("production_branch","?"))' \
-            2>/dev/null || echo "parse_error")
-          echo "CF PATCH: success=${PATCH_OK} new_production_branch=${NEW_PROD}"
+          echo "CF PATCH: success=${PATCH_OK}"
 
       - name: Deploy Pages
         working-directory: worker
@@ -107,6 +101,21 @@ jobs:
             echo "ERROR: wrangler pages deploy failed"
             exit "${MAIN_EXIT}"
           fi
+
+      - name: Verify deployment content
+        env:
+          DEPLOY_URL: ${{ env.DEPLOY_URL }}
+        run: |
+          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MsIHJlCgojIFJlYWQgZGVwbG95IFVSTCBmcm9tIGVudiAoc2V0IGJ5IERlcGxveSBQYWdlcyBzdGVwKQpkZXBsb3lfdXJsID0gb3MuZW52aXJvbi5nZXQoJ0RFUExPWV9VUkwnLCAnJykKcHJpbnQoZiJEZXBsb3ltZW50LXNwZWNpZmljIFVSTDoge2RlcGxveV91cmx9IikKCmlmIGRlcGxveV91cmw6CiAgICAjIEZldGNoIHRoZSBkZXBsb3ltZW50LXNwZWNpZmljIFVSTAogICAgcmVzID0gc3VicHJvY2Vzcy5ydW4oWydjdXJsJywgJy1zJywgJy1MJywgJy0tbWF4LXRpbWUnLCAnMTUnLCBkZXBsb3lfdXJsXSwKICAgICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgIGJvZHkgPSByZXMuc3Rkb3V0CiAgICAjIENoZWNrIGZvciB2ZXJzaW9uIGNvbW1lbnQKICAgIG0gPSByZS5zZWFyY2gocic8IS0tLio/TUlLLio/LS0+JywgYm9keSkKICAgIGNvbW1lbnQgPSBtLmdyb3VwKDApIGlmIG0gZWxzZSAnTk9UIEZPVU5EJwogICAgcHJpbnQoZiJWZXJzaW9uIGNvbW1lbnQgaW4gZGVwbG95IFVSTDoge2NvbW1lbnR9IikKICAgICMgQ2hlY2sgZm9yIG9sZCBoYXJkY29kZWQgdGFicwogICAgaGFzX29sZF90YWJzID0gYm9vbChyZS5zZWFyY2gocic8YnV0dG9uW14+XSo+KD86UENNQXxTa2lmdHxUVEd8SUJUTXxNUEl8SUNDQSk8L2J1dHRvbj4nLCBib2R5KSkKICAgICMgQ2hlY2sgZm9yIGR5bmFtaWMgc291cmNlIGxvYWRpbmcKICAgIGhhc19keW5hbWljID0gJ3JlbmRlclNvdXJjZVRhYnMnIGluIGJvZHkgb3IgJ2xvYWRTb3VyY2VUYWJzJyBpbiBib2R5IG9yICdzb3VyY2UtdGFiJyBpbiBib2R5CiAgICBwcmludChmIkhhcyBvbGQgaGFyZGNvZGVkIHRhYnM6IHtoYXNfb2xkX3RhYnN9IikKICAgIHByaW50KGYiSGFzIGR5bmFtaWMgc291cmNlIGNvZGU6IHtoYXNfZHluYW1pY30iKQogICAgcHJpbnQoZiJCb2R5IGxlbmd0aDoge2xlbihib2R5KX0gY2hhcnMiKQplbHNlOgogICAgcHJpbnQoIk5vIERFUExPWV9VUkwgc2V0IikKCiMgQWxzbyBmZXRjaCB0aGUgcHJvZHVjdGlvbiBVUkwKcHJpbnQoIlxuPT09IFByb2R1Y3Rpb24gVVJMIGNoZWNrID09PSIpCnJlczIgPSBzdWJwcm9jZXNzLnJ1bihbJ2N1cmwnLCAnLXMnLCAnLUwnLCAnLS1tYXgtdGltZScsICcxNScsCiAgICAgICAgICAgICAgICAgICAgICAgJ2h0dHBzOi8vbWlrLWRhc2hib2FyZC5wYWdlcy5kZXYnLAogICAgICAgICAgICAgICAgICAgICAgICctdycsICdcbiUle2h0dHBfY29kZX0nXSwKICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKYm9keTIgPSByZXMyLnN0ZG91dApsaW5lcyA9IGJvZHkyLnJzcGxpdCgnXG4nLCAxKQpodHRwX2NvZGUgPSBsaW5lc1stMV0gaWYgbGVuKGxpbmVzKSA+IDEgZWxzZSAnPycKYm9keTJfY29udGVudCA9IGxpbmVzWzBdIGlmIGxlbihsaW5lcykgPiAxIGVsc2UgYm9keTIKbTIgPSByZS5zZWFyY2gocic8IS0tLio/TUlLLio/LS0+JywgYm9keTJfY29udGVudCkKY29tbWVudDIgPSBtMi5ncm91cCgwKSBpZiBtMiBlbHNlICdOT1QgRk9VTkQnCmhhc19vbGRfdGFiczIgPSBib29sKHJlLnNlYXJjaChyJzxidXR0b25bXj5dKj4oPzpQQ01BfFNraWZ0fFRUR3xJQlRNfE1QSXxJQ0NBKTwvYnV0dG9uPicsIGJvZHkyX2NvbnRlbnQpKQpwcmludChmIkhUVFAgc3RhdHVzOiB7aHR0cF9jb2RlfSIpCnByaW50KGYiVmVyc2lvbiBjb21tZW50IGluIHByb2QgVVJMOiB7Y29tbWVudDJ9IikKcHJpbnQoZiJIYXMgb2xkIGhhcmRjb2RlZCB0YWJzOiB7aGFzX29sZF90YWJzMn0iKQpwcmludChmIkJvZHkgbGVuZ3RoOiB7bGVuKGJvZHkyX2NvbnRlbnQpfSBjaGFycyIpCg==" | base64 -d > /tmp/verify_content.py
+          python3 /tmp/verify_content.py 2>&1 | tee /tmp/verify-content.log
+
+      - name: Purge CF Pages cache
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "aW1wb3J0IGpzb24sIHN5cywgb3MsIHN1YnByb2Nlc3MKCnRva2VuID0gb3MuZW52aXJvblsnQ0xPVURGTEFSRV9BUElfVE9LRU4nXQphY2N0ICA9IG9zLmVudmlyb25bJ0NMT1VERkxBUkVfQUNDT1VOVF9JRCddCgojIFRyeSBtdWx0aXBsZSBDRiBjYWNoZSBwdXJnZSBhcHByb2FjaGVzCgojIDEuIENGIFBhZ2VzIHByb2plY3QtbGV2ZWwgY2FjaGUgcHVyZ2UgKHVuZG9jdW1lbnRlZCBidXQgbWF5IHdvcmspCnByaW50KCI9PT0gQXR0ZW1wdCAxOiBQYWdlcyBwcm9qZWN0IHB1cmdlX2NhY2hlID09PSIpCnVybDEgPSBmImh0dHBzOi8vYXBpLmNsb3VkZmxhcmUuY29tL2NsaWVudC92NC9hY2NvdW50cy97YWNjdH0vcGFnZXMvcHJvamVjdHMvbWlrLWRhc2hib2FyZC9kZXBsb3ltZW50cyIKcmVzID0gc3VicHJvY2Vzcy5ydW4oWydjdXJsJywgJy1zJywgJy1YJywgJ0dFVCcsIHVybDEgKyAnP3Blcl9wYWdlPTEnLAogICAgICAgICAgICAgICAgICAgICAgJy1IJywgZidBdXRob3JpemF0aW9uOiBCZWFyZXIge3Rva2VufSddLAogICAgICAgICAgICAgICAgICAgICBjYXB0dXJlX291dHB1dD1UcnVlLCB0ZXh0PVRydWUpCmQgPSBqc29uLmxvYWRzKHJlcy5zdGRvdXQpIGlmIHJlcy5zdGRvdXQuc3RyaXAoKSBlbHNlIHt9CmRlcHMgPSBkLmdldCgncmVzdWx0JywgW10pCmlmIGRlcHM6CiAgICBkZXBfaWQgPSBkZXBzWzBdLmdldCgnaWQnLCAnJykKICAgIHB1cmdlX3VybCA9IGYiaHR0cHM6Ly9hcGkuY2xvdWRmbGFyZS5jb20vY2xpZW50L3Y0L2FjY291bnRzL3thY2N0fS9wYWdlcy9wcm9qZWN0cy9taWstZGFzaGJvYXJkL2RlcGxveW1lbnRzL3tkZXBfaWR9L3B1cmdlLWNhY2hlIgogICAgcjIgPSBzdWJwcm9jZXNzLnJ1bihbJ2N1cmwnLCAnLXMnLCAnLVgnLCAnREVMRVRFJywgcHVyZ2VfdXJsLAogICAgICAgICAgICAgICAgICAgICAgICAgJy1IJywgZidBdXRob3JpemF0aW9uOiBCZWFyZXIge3Rva2VufScsCiAgICAgICAgICAgICAgICAgICAgICAgICAnLUgnLCAnQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9qc29uJ10sCiAgICAgICAgICAgICAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKICAgIHJlc3VsdCA9IGpzb24ubG9hZHMocjIuc3Rkb3V0KSBpZiByMi5zdGRvdXQuc3RyaXAoKSBlbHNlIHt9CiAgICBwcmludChmIlB1cmdlIHJlc3VsdDoge3Jlc3VsdH0iKQplbHNlOgogICAgcHJpbnQoIk5vIGRlcGxveW1lbnRzIGZvdW5kIGZvciBwdXJnZSIpCgojIDIuIFRyeSBwYWdlcyBwcm9qZWN0LWxldmVsIHB1cmdlIGVuZHBvaW50CnByaW50KCJcbj09PSBBdHRlbXB0IDI6IFByb2plY3QtbGV2ZWwgcHVyZ2UgPT09IikKdXJsMiA9IGYiaHR0cHM6Ly9hcGkuY2xvdWRmbGFyZS5jb20vY2xpZW50L3Y0L2FjY291bnRzL3thY2N0fS9wYWdlcy9wcm9qZWN0cy9taWstZGFzaGJvYXJkL3B1cmdlX2NhY2hlIgpyMyA9IHN1YnByb2Nlc3MucnVuKFsnY3VybCcsICctcycsICctWCcsICdQT1NUJywgdXJsMiwKICAgICAgICAgICAgICAgICAgICAgJy1IJywgZidBdXRob3JpemF0aW9uOiBCZWFyZXIge3Rva2VufScsCiAgICAgICAgICAgICAgICAgICAgICctSCcsICdDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24nLAogICAgICAgICAgICAgICAgICAgICAnLWQnLCAne30nXSwKICAgICAgICAgICAgICAgICAgICBjYXB0dXJlX291dHB1dD1UcnVlLCB0ZXh0PVRydWUpCnJlc3VsdDMgPSBqc29uLmxvYWRzKHIzLnN0ZG91dCkgaWYgcjMuc3Rkb3V0LnN0cmlwKCkgZWxzZSB7fQpwcmludChmIlByb2plY3QgcHVyZ2UgcmVzdWx0OiB7cmVzdWx0My5nZXQoJ3N1Y2Nlc3MnLCc/Jyl9IGVycm9ycz17cmVzdWx0My5nZXQoJ2Vycm9ycycsJz8nKX0iKQoKIyAzLiBDaGVjayBpZiB0aGUgem9uZSBmb3IgcGFnZXMuZGV2IGlzIGFjY2Vzc2libGUKcHJpbnQoIlxuPT09IEF0dGVtcHQgMzogTGlzdCB6b25lcyBmb3IgcGFnZXMuZGV2ID09PSIpCnI0ID0gc3VicHJvY2Vzcy5ydW4oWydjdXJsJywgJy1zJywKICAgICAgICAgICAgICAgICAgICAgJ2h0dHBzOi8vYXBpLmNsb3VkZmxhcmUuY29tL2NsaWVudC92NC96b25lcz9uYW1lPXBhZ2VzLmRldicsCiAgICAgICAgICAgICAgICAgICAgICctSCcsIGYnQXV0aG9yaXphdGlvbjogQmVhcmVyIHt0b2tlbn0nXSwKICAgICAgICAgICAgICAgICAgICBjYXB0dXJlX291dHB1dD1UcnVlLCB0ZXh0PVRydWUpCnJlc3VsdDQgPSBqc29uLmxvYWRzKHI0LnN0ZG91dCkgaWYgcjQuc3Rkb3V0LnN0cmlwKCkgZWxzZSB7fQp6b25lcyA9IHJlc3VsdDQuZ2V0KCdyZXN1bHQnLCBbXSkKcHJpbnQoZiJab25lcyBmb3VuZCBmb3IgcGFnZXMuZGV2OiB7bGVuKHpvbmVzKX0iKQpmb3IgeiBpbiB6b25lczoKICAgIHByaW50KGYiICB6b25lX2lkPXt6LmdldCgnaWQnKX0gbmFtZT17ei5nZXQoJ25hbWUnKX0gc3RhdHVzPXt6LmdldCgnc3RhdHVzJyl9IikK" | base64 -d > /tmp/purge_cache.py
+          python3 /tmp/purge_cache.py 2>&1 | tee /tmp/purge.log
 
       - name: Verify and promote production deployment
         env:
@@ -146,6 +155,12 @@ jobs:
             echo "--- RETRY ---"
             cat /tmp/retry.json 2>/dev/null || echo "missing"
             echo ""
+            echo "--- VERIFY CONTENT ---"
+            cat /tmp/verify-content.log 2>/dev/null || echo "missing"
+            echo ""
+            echo "--- PURGE LOG ---"
+            cat /tmp/purge.log 2>/dev/null || echo "missing"
+            echo ""
             echo "--- WORKER LOG ---"
             cat /tmp/worker.log 2>/dev/null || echo "missing"
             echo ""
@@ -157,15 +172,15 @@ jobs:
           curl -s -X POST "https://api.github.com/repos/${GH_REPO}/git/refs" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "{\"ref\":\"refs/heads/deploy-output\",\"sha\":\"${MAIN_SHA}\"}" > /tmp/branch-create.log
+            -d "{"ref":"refs/heads/deploy-output","sha":"${MAIN_SHA}"}" > /tmp/branch-create.log
           EXISTING_SHA=$(curl -s \
             "https://api.github.com/repos/${GH_REPO}/contents/diag.txt?ref=deploy-output" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("sha",""))' 2>/dev/null || echo "")
           if [ -n "${EXISTING_SHA}" ]; then
-            PUT_BODY="{\"message\":\"diag run#${GH_RUN}\",\"content\":\"${B64}\",\"branch\":\"deploy-output\",\"sha\":\"${EXISTING_SHA}\"}"
+            PUT_BODY="{"message":"diag run#${GH_RUN}","content":"${B64}","branch":"deploy-output","sha":"${EXISTING_SHA}"}"
           else
-            PUT_BODY="{\"message\":\"diag run#${GH_RUN}\",\"content\":\"${B64}\",\"branch\":\"deploy-output\"}"
+            PUT_BODY="{"message":"diag run#${GH_RUN}","content":"${B64}","branch":"deploy-output"}"
           fi
           RESULT=$(curl -s -X PUT \
             "https://api.github.com/repos/${GH_REPO}/contents/diag.txt" \
