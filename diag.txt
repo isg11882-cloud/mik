@@ -1,0 +1,17 @@
+=== RUN 39 SHA=5a3f078d7b12effeed5ac1d4b498a5c28bcac38c ===
+--- CF GET ---
+missing
+
+--- CF PATCH ---
+missing
+
+--- WORKER LOG ---
+Wrangler requires at least Node.js v22.0.0. You are using v20.20.2. Please update your version of Node.js.
+
+Consider using a Node.js version manager such as https://volta.sh/ or https://github.com/nvm-sh/nvm.
+
+--- PAGES MAIN LOG ---
+missing
+
+--- PAGES ORIG LOG ---
+missing
