@@ -38,53 +38,117 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           npx wrangler deploy 2>&1 | tee /tmp/worker.log
-          echo "worker_exit:$?"
+          echo "worker_exit:${PIPESTATUS[0]}"
 
-      - name: Get and patch CF Pages project
+      - name: Diagnose CF Pages project and set production_branch
+        id: cf_diag
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          CF_GET=$(curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
-          echo "$CF_GET" > /tmp/cf-get.json
-          echo "GET: $(echo $CF_GET | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result",{}); print("success="+str(d.get("success"))+" prod_branch="+str(r.get("production_branch","?")))')"
-          CF_PATCH=$(curl -s -X PATCH "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json" -d '{"production_branch":"main"}')
-          echo "PATCH: $(echo $CF_PATCH | python3 -c 'import json,sys; d=json.load(sys.stdin); print("success="+str(d.get("success"))+" errors="+str(d.get("errors"))+" new_prod="+str(d.get("result",{}).get("production_branch","?")))')"
+          # GET current project state
+          CF_GET=$(curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
+          echo "$CF_GET" | python3 -m json.tool > /tmp/cf-get.json 2>/dev/null || echo "$CF_GET" > /tmp/cf-get.json
 
-      - name: Deploy Pages branch=main
+          # Extract key fields
+          SUCCESS=$(echo "$CF_GET" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("success","?"))' 2>/dev/null || echo "parse_error")
+          PROD_BRANCH=$(echo "$CF_GET" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("result",{}).get("production_branch","MISSING"))' 2>/dev/null || echo "parse_error")
+          ERRORS=$(echo "$CF_GET" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("errors",[]))' 2>/dev/null || echo "?")
+
+          echo "CF GET success=$SUCCESS prod_branch=$PROD_BRANCH errors=$ERRORS"
+          echo "PROD_BRANCH=$PROD_BRANCH" >> $GITHUB_ENV
+          echo "prod_branch=$PROD_BRANCH" >> $GITHUB_OUTPUT
+
+          # PATCH to set production_branch=main
+          CF_PATCH=$(curl -s -X PATCH \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"production_branch":"main"}')
+          PATCH_OK=$(echo "$CF_PATCH" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("success","?"))' 2>/dev/null || echo "parse_error")
+          PATCH_PROD=$(echo "$CF_PATCH" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("result",{}).get("production_branch","?"))' 2>/dev/null || echo "?")
+          echo "CF PATCH success=$PATCH_OK new_prod_branch=$PATCH_PROD"
+          echo "$CF_PATCH" | python3 -m json.tool > /tmp/cf-patch.json 2>/dev/null || echo "$CF_PATCH" > /tmp/cf-patch.json
+
+      - name: Deploy Pages to production branch
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROD_BRANCH: ${{ env.PROD_BRANCH }}
         run: |
+          echo "Deploying to branch: main (after PATCH, production_branch should be main)"
+          # Deploy to main (production after PATCH)
           npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main 2>&1 | tee /tmp/pages-main.log
-          echo "pages_main_exit:$?"
+          echo "pages_main_exit:${PIPESTATUS[0]}"
 
-      - name: Deploy Pages branch=master (fallback)
-        working-directory: worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch master 2>&1 | tee /tmp/pages-master.log || true
-          echo "pages_master_exit:$?"
+          # Also try original production_branch if it differs from main
+          if [ "$PROD_BRANCH" != "main" ] && [ -n "$PROD_BRANCH" ] && [ "$PROD_BRANCH" != "MISSING" ] && [ "$PROD_BRANCH" != "parse_error" ]; then
+            echo "Also deploying to original production branch: $PROD_BRANCH"
+            npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch "$PROD_BRANCH" 2>&1 | tee /tmp/pages-orig.log
+            echo "pages_orig_exit:${PIPESTATUS[0]}"
+          fi
 
-      - name: Push deploy logs to deploy-output branch
+      - name: Push diagnostics via GitHub API
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
-          TIMESTAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}"
-          git checkout --orphan deploy-output-tmp
-          git rm -rf . 2>/dev/null || true
-          for f in /tmp/worker.log /tmp/cf-get.json /tmp/pages-main.log /tmp/pages-master.log; do
-            [ -f "$f" ] && cp "$f" . || echo "missing" > "$(basename $f)"
-          done
-          echo "sha=${{ github.sha }} time=$TIMESTAMP run=${{ github.run_number }}" > meta.txt
-          git add -A
-          git commit -m "logs: $TIMESTAMP run#${{ github.run_number }}"
-          git push origin HEAD:deploy-output --force
+          # Bundle all logs into one JSON blob and push via GitHub Contents API
+          encode() { base64 -w 0 "$1" 2>/dev/null || echo ""; }
+
+          WORKER_LOG=$(encode /tmp/worker.log)
+          CF_GET_LOG=$(encode /tmp/cf-get.json)
+          CF_PATCH_LOG=$(encode /tmp/cf-patch.json)
+          PAGES_MAIN_LOG=$(encode /tmp/pages-main.log)
+          PAGES_ORIG_LOG=$(encode /tmp/pages-orig.log)
+
+          FILENAME="run-${GITHUB_RUN_ID}.json"
+          CONTENT=$(python3 -c "
+          import json, base64
+          data = {
+            'run': '${GITHUB_RUN_NUMBER}',
+            'run_id': '${GITHUB_RUN_ID}',
+            'sha': '${GITHUB_SHA}',
+            'worker_log': '${WORKER_LOG}',
+            'cf_get': '${CF_GET_LOG}',
+            'cf_patch': '${CF_PATCH_LOG}',
+            'pages_main': '${PAGES_MAIN_LOG}',
+            'pages_orig': '${PAGES_ORIG_LOG}',
+          }
+          encoded = base64.b64encode(json.dumps(data, indent=2).encode()).decode()
+          print(encoded)
+          ")
+
+          # Try to create deploy-output branch from main SHA first
+          MAIN_SHA=$(git rev-parse HEAD)
+          curl -s -X POST "https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"ref\":\"refs/heads/deploy-output\",\"sha\":\"${MAIN_SHA}\"}" > /tmp/branch-create.log 2>&1 || true
+
+          # Get SHA of existing file if branch already exists (needed for update)
+          EXISTING_SHA=$(curl -s \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${FILENAME}?ref=deploy-output" \
+            -H "Authorization: Bearer ${GH_TOKEN}" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("sha",""))' 2>/dev/null || echo "")
+
+          # Build PUT body
+          if [ -n "$EXISTING_SHA" ]; then
+            BODY=$(python3 -c "import json; print(json.dumps({'message':'logs run#${GITHUB_RUN_NUMBER}','content':'${CONTENT}','branch':'deploy-output','sha':'${EXISTING_SHA}'}))")
+          else
+            BODY=$(python3 -c "import json; print(json.dumps({'message':'logs run#${GITHUB_RUN_NUMBER}','content':'${CONTENT}','branch':'deploy-output'}))")
+          fi
+
+          RESULT=$(curl -s -X PUT \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${FILENAME}" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$BODY")
+
+          echo "GitHub API result: $(echo $RESULT | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("content",{}).get("name","FAILED: "+str(d.get("message","?"))))' 2>/dev/null || echo 'error')"
 
