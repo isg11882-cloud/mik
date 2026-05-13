@@ -1,17 +1,428 @@
-=== RUN 39 SHA=5a3f078d7b12effeed5ac1d4b498a5c28bcac38c ===
+=== RUN 40 SHA=9360bfc5bad51312a7060d0bb7bb5361adea9ae3 ===
 --- CF GET ---
-missing
+{
+  "result": {
+    "id": "4d000306-adec-4d34-a911-b9171ac356ba",
+    "name": "mik-dashboard",
+    "subdomain": "mik-dashboard.pages.dev",
+    "domains": [
+      "mik-dashboard.pages.dev"
+    ],
+    "build_config": {
+      "web_analytics_tag": null,
+      "web_analytics_token": null
+    },
+    "deployment_configs": {
+      "preview": {
+        "env_vars": null,
+        "fail_open": true,
+        "always_use_latest_compatibility_date": false,
+        "compatibility_date": "2026-04-26",
+        "compatibility_flags": [],
+        "build_image_major_version": 3,
+        "usage_model": "standard"
+      },
+      "production": {
+        "env_vars": null,
+        "fail_open": true,
+        "always_use_latest_compatibility_date": false,
+        "compatibility_date": "2026-04-26",
+        "compatibility_flags": [],
+        "build_image_major_version": 3,
+        "usage_model": "standard"
+      }
+    },
+    "latest_deployment": {
+      "id": "0eca38bd-8d9a-44ad-a238-8a1cea051e9b",
+      "short_id": "0eca38bd",
+      "project_id": "4d000306-adec-4d34-a911-b9171ac356ba",
+      "project_name": "mik-dashboard",
+      "environment": "production",
+      "url": "https://0eca38bd.mik-dashboard.pages.dev",
+      "created_on": "2026-05-13T13:09:08.304363Z",
+      "modified_on": "2026-05-13T13:09:10.525994Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-05-13T13:09:10.525994Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "f569d58e1d2f9a5071554df0644efadc72b4d99f",
+          "commit_message": "fix: Pages 배포 — main/master/noBranch 3가지 시도 (production 브랜치 탐지)",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-05-13T13:09:08.304363Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-05-13T13:09:10.525994Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-04-26",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    "canonical_deployment": {
+      "id": "0eca38bd-8d9a-44ad-a238-8a1cea051e9b",
+      "short_id": "0eca38bd",
+      "project_id": "4d000306-adec-4d34-a911-b9171ac356ba",
+      "project_name": "mik-dashboard",
+      "environment": "production",
+      "url": "https://0eca38bd.mik-dashboard.pages.dev",
+      "created_on": "2026-05-13T13:09:08.304363Z",
+      "modified_on": "2026-05-13T13:09:10.525994Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-05-13T13:09:10.525994Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "f569d58e1d2f9a5071554df0644efadc72b4d99f",
+          "commit_message": "fix: Pages 배포 — main/master/noBranch 3가지 시도 (production 브랜치 탐지)",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-05-13T13:09:08.304363Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-05-13T13:09:10.525994Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-04-26",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    "created_on": "2026-04-26T04:16:39.162165Z",
+    "production_branch": "main",
+    "production_script_name": "pages-worker--13154678-production",
+    "preview_script_name": "pages-worker--13154678-preview",
+    "uses_functions": false,
+    "framework": "",
+    "framework_version": ""
+  },
+  "success": true,
+  "errors": [],
+  "messages": []
+}
 
 --- CF PATCH ---
-missing
+{
+  "result": {
+    "id": "4d000306-adec-4d34-a911-b9171ac356ba",
+    "name": "mik-dashboard",
+    "subdomain": "mik-dashboard.pages.dev",
+    "domains": [
+      "mik-dashboard.pages.dev"
+    ],
+    "build_config": {
+      "web_analytics_tag": null,
+      "web_analytics_token": null
+    },
+    "deployment_configs": {
+      "preview": {
+        "env_vars": null,
+        "fail_open": true,
+        "always_use_latest_compatibility_date": false,
+        "compatibility_date": "2026-04-26",
+        "compatibility_flags": [],
+        "build_image_major_version": 3,
+        "usage_model": "standard"
+      },
+      "production": {
+        "env_vars": null,
+        "fail_open": true,
+        "always_use_latest_compatibility_date": false,
+        "compatibility_date": "2026-04-26",
+        "compatibility_flags": [],
+        "build_image_major_version": 3,
+        "usage_model": "standard"
+      }
+    },
+    "latest_deployment": {
+      "id": "0eca38bd-8d9a-44ad-a238-8a1cea051e9b",
+      "short_id": "0eca38bd",
+      "project_id": "4d000306-adec-4d34-a911-b9171ac356ba",
+      "project_name": "mik-dashboard",
+      "environment": "production",
+      "url": "https://0eca38bd.mik-dashboard.pages.dev",
+      "created_on": "2026-05-13T13:09:08.304363Z",
+      "modified_on": "2026-05-13T13:09:10.525994Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-05-13T13:09:10.525994Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "f569d58e1d2f9a5071554df0644efadc72b4d99f",
+          "commit_message": "fix: Pages 배포 — main/master/noBranch 3가지 시도 (production 브랜치 탐지)",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-05-13T13:09:08.304363Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-05-13T13:09:10.525994Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-04-26",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    "canonical_deployment": {
+      "id": "0eca38bd-8d9a-44ad-a238-8a1cea051e9b",
+      "short_id": "0eca38bd",
+      "project_id": "4d000306-adec-4d34-a911-b9171ac356ba",
+      "project_name": "mik-dashboard",
+      "environment": "production",
+      "url": "https://0eca38bd.mik-dashboard.pages.dev",
+      "created_on": "2026-05-13T13:09:08.304363Z",
+      "modified_on": "2026-05-13T13:09:10.525994Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-05-13T13:09:10.525994Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "f569d58e1d2f9a5071554df0644efadc72b4d99f",
+          "commit_message": "fix: Pages 배포 — main/master/noBranch 3가지 시도 (production 브랜치 탐지)",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-05-13T13:09:08.304363Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-05-13T13:09:10.525994Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-04-26",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    "created_on": "2026-04-26T04:16:39.162165Z",
+    "production_branch": "main",
+    "production_script_name": "pages-worker--13154678-production",
+    "preview_script_name": "pages-worker--13154678-preview",
+    "uses_functions": false,
+    "framework": "",
+    "framework_version": ""
+  },
+  "success": true,
+  "errors": [],
+  "messages": []
+}
 
 --- WORKER LOG ---
-Wrangler requires at least Node.js v22.0.0. You are using v20.20.2. Please update your version of Node.js.
 
-Consider using a Node.js version manager such as https://volta.sh/ or https://github.com/nvm-sh/nvm.
+ ⛅️ wrangler 4.90.1
+───────────────────
+Total Upload: 40.08 KiB / gzip: 10.66 KiB
+Your Worker has access to the following bindings:
+Binding                              Resource                  
+env.DB (mik_db)                      D1 Database               
+env.AI                               AI                        
+env.ENVIRONMENT ("production")       Environment Variable      
+env.OLLAMA_MODEL ("qwen2.5:7b")      Environment Variable      
+
+Uploaded mik-worker (2.73 sec)
+Deployed mik-worker triggers (1.03 sec)
+  https://mik-worker.isg11882.workers.dev
+  schedule: 0 * * * *
+Current Version ID: 606509a6-b48c-4216-8eb5-71c43a1efc83
+
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 
 --- PAGES MAIN LOG ---
-missing
+
+ ⛅️ wrangler 4.90.1
+───────────────────
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mPages now has wrangler.toml support.[0m
+
+  We detected a configuration file at /home/runner/work/mik/mik/worker/wrangler.toml but it is missing the "pages_build_output_dir" field, required by Pages.
+  If you would like to use this configuration file to deploy your project, please use "pages_build_output_dir" to specify the directory of static files to upload.
+  Ignoring configuration file for now, and proceeding with project deploy.
+
+
+Uploading... (2/2)
+✨ Success! Uploaded 0 files (2 already uploaded) (0.37 sec)
+
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://a74d0f21.mik-dashboard.pages.dev
 
 --- PAGES ORIG LOG ---
 missing
