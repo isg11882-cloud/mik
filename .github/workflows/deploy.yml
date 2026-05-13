@@ -34,17 +34,14 @@ jobs:
         run: npx wrangler deploy
 
       - name: Get current CF Pages production_branch
-        id: get_prod_branch
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          GET_RESP=$(curl -s -X GET \
+          GET_RESP=$(curl -s \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/mik-dashboard" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
-          CURRENT_PROD=$(echo "$GET_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('result',{}).get('production_branch','unknown'))" 2>/dev/null || echo "unknown")
-          echo "current_prod_branch=$CURRENT_PROD" >> $GITHUB_OUTPUT
-          echo "Current production_branch: $CURRENT_PROD"
+          echo "GET response snippet: $(echo "$GET_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); r=d.get('result',{}); print('success=',d.get('success'),'prod_branch=',r.get('production_branch','?'),'deployment_configs=',list(r.get('deployment_configs',{}).keys()))" 2>/dev/null || echo "parse failed: $GET_RESP")"
 
       - name: Patch CF Pages production_branch to main
         env:
@@ -56,23 +53,24 @@ jobs:
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d '{"production_branch":"main"}')
-          NEW_PROD=$(echo "$PATCH_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print('success='+str(d.get('success'))+ ' new_prod_branch='+str(d.get('result',{}).get('production_branch','?')))" 2>/dev/null || echo "parse failed")
-          echo "PATCH result: $NEW_PROD"
+          echo "PATCH result: $(echo "$PATCH_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print('success=',d.get('success'),'prod_branch=',d.get('result',{}).get('production_branch','?'))" 2>/dev/null || echo "parse failed")"
 
-      - name: Deploy HTML to CF Pages as main branch
+      - name: Deploy HTML to CF Pages (main = production after PATCH)
+        working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "Deploying frontend/ with --branch main"
-          npx wrangler pages deploy frontend --project-name mik-dashboard --branch main
-          echo "Deploy exit code: $?"
+          echo "Deploying ../frontend with --branch main"
+          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch main
+          echo "Exit: $?"
 
-      - name: Also deploy as master branch (fallback for old production_branch)
+      - name: Deploy HTML to CF Pages (master = fallback production)
+        working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "Deploying frontend/ with --branch master (fallback)"
-          npx wrangler pages deploy frontend --project-name mik-dashboard --branch master || echo "master branch deploy skipped or failed (ok)"
+          echo "Deploying ../frontend with --branch master (covers old production_branch=master)"
+          npx wrangler pages deploy ../frontend --project-name mik-dashboard --branch master || true
           echo "Done"
