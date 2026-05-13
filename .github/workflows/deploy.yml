@@ -157,15 +157,15 @@ jobs:
           curl -s -X POST "https://api.github.com/repos/${GH_REPO}/git/refs" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "{"ref":"refs/heads/deploy-output","sha":"${MAIN_SHA}"}" > /tmp/branch-create.log
+            -d "{\"ref\":\"refs/heads/deploy-output\",\"sha\":\"${MAIN_SHA}\"}" > /tmp/branch-create.log
           EXISTING_SHA=$(curl -s \
             "https://api.github.com/repos/${GH_REPO}/contents/diag.txt?ref=deploy-output" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("sha",""))' 2>/dev/null || echo "")
           if [ -n "${EXISTING_SHA}" ]; then
-            PUT_BODY="{"message":"diag run#${GH_RUN}","content":"${B64}","branch":"deploy-output","sha":"${EXISTING_SHA}"}"
+            PUT_BODY="{\"message\":\"diag run#${GH_RUN}\",\"content\":\"${B64}\",\"branch\":\"deploy-output\",\"sha\":\"${EXISTING_SHA}\"}"
           else
-            PUT_BODY="{"message":"diag run#${GH_RUN}","content":"${B64}","branch":"deploy-output"}"
+            PUT_BODY="{\"message\":\"diag run#${GH_RUN}\",\"content\":\"${B64}\",\"branch\":\"deploy-output\"}"
           fi
           RESULT=$(curl -s -X PUT \
             "https://api.github.com/repos/${GH_REPO}/contents/diag.txt" \
