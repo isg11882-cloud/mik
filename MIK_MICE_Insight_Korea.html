@@ -1395,7 +1395,7 @@ function formatTime(d) {
 async function fetchArticles(params = {}) {
   if (IS_LOADING) return;
   IS_LOADING = true;
-  const grid = document.getElementById('newsGrid');
+  const grid = document.getElementById('newsList');
   if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;"><div style="font-size:24px;margin-bottom:8px;">⏳<' + '/div>기사를 불러오는 중...<' + '/div>';
   try {
     const sp = new URLSearchParams(params);
@@ -1406,14 +1406,14 @@ async function fetchArticles(params = {}) {
     const data = await res.json();
     ARTICLES = (data.articles || data || []).map(a => ({
       id: a.id, source: a.source||'',
-      cat: CAT_LABELS[a.category] || a.category || '일반',
-      catClass: CAT_CLASSES[a.category] || a.cat_class || 'tag-convention',
-      type: a.article_type||'분석',
-      time: formatTime(a.pub_date||a.created_at), views: a.views||0,
-      title: a.title||'', title_ko: a.title_ko||a.title||'',
-      url: a.link||'#', content_ko: a.content_ko||'',
+      cat: CAT_LABELS[a.cat] || CAT_LABELS[a.category] || a.cat || a.category || '일반',
+      catClass: a.catClass || CAT_CLASSES[a.cat] || a.cat_class || 'tag-convention',
+      type: a.type || a.article_type || '분석',
+      time: a.time || formatTime(a.pub_date||a.created_at), views: a.views||0,
+      title: a.title||'', title_ko: a.titleKo||a.title_ko||a.title||'',
+      url: a.url||a.link||'#', content_ko: a.koText||a.content_ko||'',
       insight: a.insight||'',
-      summary_json: (()=>{ try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
+      summary_json: (()=>{ if(Array.isArray(a.summaryPoints))return a.summaryPoints; try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
     }));
     renderNewsList(ARTICLES);
     renderSourceTabs(ARTICLES);
@@ -1458,7 +1458,7 @@ function renderSourceTabs(articles) {
 }
 
 function renderNewsList(articles) {
-  const grid = document.getElementById('newsGrid');
+  const grid = document.getElementById('newsList');
   if (!grid) return;
   if (!articles || articles.length === 0) {
     grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;">' +
@@ -1597,7 +1597,7 @@ function applyFilters() {
     filteredArticles.sort((a, b) => b.views - a.views);
   }
 
-  renderNewsList();
+  renderNewsList(filteredArticles);
 }
 
 // ====== VIEW TOGGLE ======
