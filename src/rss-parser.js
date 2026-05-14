@@ -149,31 +149,139 @@ export const RSS_FEEDS = [
     defaultCategory: 'incentive',
     catClass: 'tag-incentive',
   },
+
+  // ── 글로벌 최대 협회 / 전시회 ────────────────────────────────────
+  {
+    name: 'ICCA News',
+    url: 'https://www.iccaworld.org/newsarchive/rss.cfm',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+  {
+    name: 'IMEX Group',
+    url: 'https://www.imexexhibitions.com/feed/',
+    defaultCategory: 'exhibition',
+    catClass: 'tag-exhibition',
+  },
+  {
+    name: 'IBTM Events',
+    url: 'https://www.ibtmworld.com/en/news/press-releases.rss',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+
+  // ── 비즈니스 트래블 / 기업 회의 ──────────────────────────────────
+  {
+    name: 'GBTA Blog',
+    url: 'https://www.gbta.org/blog/feed/',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+  {
+    name: 'Business Travel News',
+    url: 'https://www.businesstravelnews.com/rss/all',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+
+  // ── 중동 / 아시아태평양 ───────────────────────────────────────────
+  {
+    name: 'Arabian Travel Market',
+    url: 'https://www.arabiantravelmarket.wtm.com/en/news.rss',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+  {
+    name: 'Business Events Australia',
+    url: 'https://businessevents.australia.com/feed/',
+    defaultCategory: 'incentive',
+    catClass: 'tag-incentive',
+  },
+  {
+    name: 'CNA Business Travel',
+    url: 'https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6511',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+
+  // ── 지속가능성 (Sustainability) ───────────────────────────────────
+  {
+    name: 'Sustainable Events Alliance',
+    url: 'https://sustainable-event-alliance.org/feed/',
+    defaultCategory: 'policy',
+    catClass: 'tag-policy',
+  },
+  {
+    name: 'Green Meetings Industry Council',
+    url: 'https://gmicglobal.org/feed/',
+    defaultCategory: 'policy',
+    catClass: 'tag-policy',
+  },
+
+  // ── 학술 저널 (Academic) ──────────────────────────────────────────
+  {
+    name: 'J. Convention & Event Tourism',
+    url: 'https://www.tandfonline.com/feed/rss/wcet20',
+    defaultCategory: 'policy',
+    catClass: 'tag-policy',
+  },
+  {
+    name: 'Tourism Management Journal',
+    url: 'https://rss.sciencedirect.com/publication/science/02615177',
+    defaultCategory: 'policy',
+    catClass: 'tag-policy',
+  },
+  {
+    name: 'Int\'l Journal of Event Management',
+    url: 'https://www.emerald.com/insight/rss/1758-2954',
+    defaultCategory: 'policy',
+    catClass: 'tag-policy',
+  },
 ];
 
 /**
  * Fetch and parse a single RSS feed.
- * Uses the built-in DOMParser-like approach via regex for Workers environment.
+ * Works in Cloudflare Workers. Skips silently on error so one broken
+ * feed never blocks the others.
  */
 export async function fetchFeed(feed) {
   try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000); // 12s timeout
+
     const response = await fetch(feed.url, {
       headers: {
         'User-Agent': 'MIK-MICE-Insight-Korea/1.0',
-        'Accept': 'application/rss+xml, application/xml, text/xml',
+        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
       },
-      cf: { cacheTtl: 1800 }, // Cache for 30 minutes at Cloudflare edge
+      cf: { cacheTtl: 1800 },
+      signal: controller.signal,
     });
+    clearTimeout(timer);
 
     if (!response.ok) {
-      console.error(`[RSS] Failed to fetch ${feed.name}: HTTP ${response.status}`);
+      console.warn(`[RSS] Skip ${feed.name}: HTTP ${response.status}`);
+      return [];
+    }
+
+    // Reject non-XML responses (e.g. HTML error pages)
+    const ct = response.headers.get('content-type') || '';
+    if (ct.includes('text/html') && !ct.includes('xml')) {
+      console.warn(`[RSS] Skip ${feed.name}: got HTML instead of XML`);
       return [];
     }
 
     const xml = await response.text();
-    return parseRssXml(xml, feed);
+    const items = parseRssXml(xml, feed);
+    if (items.length > 0) {
+      console.log(`[RSS] ${feed.name}: ${items.length} items`);
+    } else {
+      console.warn(`[RSS] ${feed.name}: 0 items parsed`);
+    }
+    return items;
   } catch (err) {
-    console.error(`[RSS] Error fetching ${feed.name}:`, err.message);
+    // AbortError = timeout; network error = unreachable — both are safe to skip
+    console.warn(`[RSS] Skip ${feed.name}: ${err.message}`);
     return [];
   }
 }
