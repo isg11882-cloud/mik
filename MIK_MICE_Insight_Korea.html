@@ -1447,13 +1447,11 @@ function init() {
 function renderSourceTabs(articles) {
   const tabs = document.getElementById('sourceTabs');
   if (!tabs) return;
-  // Collect unique sources from loaded articles
   const sources = [...new Set((articles || ARTICLES).map(a => a.source).filter(Boolean))].sort();
-  tabs.innerHTML = '<div class="source-tab active" onclick="filterSource('all', this)">전체<' + '/div>' +
+  tabs.innerHTML = `<div class="source-tab active" onclick="filterSource('all', this)">전체</div>` +
     sources.map(s => {
-      // Shorten long source names for display
       const label = s.replace(' Meetings','').replace(' News','').replace(' Blog','').replace(' Index','');
-      return '<div class="source-tab" onclick="filterSource(\'' + s + '\', this)">' + label + '<' + '/div>';
+      return `<div class="source-tab" onclick="filterSource('${s.replace(/'/g, "\\'")}', this)">${label}</div>`;
     }).join('');
 }
 
