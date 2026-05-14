@@ -71,7 +71,7 @@ async function callOllama(prompt, env) {
 async function callCWAI(article, env) {
   const content = (article.content || article.title || '').substring(0, 1500);
 
-  const prompt = `You are a MICE industry expert. Analyze this article and return ONLY a valid JSON object, no markdown, no explanation.
+  const prompt = `Analyze this MICE article. Return ONLY valid JSON, no other text.
 
 Title: ${article.title}
 Source: ${article.source}
@@ -232,12 +232,12 @@ function fallbackResult(article) {
     id: article.id || null,
     guid: article.guid,
     title: article.title,
-    category: '일반',
+    category: 'general',
     catClass: 'tag-convention',
     articleType: '뉴스',
-    titleKo: '',
+    titleKo: article.title,
     summaryPoints: [],
-    insight: '',
+    insight: 'pending',
     contentKo: '',
     url: article.link || article.url,
     source: article.source,
