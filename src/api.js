@@ -61,6 +61,53 @@ export async function handleApiRequest(request, env) {
       return corsResponse(jsonResponse(result));
     }
 
+    // GET /api/pending — 미번역 기사 목록 반환 (로컬 AI 스크립트용)
+    if (path === '/api/pending' && request.method === 'GET') {
+      const limit = parseInt(url.searchParams.get('limit') || '20');
+      const result = await env.DB.prepare(`
+        SELECT id, title, content_en, source, link
+        FROM articles
+        WHERE (insight = '' OR insight IS NULL OR insight LIKE 'AI 분석%' OR insight = 'pending')
+        ORDER BY created_at DESC LIMIT ?
+      `).bind(limit).all();
+      return corsResponse(jsonResponse({ articles: result.results || [], count: (result.results||[]).length }));
+    }
+
+    // POST /api/admin/sync — 로컬 Ollama 처리 결과 업로드
+    if (path === '/api/admin/sync' && request.method === 'POST') {
+      const authHeader = request.headers.get('Authorization') || '';
+      const token = authHeader.replace('Bearer ', '').trim();
+      const secret = env.JWT_SECRET || 'mik_secret_key_2026';
+      if (token !== secret) {
+        return corsResponse(jsonResponse({ error: 'Unauthorized' }, 401));
+      }
+      let body;
+      try { body = await request.json(); } catch(e) { return corsResponse(jsonResponse({ error: 'Invalid JSON' }, 400)); }
+      const articles = body.articles || [];
+      if (!Array.isArray(articles) || articles.length === 0) {
+        return corsResponse(jsonResponse({ error: 'articles array required' }, 400));
+      }
+      let updated = 0;
+      for (const a of articles) {
+        if (!a.id) continue;
+        try {
+          await env.DB.prepare(`
+            UPDATE articles SET
+              title_ko = ?, summary_json = ?, insight = ?,
+              content_ko = ?, category = ?, cat_class = ?, article_type = ?
+            WHERE id = ?
+          `).bind(
+            a.title_ko || '', JSON.stringify(a.summary_points || []),
+            a.insight || 'done', a.content_ko || '',
+            a.category || 'general', a.cat_class || 'tag-convention',
+            a.article_type || '분석', a.id
+          ).run();
+          updated++;
+        } catch(err) { console.error('[Sync] Update failed for id', a.id, err.message); }
+      }
+      return corsResponse(jsonResponse({ status: 'ok', updated, total: articles.length }));
+    }
+
     // GET /api/process-ai — manually trigger AI queue from browser
     if (path === '/api/process-ai' && request.method === 'GET') {
       console.log('[API] Processing AI Queue manually (GET)...');
