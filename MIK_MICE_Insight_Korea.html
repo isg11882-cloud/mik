@@ -1179,9 +1179,9 @@
   }
 
 /* === MIK API & Mobile Enhancements === */
-.news-pending-badge{background:#2d333b;color:#8b949e;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
-.news-ai-badge{background:#0d1f0d;color:#3fb950;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
-.news-trans-badge{background:#0d1c34;color:#58a6ff;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+.news-pending-badge{background:#F1F5F9;color:#64748B;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+.news-ai-badge{background:#F0FDF4;color:#15803D;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+.news-trans-badge{background:#EFF6FF;color:#2563EB;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
 #mobileDetailOverlay{display:none;}
 .source-tabs-wrap{overflow:hidden;position:relative;}
 .source-tabs{padding-left:0!important;}
@@ -1191,7 +1191,7 @@
   .main-layout,.content-layout,.news-layout{flex-direction:column!important;}
   .source-tabs{padding:0 0 8px!important;}
   .news-item{cursor:pointer;-webkit-tap-highlight-color:transparent;}
-  .news-item:active{background:#21262d!important;}
+  .news-item:active{background:#EFF6FF!important;}
 }
 </style>
 </head>
@@ -1285,7 +1285,7 @@
       왼쪽 뉴스 목록에서 기사를 선택하면<br>
       AI가 번역·요약한 전문가 인사이트를<br>듀얼 뷰로 확인할 수 있습니다.
     </div>
-    <div style="font-size:13px;color:#8b949e;margin-top:12px;">기사를 선택하면 상세 내용이 여기에 표시됩니다</div>
+    <div style="font-size:13px;color:#94A3B8;margin-top:12px;">기사를 선택하면 상세 내용이 여기에 표시됩니다</div>
   </div>
 
   <!-- Article detail (hidden until selected) -->
@@ -1420,7 +1420,7 @@ async function fetchArticles(params = {}) {
   if (IS_LOADING) return;
   IS_LOADING = true;
   const grid = document.getElementById('newsList');
-  if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;"><div style="font-size:24px;margin-bottom:8px;">⏳<' + '/div>기사를 불러오는 중...<' + '/div>';
+  if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#64748B;"><div style="font-size:24px;margin-bottom:8px;">⏳<' + '/div>기사를 불러오는 중...<' + '/div>';
   try {
     const sp = new URLSearchParams(params);
     const res = await fetch(WORKER_URL + '/api/articles?' + sp.toString(), {
@@ -1444,7 +1444,7 @@ async function fetchArticles(params = {}) {
     if (ARTICLES.length > 0) showArticle(ARTICLES[0].id);
   } catch(e) {
     console.error('[MIK] API error:', e);
-    if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#f85149;"><div style="font-size:24px;margin-bottom:8px;">⚠️<' + '/div>기사를 불러올 수 없습니다.<br><small style="color:#8b949e">Worker API 상태를 확인해 주세요.<' + '/small><' + '/div>';
+    if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#EF4444;"><div style="font-size:24px;margin-bottom:8px;">⚠️<' + '/div>기사를 불러올 수 없습니다.<br><small style="color:#94A3B8">Worker API 상태를 확인해 주세요.<' + '/small><' + '/div>';
   } finally { IS_LOADING = false; }
 }
 
@@ -1485,7 +1485,7 @@ function renderNewsList(articles) {
   const grid = document.getElementById('newsList');
   if (!grid) return;
   if (!articles || articles.length === 0) {
-    grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;">' +
+    grid.innerHTML = '<div style="padding:40px;text-align:center;color:#64748B;">' +
       '<div style="font-size:32px;margin-bottom:12px;">📭<' + '/div>' +
       '<div style="font-weight:600;margin-bottom:6px;">기사가 없습니다<' + '/div>' +
       '<div style="font-size:12px;">RSS 크롤링 후 기사가 표시됩니다.<' + '/div><' + '/div>';
@@ -1525,20 +1525,20 @@ function buildDetailHTML(a) {
   const title = a.title_ko || a.title || '';
   const sum = a.summary_json && a.summary_json.length > 0;
   let h = '';
-  if (sum) h += '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:16px;">' +
-    '<div style="font-size:12px;color:#58a6ff;font-weight:600;margin-bottom:8px;">📋 핵심 요약<' + '/div>' +
-    a.summary_json.map((s,i)=>'<div style="font-size:14px;color:#c9d1d9;padding:4px 0;">'+(i+1)+'. '+s+'<' + '/div>').join('') + '<' + '/div>';
-  if (a.insight) h += '<div style="background:#0d1f0d;border:1px solid #238636;border-radius:8px;padding:16px;margin-bottom:16px;">' +
-    '<div style="font-size:12px;color:#3fb950;font-weight:600;margin-bottom:8px;">💡 AI MICE 인사이트<' + '/div>' +
-    '<div style="font-size:14px;color:#c9d1d9;line-height:1.6;">' + a.insight + '<' + '/div><' + '/div>';
+  if (sum) h += '<div style="background:#F0F7FF;border:1px solid #BFDBFE;border-radius:8px;padding:16px;margin-bottom:16px;">' +
+    '<div style="font-size:12px;color:#2563EB;font-weight:600;margin-bottom:8px;">📋 핵심 요약<' + '/div>' +
+    a.summary_json.map((s,i)=>'<div style="font-size:14px;color:#1F2937;padding:4px 0;">'+(i+1)+'. '+s+'<' + '/div>').join('') + '<' + '/div>';
+  if (a.insight) h += '<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:16px;margin-bottom:16px;">' +
+    '<div style="font-size:12px;color:#15803D;font-weight:600;margin-bottom:8px;">💡 AI MICE 인사이트<' + '/div>' +
+    '<div style="font-size:14px;color:#1F2937;line-height:1.6;">' + a.insight + '<' + '/div><' + '/div>';
   const PEND2=/번역 대기|번역 처리 중|대기 중/i;
   const hasRealKo = a.content_ko && !PEND2.test(a.content_ko) && a.content_ko.length > 30;
   if (hasRealKo) {
-    h += '<div style="font-size:14px;color:#c9d1d9;line-height:1.8;">' + a.content_ko + '<' + '/div>';
+    h += '<div style="font-size:14px;color:#1F2937;line-height:1.8;">' + a.content_ko + '<' + '/div>';
   } else if (a.enText && a.enText.length > 30) {
-    h += '<div style="border-left:3px solid #30363d;padding:4px 16px;margin-bottom:4px;"><div style="font-size:11px;color:#6e7681;margin-bottom:8px;">📄 원문 (AI 번역 준비 중)</div><div style="font-size:13px;color:#8b949e;line-height:1.7;">' + a.enText + '<' + '/div><' + '/div>';
+    h += '<div style="border-left:3px solid #E2E8F0;padding:4px 16px;margin-bottom:4px;"><div style="font-size:11px;color:#94A3B8;margin-bottom:8px;">📄 원문 (AI 번역 준비 중)</div><div style="font-size:13px;color:#64748B;line-height:1.7;">' + a.enText + '<' + '/div><' + '/div>';
   } else {
-    h += '<div style="color:#6e7681;font-size:13px;padding:12px 0;">원문 보기 버튼을 클릭해 기사 전문을 확인하세요.</div>';
+    h += '<div style="color:#94A3B8;font-size:13px;padding:12px 0;">원문 보기 버튼을 클릭해 기사 전문을 확인하세요.</div>';
   }
   return {title, h};
 }
@@ -1548,18 +1548,18 @@ function showMobileDetail(a) {
   if (!ov) {
     ov = document.createElement('div');
     ov.id = 'mobileDetailOverlay';
-    ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#0d1117;z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;';
+    ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#F8FAFC;z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;';
     document.body.appendChild(ov);
   }
   const {title, h} = buildDetailHTML(a);
-  ov.innerHTML = '<div style="position:sticky;top:0;background:#161b22;padding:12px 16px;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:12px;z-index:1;">' +
-    '<button onclick="closeMobileDetail()" style="background:none;border:none;color:#8b949e;font-size:22px;cursor:pointer;line-height:1;">←<' + '/button>' +
-    '<span style="font-size:13px;color:#8b949e;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (a.source||'') + '<' + '/span>' +
-    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#238636;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;">원문 →<' + '/a><' + '/div>' +
+  ov.innerHTML = '<div style="position:sticky;top:0;background:#FFFFFF;padding:12px 16px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:12px;z-index:1;box-shadow:0 1px 4px rgba(0,0,0,.06);">' +
+    '<button onclick="closeMobileDetail()" style="background:none;border:none;color:#64748B;font-size:22px;cursor:pointer;line-height:1;">←<' + '/button>' +
+    '<span style="font-size:13px;color:#64748B;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (a.source||'') + '<' + '/span>' +
+    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#2563EB;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;">원문 →<' + '/a><' + '/div>' +
     '<div style="padding:20px 16px;">' +
     '<div style="margin-bottom:12px;"><span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
-    '<span style="color:#8b949e;font-size:12px;margin-left:8px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
-    '<h2 style="font-size:18px;font-weight:700;color:#e6edf3;line-height:1.4;margin:0 0 16px;">' + title + '<' + '/h2>' + h + '<' + '/div>';
+    '<span style="color:#64748B;font-size:12px;margin-left:8px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
+    '<h2 style="font-size:18px;font-weight:700;color:#0F172A;line-height:1.4;margin:0 0 16px;">' + title + '<' + '/h2>' + h + '<' + '/div>';
   ov.style.display = 'block';
   document.body.style.overflow = 'hidden';
 }
@@ -1579,16 +1579,16 @@ function renderDetailPanel(a) {
   panel.style.display = 'flex';
   panel.style.flexDirection = 'column';
   const {title, h} = buildDetailHTML(a);
-  panel.innerHTML = '<div style="padding:20px;border-bottom:1px solid #30363d;">' +
+  panel.innerHTML = '<div style="padding:20px;border-bottom:1px solid #E2E8F0;background:#FFFFFF;">' +
     '<div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
     '<span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
-    '<span style="color:#8b949e;font-size:12px;">' + (a.source||'') + '<' + '/span>' +
-    '<span style="color:#8b949e;font-size:12px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
-    '<h2 style="font-size:17px;font-weight:700;color:#e6edf3;line-height:1.4;margin:0 0 12px;">' + title + '<' + '/h2>' +
+    '<span style="color:#64748B;font-size:12px;">' + (a.source||'') + '<' + '/span>' +
+    '<span style="color:#94A3B8;font-size:12px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
+    '<h2 style="font-size:17px;font-weight:700;color:#0F172A;line-height:1.4;margin:0 0 12px;">' + title + '<' + '/h2>' +
     '<div style="display:flex;gap:8px;">' +
-    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#238636;color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none;">원문 보기 →<' + '/a>' +
-    '<button onclick="toggleBookmark(' + a.id + ')" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;">🔖 저장<' + '/button><' + '/div><' + '/div>' +
-    '<div style="padding:20px;overflow-y:auto;">' + h + '<' + '/div>';
+    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#2563EB;color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none;">원문 보기 →<' + '/a>' +
+    '<button onclick="toggleBookmark(' + a.id + ')" style="background:#F1F5F9;color:#374151;border:1px solid #E2E8F0;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;">🔖 저장<' + '/button><' + '/div><' + '/div>' +
+    '<div style="padding:20px;overflow-y:auto;background:#F8FAFC;">' + h + '<' + '/div>';
 }
 
 // ====== SOURCE TABS DRAG SCROLL (데스크톱) ======
