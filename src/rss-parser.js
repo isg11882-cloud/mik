@@ -4,9 +4,9 @@
  */
 
 // Registered RSS feed sources
-// Last audited: 2026-05 — broken sources removed, new MICE associations added
+// Last audited: 2026-05 — ITII/BizBash 제거, 신규 매체 9개 추가
 export const RSS_FEEDS = [
-  // ── 핵심 전시/컨벤션 협회 (인증기관) ───────────────────────────────
+  // ── 핵심 전시/컨벤션 협회 ─────────────────────────────────────────
   {
     name: 'UFI Blog',
     url: 'https://blog.ufi.org/feed/',
@@ -20,7 +20,7 @@ export const RSS_FEEDS = [
     catClass: 'tag-exhibition',
   },
 
-  // ── 주요 MICE 업계 미디어 ──────────────────────────────────────────
+  // ── 글로벌 MICE 전문지 ────────────────────────────────────────────
   {
     name: 'Skift Meetings',
     url: 'https://meetings.skift.com/feed/',
@@ -34,26 +34,8 @@ export const RSS_FEEDS = [
     catClass: 'tag-convention',
   },
   {
-    name: 'Event Industry News',
-    url: 'https://eventindustrynews.com/feed/',
-    defaultCategory: 'exhibition',
-    catClass: 'tag-exhibition',
-  },
-  {
-    name: 'Exhibition World',
-    url: 'https://www.exhibitionworld.co.uk/feed',
-    defaultCategory: 'exhibition',
-    catClass: 'tag-exhibition',
-  },
-  {
-    name: 'PCMA Convene',
-    url: 'https://www.pcma.org/convene/feed/',
-    defaultCategory: 'convention',
-    catClass: 'tag-convention',
-  },
-  {
-    name: 'PCMA Blog',
-    url: 'https://www.pcma.org/blog/feed/',
+    name: 'Meetings Today',
+    url: 'https://www.meetingstoday.com/feed/',
     defaultCategory: 'convention',
     catClass: 'tag-convention',
   },
@@ -64,10 +46,24 @@ export const RSS_FEEDS = [
     catClass: 'tag-convention',
   },
   {
-    name: 'BizBash',
-    url: 'https://www.bizbash.com/feed',
+    name: 'Convene International',
+    url: 'https://convene.com/catalyst/feed/',
     defaultCategory: 'convention',
     catClass: 'tag-convention',
+  },
+
+  // ── 전시/이벤트 전문지 ────────────────────────────────────────────
+  {
+    name: 'Event Industry News',
+    url: 'https://eventindustrynews.com/feed/',
+    defaultCategory: 'exhibition',
+    catClass: 'tag-exhibition',
+  },
+  {
+    name: 'Exhibition World',
+    url: 'https://www.exhibitionworld.co.uk/feed',
+    defaultCategory: 'exhibition',
+    catClass: 'tag-exhibition',
   },
   {
     name: 'TradeShow News Network',
@@ -81,19 +77,77 @@ export const RSS_FEEDS = [
     defaultCategory: 'convention',
     catClass: 'tag-convention',
   },
-
-  // ── 인센티브 전문 ─────────────────────────────────────────────────
-  {
-    name: 'Incentive Travel Industry Index',
-    url: 'https://www.itii.co.uk/feed/',
-    defaultCategory: 'incentive',
-    catClass: 'tag-incentive',
-  },
   {
     name: 'Eventex',
     url: 'https://eventex.co/feed/',
     defaultCategory: 'exhibition',
     catClass: 'tag-exhibition',
+  },
+  {
+    name: 'Event Tech Live',
+    url: 'https://eventtechlive.com/feed/',
+    defaultCategory: 'tech',
+    catClass: 'tag-tech',
+  },
+
+  // ── 협회 공식 채널 ────────────────────────────────────────────────
+  {
+    name: 'PCMA Convene',
+    url: 'https://www.pcma.org/convene/feed/',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+  {
+    name: 'PCMA Blog',
+    url: 'https://www.pcma.org/blog/feed/',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+  {
+    name: 'MPI Blog',
+    url: 'https://www.mpi.org/blog/rss/',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+  {
+    name: 'Events Industry Council',
+    url: 'https://news.eventscouncil.org/feed/',
+    defaultCategory: 'policy',
+    catClass: 'tag-policy',
+  },
+
+  // ── 아시아태평양 / 글로벌 ─────────────────────────────────────────
+  {
+    name: 'TTG MICE',
+    url: 'https://www.ttgmice.com/feed/',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+  {
+    name: 'Micebook',
+    url: 'https://micebook.com/news/feed/',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+  {
+    name: 'Conference News',
+    url: 'https://www.conference-news.co.uk/feed/',
+    defaultCategory: 'convention',
+    catClass: 'tag-convention',
+  },
+
+  // ── 인센티브 트래블 전문 ──────────────────────────────────────────
+  {
+    name: 'SITE Global',
+    url: 'https://siteglobal.com/news/feed/',
+    defaultCategory: 'incentive',
+    catClass: 'tag-incentive',
+  },
+  {
+    name: 'MICE Travel Today',
+    url: 'https://www.micetraveltoday.com/feed/',
+    defaultCategory: 'incentive',
+    catClass: 'tag-incentive',
   },
 ];
 
