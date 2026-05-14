@@ -49,10 +49,24 @@ export async function handleApiRequest(request, env) {
       return corsResponse(jsonResponse(result));
     }
 
+    // GET /api/test-ollama — Ollama 연결 및 모델 상태 진단
+    if (path === '/api/test-ollama' && request.method === 'GET') {
+      return corsResponse(await testOllama(env));
+    }
+
     // POST /api/repair/titles — repair English titles using free AI
     if (path === '/api/repair/titles' && request.method === 'POST') {
       const { repairTitles } = await import('./index.js');
       const result = await repairTitles(env);
+      return corsResponse(jsonResponse(result));
+    }
+
+    // GET /api/process-ai — manually trigger AI queue from browser
+    if (path === '/api/process-ai' && request.method === 'GET') {
+      console.log('[API] Processing AI Queue manually (GET)...');
+      const limit = parseInt(url.searchParams.get('limit') || '10');
+      const { processAIQueue } = await import('./index.js');
+      const result = await processAIQueue(env, limit);
       return corsResponse(jsonResponse(result));
     }
 
@@ -448,4 +462,71 @@ async function triggerCrawl(env) {
     raw: rawResult,
     ai: aiResult
   });
+}
+
+/**
+ * GET /api/test-ollama — Ollama 연결 상태 및 모델 진단
+ */
+async function testOllama(env) {
+  const ollamaUrl = (env.OLLAMA_URL || '').replace(/\/$/, '');
+  const model = env.OLLAMA_MODEL || 'qwen2.5:7b';
+
+  if (!ollamaUrl) {
+    return jsonResponse({ status: 'error', message: 'OLLAMA_URL not set in environment' });
+  }
+
+  const result = { ollamaUrl, model, steps: [] };
+
+  // 1. 연결 확인 (/api/tags)
+  try {
+    const tagsRes = await fetch(`${ollamaUrl}/api/tags`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!tagsRes.ok) throw new Error(`HTTP ${tagsRes.status}`);
+    const tagsData = await tagsRes.json();
+    const availableModels = (tagsData.models || []).map(m => m.name);
+    result.steps.push({ step: 'connection', status: 'ok', availableModels });
+
+    // 2. 모델 존재 여부 확인
+    const modelExists = availableModels.some(m => m.startsWith(model.split(':')[0]));
+    result.steps.push({ step: 'model_check', status: modelExists ? 'ok' : 'missing', model, availableModels });
+
+    if (!modelExists) {
+      return jsonResponse({
+        ...result,
+        status: 'error',
+        message: `Model "${model}" not found. Available: ${availableModels.join(', ')}. Run: ollama pull ${model}`,
+      });
+    }
+  } catch (err) {
+    result.steps.push({ step: 'connection', status: 'error', error: err.message });
+    return jsonResponse({
+      ...result,
+      status: 'error',
+      message: `Cannot reach Ollama at ${ollamaUrl}. Is Ollama running? Is the tunnel active?`,
+    });
+  }
+
+  // 3. 번역 기능 테스트
+  try {
+    const testRes = await fetch(`${ollamaUrl}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(30000),
+      body: JSON.stringify({
+        model,
+        prompt: 'Translate to Korean. Return ONLY JSON {"title_ko":"..."} Input: "MICE industry growth accelerates in Asia"',
+        stream: false,
+        format: 'json',
+        options: { temperature: 0.1, num_predict: 100 },
+      }),
+    });
+    const testData = await testRes.json();
+    const parsed = JSON.parse(testData.response || '{}');
+    result.steps.push({ step: 'translation_test', status: 'ok', result: parsed });
+    return jsonResponse({ ...result, status: 'ok', message: 'Ollama is working correctly' });
+  } catch (err) {
+    result.steps.push({ step: 'translation_test', status: 'error', error: err.message });
+    return jsonResponse({ ...result, status: 'error', message: 'Translation test failed: ' + err.message });
+  }
 }

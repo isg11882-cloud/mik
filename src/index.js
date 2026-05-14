@@ -122,7 +122,7 @@ export async function processAIQueue(env, limit = 2) {
     return { status: 'error', message: 'No AI service configured' };
   }
 
-  const query = `SELECT * FROM articles WHERE (insight = '' OR insight IS NULL) ORDER BY created_at DESC LIMIT ?`;
+  const query = `SELECT * FROM articles WHERE (insight = '' OR insight IS NULL OR insight LIKE 'AI 분석%' OR insight LIKE 'pending%') ORDER BY created_at DESC LIMIT ?`;
   const debugLogs = [`Executing query: ${query} with limit ${limit}`];
 
   const pending = await env.DB.prepare(query).bind(limit).all();
@@ -240,7 +240,7 @@ async function storeArticle(article, env) {
  * Store a raw article without AI processing.
  */
 async function storeArticleRaw(item, env) {
-  const defaultInsight = 'AI 분석 대기 중입니다.';
+  const defaultInsight = '';
   await env.DB.prepare(`
     INSERT OR IGNORE INTO articles 
     (guid, title, title_ko, link, pub_date, source, category, cat_class, article_type, author, summary_json, insight, content_en, content_ko)
