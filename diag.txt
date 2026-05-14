@@ -1,5 +1,5 @@
-=== RUN 53 SHA=22282fdd8a7a5dc47e3f811717da5edf6f2b0ffa ===
-deploy_url=https://9c9981f1.mik-dashboard.pages.dev
+=== RUN 55 SHA=22282fdd8a7a5dc47e3f811717da5edf6f2b0ffa ===
+deploy_url=https://8b5ade0e.mik-dashboard.pages.dev
 --- WORKER LOG ---
 
  ⛅️ wrangler 4.90.1
@@ -12,11 +12,11 @@ env.AI                               AI
 env.ENVIRONMENT ("production")       Environment Variable      
 env.OLLAMA_MODEL ("qwen2.5:7b")      Environment Variable      
 
-Uploaded mik-worker (2.13 sec)
-Deployed mik-worker triggers (0.73 sec)
+Uploaded mik-worker (2.58 sec)
+Deployed mik-worker triggers (1.38 sec)
   https://mik-worker.isg11882.workers.dev
   schedule: 0 * * * *
-Current Version ID: 396c6bf6-d6af-440d-ab2e-e975bb411857
+Current Version ID: 81202f9c-8c70-4da1-8d52-a372b95f4d12
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 
@@ -29,7 +29,7 @@ prod_version: MIK v2.4 — nuclear 2026-05-14 -->
 prod_size: 62693
 
 === Worker API (articles) ===
-worker_raw: {"articles":[{"id":397,"source":"Event Marketer","cat":"일반","catClass":"tag-convention","type":"뉴스","time":"2시간 전","views":0,"title":"Eight Strategies for Reducing Food Waste in Trade Shows and Events","titleKo":"Eight Strategies for Reducing Food Waste in Trade Shows and Events","url"
+worker_raw: {"articles":[{"id":397,"source":"Event Marketer","cat":"일반","catClass":"tag-convention","type":"뉴스","time":"3시간 전","views":0,"title":"Eight Strategies for Reducing Food Waste in Trade Shows and Events","titleKo":"Eight Strategies for Reducing Food Waste in Trade Shows and Events","url"
 worker_article_count: 2
 
  ⛅️ wrangler 4.90.1
@@ -42,7 +42,7 @@ worker_article_count: 2
 
 
 Uploading... (2/2)
-✨ Success! Uploaded 0 files (2 already uploaded) (0.29 sec)
+✨ Success! Uploaded 0 files (2 already uploaded) (0.38 sec)
 
 🌎 Deploying...
-✨ Deployment complete! Take a peek over at https://9c9981f1.mik-dashboard.pages.dev
+✨ Deployment complete! Take a peek over at https://8b5ade0e.mik-dashboard.pages.dev
