@@ -42,6 +42,6 @@ jobs:
           cp MIK_MICE_Insight_Korea.html dist/index.html
           npx wrangler pages deploy dist \
             --project-name mik-dashboard \
-            --branch master \
+            --branch main \
             --commit-dirty=true \
             2>&1 | tee /tmp/pages-deploy.log
