@@ -1411,7 +1411,7 @@ async function fetchArticles(params = {}) {
       type: a.type || a.article_type || '분석',
       time: a.time || formatTime(a.pub_date||a.created_at), views: a.views||0,
       title: a.title||'', title_ko: a.titleKo||a.title_ko||a.title||'',
-      url: a.url||a.link||'#', content_ko: a.koText||a.content_ko||'',
+      url: a.url||a.link||'#', content_ko: a.koText||a.content_ko||'', enText: a.enText||'',
       insight: a.insight||'',
       summary_json: (()=>{ if(Array.isArray(a.summaryPoints))return a.summaryPoints; try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
     }));
@@ -1467,9 +1467,10 @@ function renderNewsList(articles) {
   }
   grid.innerHTML = articles.map(a => {
     const title = a.title_ko || a.title || '제목 없음';
-    const badge = a.insight ? '<span class="news-ai-badge">AI분석</span>' :
-                  a.content_ko ? '<span class="news-trans-badge">번역완료</span>' :
-                  '<span class="news-pending-badge">번역대기</span>';
+    const PEND=/번역 대기|번역 처리 중|대기 중/i;
+    const badge = (a.insight && a.insight.length > 5 && a.insight !== 'pending') ? '<span class="news-ai-badge">AI분석<' + '/span>' :
+                  (a.content_ko && !PEND.test(a.content_ko) && a.content_ko.length > 30) ? '<span class="news-trans-badge">번역완료<' + '/span>' :
+                  '<span class="news-pending-badge">번역대기<' + '/span>';
     return '<div class="news-item" data-id="' + a.id + '" onclick="showArticle(' + a.id + ')">' +
       '<div class="news-item-header"><span class="news-tag ' + (a.catClass||'tag-convention') + '">' + (a.cat||'') + '<' + '/span>' +
       '<span class="news-type">' + (a.type||'') + '<' + '/span><span class="news-time">' + (a.time||'') + '<' + '/span><' + '/div>' +
@@ -1504,9 +1505,15 @@ function buildDetailHTML(a) {
   if (a.insight) h += '<div style="background:#0d1f0d;border:1px solid #238636;border-radius:8px;padding:16px;margin-bottom:16px;">' +
     '<div style="font-size:12px;color:#3fb950;font-weight:600;margin-bottom:8px;">💡 AI MICE 인사이트<' + '/div>' +
     '<div style="font-size:14px;color:#c9d1d9;line-height:1.6;">' + a.insight + '<' + '/div><' + '/div>';
-  h += a.content_ko ?
-    '<div style="font-size:14px;color:#c9d1d9;line-height:1.8;">' + a.content_ko + '<' + '/div>' :
-    '<div style="color:#8b949e;font-size:13px;text-align:center;padding:24px;background:#161b22;border-radius:8px;">⏳ AI 번역 처리 중입니다. 잠시 후 확인해 주세요.<' + '/div>';
+  const PEND2=/번역 대기|번역 처리 중|대기 중/i;
+  const hasRealKo = a.content_ko && !PEND2.test(a.content_ko) && a.content_ko.length > 30;
+  if (hasRealKo) {
+    h += '<div style="font-size:14px;color:#c9d1d9;line-height:1.8;">' + a.content_ko + '<' + '/div>';
+  } else if (a.enText && a.enText.length > 30) {
+    h += '<div style="border-left:3px solid #30363d;padding:4px 16px;"><div style="font-size:11px;color:#6e7681;margin-bottom:8px;">📄 원문 (AI 번역 준비 중)</div><div style="font-size:13px;color:#8b949e;line-height:1.7;">' + a.enText + '<' + '/div><' + '/div>';
+  } else {
+    h += '<div style="color:#6e7681;font-size:13px;padding:12px 0;">원문 보기 버튼을 클릭해 기사 전문을 확인하세요.</div>';
+  }
   return {title, h};
 }
 
