@@ -1,5 +1,5 @@
-=== RUN 56 SHA=000b63622d4e1fe38ea7ac927dcd716f119d744a ===
-deploy_url=https://7787a84d.mik-dashboard.pages.dev
+=== RUN 57 SHA=0b2c68fcbd83c5029963c18db1183a945a876e38 ===
+deploy_url=https://6d9ff29c.mik-dashboard.pages.dev
 --- WORKER LOG ---
 
  ⛅️ wrangler 4.90.1
@@ -12,11 +12,11 @@ env.AI                               AI
 env.ENVIRONMENT ("production")       Environment Variable      
 env.OLLAMA_MODEL ("qwen2.5:7b")      Environment Variable      
 
-Uploaded mik-worker (2.96 sec)
-Deployed mik-worker triggers (0.66 sec)
+Uploaded mik-worker (2.39 sec)
+Deployed mik-worker triggers (0.80 sec)
   https://mik-worker.isg11882.workers.dev
   schedule: 0 * * * *
-Current Version ID: 82662138-4426-4dde-a8e8-6b4f33866da3
+Current Version ID: 0e94ce2c-a69d-4c9f-913a-d3dfbf09d190
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 
@@ -26,10 +26,10 @@ Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more
 === Waiting 10s for CDN propagation ===
 === PROD URL (mik-dashboard.pages.dev) ===
 prod_version: MIK v2.4 — nuclear 2026-05-14 -->
-prod_size: 62856
+prod_size: 62860
 
 === Worker API (articles) ===
-worker_raw: {"articles":[{"id":397,"source":"Event Marketer","cat":"일반","catClass":"tag-convention","type":"뉴스","time":"3시간 전","views":0,"title":"Eight Strategies for Reducing Food Waste in Trade Shows and Events","titleKo":"Eight Strategies for Reducing Food Waste in Trade Shows and Events","url"
+worker_raw: {"articles":[{"id":399,"source":"Exhibition World","cat":"일반","catClass":"tag-convention","type":"뉴스","time":"1시간 전","views":0,"title":"CPHI &#038; PMEC India 2026 expand to two venues in Delhi-NCR","titleKo":"CPHI &#038; PMEC India 2026 expand to two venues in Delhi-NCR","url":"https:
 worker_article_count: 2
 
  ⛅️ wrangler 4.90.1
@@ -41,8 +41,9 @@ worker_article_count: 2
   Ignoring configuration file for now, and proceeding with project deploy.
 
 
+Uploading... (1/2)
 Uploading... (2/2)
-✨ Success! Uploaded 0 files (2 already uploaded) (0.40 sec)
+✨ Success! Uploaded 1 files (1 already uploaded) (0.99 sec)
 
 🌎 Deploying...
-✨ Deployment complete! Take a peek over at https://7787a84d.mik-dashboard.pages.dev
+✨ Deployment complete! Take a peek over at https://6d9ff29c.mik-dashboard.pages.dev
