@@ -1224,7 +1224,7 @@
       <button class="user-avatar" id="headerUserBtn" style="display:none" onclick="openAuthModal('login')" title="내 계정"></button>
     </div><!-- end list-header-top -->
     <div class="source-tabs" id="sourceTabs" style="padding: 0 16px 12px;">
-      <div class="source-tab active" onclick="filterSource('all', this)">전체</div>
+      <div class="source-tab active" onclick="filterSource(\'all\', this)">전체</div>
     </div>
   </div>
 
@@ -1453,7 +1453,7 @@ function renderSourceTabs(articles) {
     sources.map(s => {
       // Shorten long source names for display
       const label = s.replace(' Meetings','').replace(' News','').replace(' Blog','').replace(' Index','');
-      return '<div class="source-tab" onclick="filterSource('' + s + '', this)">' + label + '<' + '/div>';
+      return '<div class="source-tab" onclick="filterSource(\'' + s + '\', this)">' + label + '<' + '/div>';
     }).join('');
 }
 
