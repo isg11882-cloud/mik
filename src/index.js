@@ -122,7 +122,7 @@ export async function processAIQueue(env, limit = 2) {
     return { status: 'error', message: 'No AI service configured' };
   }
 
-  const query = `SELECT * FROM articles WHERE insight = '' OR insight IS NULL OR insight LIKE '%대기%' ORDER BY created_at DESC LIMIT ?`;
+  const query = `SELECT * FROM articles WHERE (insight = '' OR insight IS NULL) ORDER BY created_at DESC LIMIT ?`;
   const debugLogs = [`Executing query: ${query} with limit ${limit}`];
 
   const pending = await env.DB.prepare(query).bind(limit).all();
@@ -259,7 +259,7 @@ async function storeArticleRaw(item, env) {
     JSON.stringify([item.title, `${item.source} 보도`, 'AI 분석 대기 중']),
     defaultInsight,
     item.content || '',
-    item.content_ko || '<p>AI 번역 대기 중입니다.</p>'
+    item.content_ko || ''
   ).run();
 }
 
