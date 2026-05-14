@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- MIK v2.4 — nuclear 2026-05-14 -->
 <html lang="ko">
 <head>
   <!-- Google tag (gtag.js) -->
@@ -1222,14 +1223,8 @@
       <button class="btn-login" id="headerLoginBtn" onclick="openAuthModal('login')">로그인</button>
       <button class="user-avatar" id="headerUserBtn" style="display:none" onclick="openAuthModal('login')" title="내 계정"></button>
     </div><!-- end list-header-top -->
-    <div class="source-tabs" style="padding: 0 16px 12px;">
+    <div class="source-tabs" id="sourceTabs" style="padding: 0 16px 12px;">
       <div class="source-tab active" onclick="filterSource('all', this)">전체</div>
-      <div class="source-tab" onclick="filterSource('PCMA', this)">PCMA</div>
-      <div class="source-tab" onclick="filterSource('Skift', this)">Skift</div>
-      <div class="source-tab" onclick="filterSource('TTG', this)">TTG</div>
-      <div class="source-tab" onclick="filterSource('IBTM', this)">IBTM</div>
-      <div class="source-tab" onclick="filterSource('MPI', this)">MPI</div>
-      <div class="source-tab" onclick="filterSource('ICCA', this)">ICCA</div>
     </div>
   </div>
 
@@ -1246,20 +1241,7 @@
     </select>
   </div>
 
-  <!-- Today's highlights -->
-  <div class="highlights">
-    <div class="highlights-title">
-      🔥 오늘의 주요 인사이트
-      <span style="font-size:11px;font-weight:500;color:#6D28D9;margin-left:4px;">AI 선별</span>
-    </div>
-    <div class="highlight-card" onclick="showArticle(0)">
-      <div class="hc-meta">
-        <span class="tag tag-convention">컨벤션</span>
-        <span style="font-size:11px;color:#94A3B8;">PCMA · 2시간 전</span>
-      </div>
-      🏆 싱가포르 MICE 인센티브 확대… 한국 CVB에 주는 교훈
-    </div>
-  </div>
+
 
   <!-- News feed -->
   <div class="news-list" id="newsList">
@@ -1386,6 +1368,15 @@
 <script>
 // ====== DATA ======
 const WORKER_URL = 'https://mik-worker.isg11882.workers.dev';
+const CAT_LABELS = {
+  'exhibition':'전시', 'convention':'컨벤션', 'incentive':'인센티브',
+  'tech':'테크', 'bio':'바이오', 'policy':'정책', 'general':'일반'
+};
+const CAT_CLASSES = {
+  'exhibition':'tag-exhibition', 'convention':'tag-convention',
+  'incentive':'tag-incentive', 'tech':'tag-tech',
+  'bio':'tag-bio', 'policy':'tag-policy', 'general':'tag-convention'
+};
 let ARTICLES = [];
 let IS_LOADING = false;
 
@@ -1414,8 +1405,10 @@ async function fetchArticles(params = {}) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     ARTICLES = (data.articles || data || []).map(a => ({
-      id: a.id, source: a.source||'', cat: a.category||'general',
-      catClass: a.cat_class||'tag-convention', type: a.article_type||'분석',
+      id: a.id, source: a.source||'',
+      cat: CAT_LABELS[a.category] || a.category || '일반',
+      catClass: CAT_CLASSES[a.category] || a.cat_class || 'tag-convention',
+      type: a.article_type||'분석',
       time: formatTime(a.pub_date||a.created_at), views: a.views||0,
       title: a.title||'', title_ko: a.title_ko||a.title||'',
       url: a.link||'#', content_ko: a.content_ko||'',
@@ -1423,6 +1416,7 @@ async function fetchArticles(params = {}) {
       summary_json: (()=>{ try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
     }));
     renderNewsList(ARTICLES);
+    renderSourceTabs(ARTICLES);
     if (ARTICLES.length > 0) showArticle(ARTICLES[0].id);
   } catch(e) {
     console.error('[MIK] API error:', e);
@@ -1431,25 +1425,9 @@ async function fetchArticles(params = {}) {
 }
 
 const KEYWORDS_DEFAULT = ['Bio', 'CVB', 'Sustainability', 'AI Event', 'Korea MICE', 'PCO'];
-const MEDIA_SOURCES = [
-  { name: 'PCMA', active: true, count: 12 },
-  { name: 'Skift Meetings', active: true, count: 8 },
-  { name: 'TTG MICE', active: true, count: 6 },
-  { name: 'IBTM World', active: true, count: 4 },
-  { name: 'MPI Foundation', active: true, count: 9 },
-  { name: 'ICCA', active: true, count: 5 },
-  { name: 'C&IT Magazine', active: true, count: 3 },
-  { name: 'Meetings & Conventions', active: false, count: 0 },
-  { name: 'Event Manager Blog', active: true, count: 7 },
-  { name: 'Northstar Meetings', active: false, count: 0 },
-];
+const MEDIA_SOURCES = []; // 동적으로 API에서 로드
 
-const ALERTS = [
-  { icon: '🧬', keyword: 'Bio', title: 'BIO North America 2026, 서울 바이오 업계 최대 파견단 구성 추진', time: '18분 전' },
-  { icon: '🤖', keyword: 'AI Event', title: 'EventMind 한국 파트너십 협의 시작, 서울 오피스 Q3 오픈 예정', time: '1시간 전' },
-  { icon: '🌱', keyword: 'Sustainability', title: 'UNFCCC, 2028 COP 개최지 후보에 부산 포함 – 공식 발표 임박', time: '2시간 전' },
-  { icon: '🏢', keyword: 'CVB', title: '인천관광공사 CVB 기능 강화… 국제회의 유치 전담팀 신설', time: '3시간 전' },
-];
+const ALERTS = []; // 알림은 키워드 설정 후 동적으로 수신
 
 // ====== STATE ======
 let currentSource = 'all';
@@ -1466,6 +1444,19 @@ function init() {
 }
 
 // ====== RENDER NEWS LIST ======
+function renderSourceTabs(articles) {
+  const tabs = document.getElementById('sourceTabs');
+  if (!tabs) return;
+  // Collect unique sources from loaded articles
+  const sources = [...new Set((articles || ARTICLES).map(a => a.source).filter(Boolean))].sort();
+  tabs.innerHTML = '<div class="source-tab active" onclick="filterSource('all', this)">전체<' + '/div>' +
+    sources.map(s => {
+      // Shorten long source names for display
+      const label = s.replace(' Meetings','').replace(' News','').replace(' Blog','').replace(' Index','');
+      return '<div class="source-tab" onclick="filterSource('' + s + '', this)">' + label + '<' + '/div>';
+    }).join('');
+}
+
 function renderNewsList(articles) {
   const grid = document.getElementById('newsGrid');
   if (!grid) return;
