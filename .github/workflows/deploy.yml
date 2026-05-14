@@ -63,6 +63,28 @@ jobs:
             exit "${MAIN_EXIT}"
           fi
 
+
+      - name: Production Smoke Test
+        env:
+          DEPLOY_URL: ${{ env.DEPLOY_URL }}
+        run: |
+          echo '=== Waiting 10s for CDN propagation ===' | tee /tmp/prod-check.log
+          sleep 10
+
+          echo '=== PROD URL (mik-dashboard.pages.dev) ===' | tee -a /tmp/prod-check.log
+          PROD_HTML=$(curl -s --max-time 15 https://mik-dashboard.pages.dev/ || echo 'CURL_FAILED')
+          PROD_VER=$(echo "$PROD_HTML" | grep -oP 'MIK v[0-9.]+[^<"]*' | head -1 || echo 'not_found')
+          PROD_SIZE=$(echo -n "$PROD_HTML" | wc -c)
+          echo "prod_version: $PROD_VER" | tee -a /tmp/prod-check.log
+          echo "prod_size: $PROD_SIZE" | tee -a /tmp/prod-check.log
+
+          echo '' | tee -a /tmp/prod-check.log
+          echo '=== Worker API (articles) ===' | tee -a /tmp/prod-check.log
+          WORKER_RESP=$(curl -s --max-time 15 "https://mik-worker.isg11882.workers.dev/api/articles?limit=2" || echo 'CURL_FAILED')
+          echo "worker_raw: $(echo "$WORKER_RESP" | head -c 300)" | tee -a /tmp/prod-check.log
+          ARTICLE_COUNT=$(echo "$WORKER_RESP" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get("articles",[])))' 2>/dev/null || echo 'parse_error')
+          echo "worker_article_count: $ARTICLE_COUNT" | tee -a /tmp/prod-check.log
+
       - name: Push diagnostics to deploy-output
         if: always()
         env:
@@ -79,6 +101,10 @@ jobs:
             cat /tmp/worker.log 2>/dev/null || echo "missing"
             echo ""
             echo "--- PAGES MAIN LOG ---"
+            echo ""
+            echo "--- PROD CHECK ---"
+            cat /tmp/prod-check.log 2>/dev/null || echo "missing"
+
             cat /tmp/pages-main.log 2>/dev/null || echo "missing"
           } > /tmp/diag.txt
           B64=$(base64 -w 0 /tmp/diag.txt)
