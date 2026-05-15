@@ -370,7 +370,7 @@
 
   .news-item-title {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.45;
     color: var(--text-primary);
     margin-bottom: 6px;
@@ -379,7 +379,19 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .news-item.active .news-item-title { color: var(--primary-dark); font-weight: 600; }
+  .news-item.active .news-item-title { color: var(--primary-dark); font-weight: 700; }
+  /* renderNewsList uses .news-title — mirror same style */
+  .news-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 
   .news-item-footer {
     display: flex;
