@@ -13,16 +13,13 @@ const DEFAULT_MODEL = 'qwen2.5:7b';
 const FETCH_TIMEOUT_MS = 25000;
 
 const CATEGORY_MAP = {
-  'convention':     { ko: '컨벤션·회의',   catClass: 'tag-convention' },
-  'exhibition':     { ko: '전시·박람회',   catClass: 'tag-exhibition' },
-  'incentive':      { ko: '인센티브·여행', catClass: 'tag-incentive' },
-  'tech':           { ko: '기술·플랫폼',   catClass: 'tag-tech' },
-  'sustainability': { ko: '지속가능성',    catClass: 'tag-sustainability' },
-  'market':         { ko: '시장·통계',     catClass: 'tag-market' },
-  'policy':         { ko: '정책·규제',     catClass: 'tag-policy' },
-  // 하위 호환
-  'bio':            { ko: '지속가능성',    catClass: 'tag-sustainability' },
-  'general':        { ko: '시장·통계',     catClass: 'tag-market' },
+  'exhibition': { ko: '전시', catClass: 'tag-exhibition' },
+  'convention': { ko: '컨벤션', catClass: 'tag-convention' },
+  'incentive': { ko: '인센티브', catClass: 'tag-incentive' },
+  'tech': { ko: '테크', catClass: 'tag-tech' },
+  'bio': { ko: '바이오', catClass: 'tag-bio' },
+  'policy': { ko: '정책', catClass: 'tag-policy' },
+  'general': { ko: '일반', catClass: 'tag-convention' },
 };
 
 // ─────────────────────────────────────────────
@@ -79,10 +76,7 @@ async function callCWAI(article, env) {
 {"category":"convention","article_type":"분석","title_ko":"Korean title here","summary_points":["point1","point2","point3"],"insight":"2-sentence strategic insight for Korean MICE professionals"}
 
 Rules:
-- category must be exactly one of: convention exhibition incentive tech sustainability market policy
-  (convention=meetings/congress, exhibition=tradeshows/expos, incentive=incentive travel,
-   tech=event technology/platforms, sustainability=ESG/green meetings,
-   market=industry stats/research/trends, policy=regulations/government)
+- category must be exactly one of: exhibition convention incentive tech bio policy general
 - title_ko: translate the title to Korean
 - summary_points: 3 key facts in Korean
 - insight: 2 sentences in Korean for Korean PCO/CVB/venue managers
@@ -255,7 +249,7 @@ function buildResult(article, parsed, source) {
     id: article.id || null,
     guid: article.guid,
     title: article.title,
-    category: catKey,          // English key for DB (convention|exhibition|incentive|tech|sustainability|market|policy)
+    category: catKey,          // English key for DB (exhibition|convention|incentive|tech|bio|policy|general)
     catClass: catInfo.catClass,
     articleType: parsed.article_type || '분석',
     titleKo: parsed.title_ko || article.title,
@@ -278,9 +272,7 @@ function buildOllamaPrompt(article) {
     '[ARTICLE TITLE]: ' + (article.title || '') + '\n' +
     '[CONTENT]:\n' + (article.content || article.title || '') + '\n\n' +
     '{\n' +
-    '  "category": "convention|exhibition|incentive|tech|sustainability|market|policy",\n' +
-    '  // convention=국제회의, exhibition=전시박람회, incentive=인센티브여행,\n' +
-    '  // tech=이벤트기술, sustainability=친환경ESG, market=시장통계리서치, policy=정책규제\n' +
+    '  "category": "exhibition|convention|incentive|tech|bio|policy|general",\n' +
     '  "article_type": "속보|분석|리포트",\n' +
     '  "title_ko": "...",\n' +
     '  "summary_points": ["핵심 사실", "구체적 수치/인용", "한국 MICE 시장 영향"],\n' +
