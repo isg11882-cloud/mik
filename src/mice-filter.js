@@ -94,6 +94,11 @@ const BLOCK_TERMS = [
   'political election', 'election result',
   'real estate', 'property market',
   'personal finance', 'mortgage', 'insurance policy',
+  // 정치/외교 뉴스 (MICE 관련 없는 일반 뉴스)
+  'white house summit', 'diplomatic talks', 'senate vote', 'parliament debate',
+  'prime minister visit', 'presidential', 'election campaign', 'military operation',
+  'drug war', 'fugitive', 'prison sentence', 'murder', 'typhoon', 'flood damage',
+  'dinosaur', 'wildlife', 'species discovery',
 ];
 
 /**
@@ -123,7 +128,7 @@ export function calcMiceScore(title, content) {
  *   3 = 균형 (권장값 — 핵심어 1개 또는 산업어 2개 이상)
  *   5 = 엄격 (핵심어 2개 또는 핵심+산업어 조합 필요)
  */
-export const MIN_MICE_SCORE = 3;
+export const MIN_MICE_SCORE = 5;
 
 /**
  * 기사가 MICE 기준을 통과하는지 여부.

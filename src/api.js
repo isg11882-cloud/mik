@@ -109,6 +109,51 @@ export async function handleApiRequest(request, env) {
       return corsResponse(jsonResponse({ status: 'ok', updated, total: articles.length }));
     }
 
+    // GET /api/stats — 카테고리별/날짜별 기사 통계 (리포트 패널용)
+    if (path === '/api/stats' && request.method === 'GET') {
+      const [catStats, dateStats, sourceStats, totalResult] = await Promise.all([
+        env.DB.prepare(`
+          SELECT category, COUNT(*) as count
+          FROM articles
+          WHERE insight != '' AND insight != 'skip-non-mice' AND insight IS NOT NULL
+          GROUP BY category ORDER BY count DESC
+        `).all(),
+        env.DB.prepare(`
+          SELECT DATE(created_at) as date, COUNT(*) as count
+          FROM articles
+          WHERE created_at >= datetime('now', '-14 days')
+          GROUP BY DATE(created_at) ORDER BY date ASC
+        `).all(),
+        env.DB.prepare(`
+          SELECT source, COUNT(*) as count
+          FROM articles
+          WHERE insight != '' AND insight != 'skip-non-mice'
+          GROUP BY source ORDER BY count DESC LIMIT 10
+        `).all(),
+        env.DB.prepare(`SELECT COUNT(*) as total FROM articles WHERE insight != 'skip-non-mice'`).first(),
+      ]);
+      return corsResponse(jsonResponse({
+        byCategory: catStats.results || [],
+        byDate: dateStats.results || [],
+        bySource: sourceStats.results || [],
+        total: totalResult?.total || 0,
+      }));
+    }
+
+    // GET /api/sources/status — RSS 소스별 최근 수집 현황
+    if (path === '/api/sources/status' && request.method === 'GET') {
+      const result = await env.DB.prepare(`
+        SELECT source,
+               COUNT(*) as total,
+               MAX(created_at) as last_seen,
+               SUM(CASE WHEN insight != '' AND insight IS NOT NULL AND insight != 'skip-non-mice' THEN 1 ELSE 0 END) as analyzed
+        FROM articles
+        GROUP BY source
+        ORDER BY total DESC
+      `).all();
+      return corsResponse(jsonResponse({ sources: result.results || [] }));
+    }
+
     // GET /api/process-ai — manually trigger AI queue from browser
     if (path === '/api/process-ai' && request.method === 'GET') {
       console.log('[API] Processing AI Queue manually (GET)...');
