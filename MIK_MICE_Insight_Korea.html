@@ -65,34 +65,103 @@
     --cat-policy-text: #92400E;
   }
 
-  /* ── 다크 모드 ── */
+  /* ── 다크 모드 — 따뜻한 중성 계열 ── */
   body.dark-mode {
-    --bg: #0D1117;
-    --surface: #161B22;
-    --border: #30363D;
-    --text-primary: #E6EDF3;
-    --text-secondary: #8B949E;
-    --text-muted: #6E7681;
-    --primary-light: #1C2B4A;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
-    --shadow: 0 4px 16px rgba(0,0,0,.4);
-    --cat-exhibition: #0D2137; --cat-exhibition-text: #58A6FF;
-    --cat-convention: #0D1F0D; --cat-convention-text: #3FB950;
-    --cat-incentive: #2D1B00; --cat-incentive-text: #D29922;
-    --cat-tech: #1A1140; --cat-tech-text: #BC8CFF;
-    --cat-bio: #2D0F1D; --cat-bio-text: #F778B5;
-    --cat-policy: #2D2200; --cat-policy-text: #D29922;
+    --bg:             #111215;
+    --surface:        #1C1E25;
+    --border:         #2A2D37;
+    --text-primary:   #E8E9EE;
+    --text-secondary: #8A8FA8;
+    --text-muted:     #5A5F74;
+    --primary:        #4F86F7;
+    --primary-light:  #1E2640;
+    --primary-dark:   #2563EB;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,.35);
+    --shadow:    0 4px 20px rgba(0,0,0,.45);
+
+    /* 카테고리 태그 — 차분한 파스텔톤 */
+    --cat-exhibition:      #1A2A40; --cat-exhibition-text:  #7DB8FF;
+    --cat-convention:      #172B1E; --cat-convention-text:  #6DDDA0;
+    --cat-incentive:       #2B1E10; --cat-incentive-text:   #FFBA78;
+    --cat-tech:            #201830; --cat-tech-text:        #C0A8FF;
+    --cat-bio:             #2B1222; --cat-bio-text:         #FF9FCC;
+    --cat-policy:          #282012; --cat-policy-text:      #FFD080;
   }
-  body.dark-mode .ai-summary-card { background: #1C2B3A; border-color: #2D4A6A; }
-  body.dark-mode .ai-insight-box  { background: #0D1F0D; border-color: #238636; }
-  body.dark-mode .ko-pending-wrap  { background: #161B22; border-color: #30363D; }
-  body.dark-mode .search-box { background: #161B22; border-color: #30363D; }
-  body.dark-mode .search-box input { color: var(--text-primary); }
-  body.dark-mode .mobile-back-bar { background: #161B22; border-color: #30363D; }
-  body.dark-mode .news-item:active { background: #1C2B4A!important; }
-  body.dark-mode .news-pending-badge{background:#21262D;color:#8B949E;}
-  body.dark-mode .news-ai-badge{background:#0D1F0D;color:#3FB950;}
-  body.dark-mode .news-trans-badge{background:#1C2B4A;color:#58A6FF;}
+
+  /* 구성 요소별 다크 재정의 */
+  body.dark-mode .ai-summary-card {
+    /* 그라디언트를 유지하되 어둡게 */
+    background: linear-gradient(135deg, #162348 0%, #1A306A 60%, #153050 100%);
+    box-shadow: 0 4px 24px rgba(0,0,0,.5);
+  }
+  body.dark-mode .ai-insight-box {
+    /* 카드 내부 — 반투명 어두운 오버레이 */
+    background: rgba(0,0,0,.28);
+    border-color: rgba(255,255,255,.12);
+    color: #CBD8F5;
+  }
+  body.dark-mode .ko-pending-wrap {
+    background: #1C1E25;
+    border-color: #2A2D37;
+  }
+  body.dark-mode .search-box {
+    background: #1C1E25;
+    border-color: #2A2D37;
+  }
+  body.dark-mode .search-box input { color: var(--text-primary); background: transparent; }
+  body.dark-mode .mobile-back-bar  { background: #1C1E25; border-color: #2A2D37; }
+  body.dark-mode .news-item:hover  { background: #222430 !important; }
+  body.dark-mode .news-item.active { background: #1E2640 !important; border-left-color: #4F86F7; }
+  body.dark-mode .news-item:active { background: #1E2640 !important; }
+
+  /* 배지 */
+  body.dark-mode .news-pending-badge { background: #252830; color: #6A6F88; }
+  body.dark-mode .news-ai-badge      { background: #172B1E; color: #6DDDA0; }
+  body.dark-mode .news-trans-badge   { background: #1A2A40; color: #7DB8FF; }
+
+  /* 헤더 · 패널 구분선 */
+  body.dark-mode .top-header       { border-bottom-color: #2A2D37; }
+  body.dark-mode .sidebar          { border-right-color:  #2A2D37; }
+  body.dark-mode .news-list-panel  { border-right-color:  #2A2D37; }
+
+  /* 디테일 헤더 — white 하드코딩 제거 */
+  body.dark-mode .detail-header    { background: #1C1E25; border-bottom-color: #2A2D37; }
+  body.dark-mode .action-btn       { background: #252830; border-color: #2A2D37; color: #8A8FA8; }
+  body.dark-mode .action-btn:hover { background: #2E3245; border-color: #4F86F7; color: #7DB8FF; }
+  body.dark-mode .action-btn.primary-btn { background: #2563EB; border-color: #2563EB; color: #fff; }
+  body.dark-mode .action-btn.primary-btn:hover { background: #1E40AF; }
+
+  /* 뷰 토글 버튼 */
+  body.dark-mode .view-toggle { background: #111215; border-color: #2A2D37; }
+  body.dark-mode .view-toggle-btn.active { background: #252830; color: #7DB8FF; box-shadow: none; }
+
+  /* 원문·번역 패널 */
+  body.dark-mode .dual-pane-en { background: #16181F; border-color: #2A2D37; }
+  body.dark-mode .dual-pane-ko { background: #141C18; border-color: #253520; }
+  body.dark-mode .dual-view-title { color: #8A8FA8; border-bottom-color: #2A2D37; }
+  body.dark-mode .dual-lang-label { background: #252830; color: #8A8FA8; border-color: #2A2D37; }
+
+  /* 소스 탭 */
+  body.dark-mode .source-tab        { color: #5A5F74; }
+  body.dark-mode .source-tab.active { color: #4F86F7; border-bottom-color: #4F86F7; }
+  body.dark-mode .source-tabs-wrap  { border-bottom-color: #2A2D37; }
+
+  /* 기사 메타 */
+  body.dark-mode .article-meta-wrap { border-bottom-color: #2A2D37; }
+
+  /* 버튼류 */
+  body.dark-mode .btn-outline       { border-color: #2A2D37; color: #5A5F74; }
+  body.dark-mode .btn-outline:hover { background: #222430; color: #8A8FA8; }
+
+  /* 알림 패널 */
+  body.dark-mode .alert-panel       { background: #1C1E25; border-left-color: #2A2D37; }
+  body.dark-mode .alert-noti-item   { border-bottom-color: #2A2D37; }
+  body.dark-mode .alert-input       { background: #252830; border-color: #2A2D37; color: #E8E9EE; }
+
+  /* 스크롤바 */
+  body.dark-mode ::-webkit-scrollbar-track { background: #111215; }
+  body.dark-mode ::-webkit-scrollbar-thumb { background: #2E3140; border-radius: 4px; }
+  body.dark-mode ::-webkit-scrollbar-thumb:hover { background: #3A3D52; }
 
   body {
     font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif;
