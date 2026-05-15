@@ -143,7 +143,7 @@ export async function processAIQueue(env, limit = 2) {
     return { status: 'error', message: 'No AI service configured' };
   }
 
-  const query = `SELECT * FROM articles WHERE (insight = '' OR insight IS NULL OR insight LIKE 'AI 분석%' OR insight LIKE 'pending%') ORDER BY created_at DESC LIMIT ?`;
+  const query = `SELECT * FROM articles WHERE (insight = '' OR insight IS NULL OR insight LIKE 'AI 분석%' OR insight LIKE 'pending%') AND insight != 'skip-non-mice' ORDER BY created_at DESC LIMIT ?`;
   const debugLogs = [`Executing query: ${query} with limit ${limit}`];
 
   const pending = await env.DB.prepare(query).bind(limit).all();

@@ -68,6 +68,7 @@ export async function handleApiRequest(request, env) {
         SELECT id, title, content_en, source, link
         FROM articles
         WHERE (insight = '' OR insight IS NULL OR insight LIKE 'AI 분석%' OR insight = 'pending')
+          AND insight != 'skip-non-mice'
         ORDER BY created_at DESC LIMIT ?
       `).bind(limit).all();
       return corsResponse(jsonResponse({ articles: result.results || [], count: (result.results||[]).length }));
