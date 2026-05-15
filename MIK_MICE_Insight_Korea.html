@@ -726,6 +726,34 @@
     gap: 16px;
   }
 
+  /* 모바일: 1열 세로 스택 */
+  @media (max-width: 768px) {
+    .dual-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    /* 번역본 항상 위 */
+    #koCol { order: 1; }
+    #enCol { order: 2; }
+
+    .article-col-body {
+      max-height: none !important;  /* 모바일: 전체 높이 표시 */
+    }
+
+    .dual-view-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .view-toggle {
+      width: 100%;
+    }
+    .view-toggle-btn {
+      flex: 1;
+      text-align: center;
+    }
+  }
+
   .article-col {
     background: white;
     border-radius: 12px;
@@ -1663,15 +1691,24 @@
 
       <!-- Dual View -->
       <div class="dual-view-header">
-        <div class="dual-view-title">📄 원문 · 번역 비교 보기</div>
+        <div class="dual-view-title">📄 번역 · 원문 보기</div>
         <div class="view-toggle">
           <button class="view-toggle-btn active" onclick="setView('dual', this)">듀얼</button>
-          <button class="view-toggle-btn" onclick="setView('en', this)">영문</button>
-          <button class="view-toggle-btn" onclick="setView('ko', this)">한국어</button>
+          <button class="view-toggle-btn" onclick="setView('ko', this)">번역</button>
+          <button class="view-toggle-btn" onclick="setView('en', this)">원문</button>
         </div>
       </div>
 
       <div class="dual-grid" id="dualGrid">
+        <!-- Korean column (먼저 표시) -->
+        <div class="article-col" id="koCol">
+          <div class="article-col-header">
+            <span class="lang-badge lang-ko">🇰🇷 KO</span>
+            AI 번역 (Korean)
+          </div>
+          <div class="article-col-body" id="koContent"></div>
+        </div>
+
         <!-- English column -->
         <div class="article-col" id="enCol">
           <div class="article-col-header">
@@ -1679,15 +1716,6 @@
             원문 (English)
           </div>
           <div class="article-col-body" id="enContent"></div>
-        </div>
-
-        <!-- Korean column -->
-        <div class="article-col" id="koCol">
-          <div class="article-col-header">
-            <span class="lang-badge lang-ko">🇰🇷 KO</span>
-            AI 번역 (Korean)
-          </div>
-          <div class="article-col-body" id="koContent"></div>
         </div>
       </div>
     </div>
@@ -2058,10 +2086,17 @@ function showArticle(id) {
   const bmBtn = document.getElementById('bookmarkBtn');
   if (bmBtn) bmBtn.innerHTML = isBookmarked(a.id) ? '✅ 저장됨' : '🔖 저장';
 
-  // 모바일: History API로 뒤로가기 지원
+  // 모바일: 번역 먼저 보이기 + History API 뒤로가기 지원
   if (window.innerWidth <= 768) {
+    // 번역 버튼 active, 듀얼 해제 → 한국어만 표시
+    const koBtn = document.querySelector('.view-toggle-btn[onclick*="\'ko\'"]');
+    setView('ko', koBtn);
     history.pushState({ articleId: id }, '', '#a' + id);
     document.body.classList.add('mobile-article-open');
+  } else {
+    // 데스크톱: 듀얼 뷰 복원
+    const dualBtn = document.querySelector('.view-toggle-btn[onclick*="\'dual\'"]');
+    setView('dual', dualBtn);
   }
 }
 
@@ -2240,18 +2275,20 @@ function applyFilters() {
 // ====== VIEW TOGGLE ======
 function setView(mode, el) {
   document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
   const enCol = document.getElementById('enCol');
   const koCol = document.getElementById('koCol');
-  const grid = document.getElementById('dualGrid');
+  const grid  = document.getElementById('dualGrid');
+  const isMobile = window.innerWidth <= 768;
 
   if (mode === 'dual') {
-    grid.style.gridTemplateColumns = '1fr 1fr';
+    // 모바일: CSS grid-template-columns 미디어쿼리에 맡김 (인라인 제거)
+    grid.style.gridTemplateColumns = isMobile ? '' : '1fr 1fr';
     enCol.style.display = ''; koCol.style.display = '';
   } else if (mode === 'en') {
     grid.style.gridTemplateColumns = '1fr';
     enCol.style.display = ''; koCol.style.display = 'none';
-  } else {
+  } else { // 'ko'
     grid.style.gridTemplateColumns = '1fr';
     enCol.style.display = 'none'; koCol.style.display = '';
   }
