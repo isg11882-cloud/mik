@@ -346,10 +346,15 @@ function parseRssXml(xml, feed) {
  */
 export async function fetchFullContent(url) {
   try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000); // 8초 타임아웃
+
     const response = await fetch(url, {
       headers: { 'User-Agent': 'MIK-MICE-Insight-Korea/1.0' },
-      cf: { cacheTtl: 3600 }
+      cf: { cacheTtl: 3600 },
+      signal: controller.signal,
     });
+    clearTimeout(timer);
     if (!response.ok) return null;
 
     const html = await response.text();

@@ -85,20 +85,22 @@ const CONTEXT_TERMS = [
 const BLOCK_TERMS = [
   'stock market', 'stock price', 'stock exchange',
   'cryptocurrency', 'bitcoin', 'ethereum', 'nft',
-  'lawsuit', 'court ruling', 'criminal',
+  'court ruling', 'criminal arrest',
   'recipe', 'cooking', 'restaurant review',
-  'sports team', 'nfl', 'nba', 'fifa',
-  'celebrity', 'actress', 'actor', 'pop star',
+  'sports team', 'nfl ', 'nba ', 'fifa ',
+  'celebrity gossip', 'pop star',
   'video game', 'gaming console',
   'weather forecast', 'earthquake', 'hurricane',
   'political election', 'election result',
-  'real estate', 'property market',
-  'personal finance', 'mortgage', 'insurance policy',
-  // 정치/외교 뉴스 (MICE 관련 없는 일반 뉴스)
-  'white house summit', 'diplomatic talks', 'senate vote', 'parliament debate',
-  'prime minister visit', 'presidential', 'election campaign', 'military operation',
-  'drug war', 'fugitive', 'prison sentence', 'murder', 'typhoon', 'flood damage',
-  'dinosaur', 'wildlife', 'species discovery',
+  'real estate listing', 'property market',
+  'personal finance', 'mortgage rate', 'insurance policy',
+  // 정치/외교 뉴스 (MICE 관련 없는 일반 뉴스) — 더 구체적으로 변경
+  'senate vote', 'parliament debate',
+  'presidential election', 'presidential campaign', 'election campaign',
+  'military operation', 'military strike',
+  'drug war', 'fugitive', 'prison sentence', 'murder suspect',
+  'typhoon warning', 'flood damage', 'earthquake damage',
+  'dinosaur', 'wildlife conservation', 'species discovery',
 ];
 
 /**
@@ -128,7 +130,7 @@ export function calcMiceScore(title, content) {
  *   3 = 균형 (권장값 — 핵심어 1개 또는 산업어 2개 이상)
  *   5 = 엄격 (핵심어 2개 또는 핵심+산업어 조합 필요)
  */
-export const MIN_MICE_SCORE = 5;
+export const MIN_MICE_SCORE = 3;
 
 /**
  * 기사가 MICE 기준을 통과하는지 여부.

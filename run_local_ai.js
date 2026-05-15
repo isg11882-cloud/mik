@@ -47,14 +47,14 @@ const MICE_INDUSTRY = [
 ];
 const BLOCK_HARD = [
   'stock market','stock exchange','cryptocurrency','bitcoin',
-  'lawsuit','criminal court','recipe','cooking','nfl ','nba ',
-  'celebrity','pop star','video game','gaming','weather forecast',
-  'earthquake','hurricane','election result','real estate',
-  'personal finance','mortgage','insurance policy',
-  // 완전히 무관한 정치 뉴스
-  'white house summit','diplomatic meeting','senate hearing',
-  'supreme court','parliament vote','myanmar','philippines senate',
-  'fugitive','prison sentence','drug possession',
+  'criminal arrest','criminal court','recipe','cooking','nfl ','nba ',
+  'celebrity gossip','pop star','video game','gaming console','weather forecast',
+  'earthquake','hurricane','political election','election result','real estate listing',
+  'personal finance','mortgage rate','insurance policy',
+  // 완전히 무관한 정치 뉴스 — 구체적으로 변경
+  'senate vote','parliament vote','presidential election','presidential campaign',
+  'supreme court ruling','myanmar coup','prison sentence','drug possession',
+  'military strike','fugitive arrest',
 ];
 
 function isMiceRelevant(title, content) {

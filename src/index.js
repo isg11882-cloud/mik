@@ -101,17 +101,10 @@ export async function fetchAndStoreRawRSS(env) {
       }
       console.log(`[Filter] PASS (score=${preCheck.score}): ${item.title.slice(0, 60)}`);
 
-      // ── 본문 전문 가져오기 ─────────────────────────────────────────
+      // ── 본문 전문 가져오기 (필터 재검사 없음 — 제목 기반 필터 통과 시 저장)
       const fullContent = await fetchFullContent(item.link);
-      if (fullContent) {
+      if (fullContent && fullContent.length > 100) {
         item.content = fullContent;
-        // 본문까지 포함해 재검사 (본문에서 걸러지는 경우 방지)
-        const fullCheck = isMiceRelevant(item.title, fullContent);
-        if (!fullCheck.pass) {
-          console.log(`[Filter] SKIP after full-content (score=${fullCheck.score}): ${item.title.slice(0, 60)}`);
-          filteredCount++;
-          continue;
-        }
       }
 
       // ── 제목 즉시 번역 ─────────────────────────────────────────────
