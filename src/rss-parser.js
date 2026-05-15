@@ -170,24 +170,11 @@ export const RSS_FEEDS = [
     catClass: 'tag-convention',
   },
 
-  // ── 비즈니스 트래블 / 기업 회의 ──────────────────────────────────
+  // ── 비즈니스 이벤트 / 기업 회의 ──────────────────────────────────
+  // ※ MICE 필터가 corporate travel 일반 기사는 자동 차단
   {
     name: 'GBTA Blog',
     url: 'https://www.gbta.org/blog/feed/',
-    defaultCategory: 'convention',
-    catClass: 'tag-convention',
-  },
-  {
-    name: 'Business Travel News',
-    url: 'https://www.businesstravelnews.com/rss/all',
-    defaultCategory: 'convention',
-    catClass: 'tag-convention',
-  },
-
-  // ── 중동 / 아시아태평양 ───────────────────────────────────────────
-  {
-    name: 'Arabian Travel Market',
-    url: 'https://www.arabiantravelmarket.wtm.com/en/news.rss',
     defaultCategory: 'convention',
     catClass: 'tag-convention',
   },
@@ -196,12 +183,6 @@ export const RSS_FEEDS = [
     url: 'https://businessevents.australia.com/feed/',
     defaultCategory: 'incentive',
     catClass: 'tag-incentive',
-  },
-  {
-    name: 'CNA Business Travel',
-    url: 'https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6511',
-    defaultCategory: 'convention',
-    catClass: 'tag-convention',
   },
 
   // ── 지속가능성 (Sustainability) ───────────────────────────────────

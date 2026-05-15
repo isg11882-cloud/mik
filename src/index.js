@@ -8,6 +8,7 @@
 import { fetchAllFeeds, fetchFullContent } from './rss-parser.js';
 import { processArticles, translateTitle } from './ollama.js';
 import { handleApiRequest } from './api.js';
+import { isMiceRelevant } from './mice-filter.js';
 
 /**
  * Translate a title.
@@ -80,30 +81,50 @@ export async function fetchAndStoreRawRSS(env) {
   }
 
   const newItems = await deduplicateItems(feedItems, env);
-  console.log(`[Crawl] ${newItems.length} new items to store as RAW`);
+  console.log(`[Crawl] ${newItems.length} new items after dedup`);
 
   if (newItems.length === 0) {
     return { status: 'no_new', message: 'All items already in DB' };
   }
 
   let storedCount = 0;
+  let filteredCount = 0;
+
   for (const item of newItems) {
-    console.log(`[Crawl] Fetching & Translating: ${item.title}`);
     try {
+      // ── MICE 관련성 필터 ──────────────────────────────────────────
+      const preCheck = isMiceRelevant(item.title, item.content || '');
+      if (!preCheck.pass) {
+        console.log(`[Filter] SKIP (score=${preCheck.score}): ${item.title.slice(0, 60)}`);
+        filteredCount++;
+        continue;
+      }
+      console.log(`[Filter] PASS (score=${preCheck.score}): ${item.title.slice(0, 60)}`);
+
+      // ── 본문 전문 가져오기 ─────────────────────────────────────────
       const fullContent = await fetchFullContent(item.link);
       if (fullContent) {
         item.content = fullContent;
+        // 본문까지 포함해 재검사 (본문에서 걸러지는 경우 방지)
+        const fullCheck = isMiceRelevant(item.title, fullContent);
+        if (!fullCheck.pass) {
+          console.log(`[Filter] SKIP after full-content (score=${fullCheck.score}): ${item.title.slice(0, 60)}`);
+          filteredCount++;
+          continue;
+        }
       }
-      
-      // Free translation for Title right away!
+
+      // ── 제목 즉시 번역 ─────────────────────────────────────────────
       item.title_ko = await translateText(item.title, env);
-      
+
       await storeArticleRaw(item, env);
       storedCount++;
     } catch (e) {
       console.error(`[Crawl] Failed to store raw article ${item.title}:`, e.message);
     }
   }
+
+  console.log(`[Crawl] MICE filter: ${filteredCount} articles blocked, ${storedCount} stored`);
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   console.log(`[Crawl] Raw fetch complete: ${storedCount} articles stored in ${elapsed}s`);
