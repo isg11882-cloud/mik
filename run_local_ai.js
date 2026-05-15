@@ -67,13 +67,16 @@ function isMiceRelevant(title, content) {
 }
 
 const CATEGORY_MAP = {
-  exhibition: 'tag-exhibition',
-  convention:  'tag-convention',
-  incentive:   'tag-incentive',
-  tech:        'tag-tech',
-  bio:         'tag-bio',
-  policy:      'tag-policy',
-  general:     'tag-convention',
+  convention:     'tag-convention',
+  exhibition:     'tag-exhibition',
+  incentive:      'tag-incentive',
+  tech:           'tag-tech',
+  sustainability: 'tag-sustainability',
+  market:         'tag-market',
+  policy:         'tag-policy',
+  // 하위 호환
+  bio:            'tag-sustainability',
+  general:        'tag-market',
 };
 
 // ─────────────────────────────────────────────
@@ -132,10 +135,13 @@ async function analyzeArticle(article) {
   // ── Step 1: 메타 JSON (title_ko, category, summary, insight) ──
   // content_ko 없음 → JSON이 짧아서 잘릴 일이 없음
   const metaPrompt = `You are a MICE industry analyst. Output ONLY this JSON object, nothing else:
-{"category":"general","article_type":"분석","title_ko":"한국어제목","summary_points":["핵심사실1","핵심사실2","핵심사실3"],"insight":"한국PCO/CVB담당자를위한2문장인사이트"}
+{"category":"convention","article_type":"분석","title_ko":"한국어제목","summary_points":["핵심사실1","핵심사실2","핵심사실3"],"insight":"한국PCO/CVB담당자를위한2문장인사이트"}
 
 STRICT RULES:
-- category: exhibition | convention | incentive | tech | bio | policy | general
+- category: convention | exhibition | incentive | tech | sustainability | market | policy
+- sustainability: 친환경·ESG·그린미팅·탄소중립 관련
+- market: 시장동향·통계·리서치·수익·전망 관련
+- policy: 정부정책·규제·인증·비자 관련
 - Each summary_point: max 40 Korean characters (be concise!)
 - insight: max 100 Korean characters total
 - Output ONLY the JSON object. Start with { and end with }
@@ -164,7 +170,7 @@ ${content.slice(0, 1000)}`;
     // 번역 실패는 무시 (메타는 성공)
   }
 
-  const catKey   = (meta.category || 'general').toLowerCase();
+  const catKey   = (meta.category || 'market').toLowerCase();
   const catClass = CATEGORY_MAP[catKey] || 'tag-convention';
 
   return {
@@ -227,7 +233,7 @@ async function skipArticle(id) {
           summary_points: [],
           insight: 'skip-non-mice',  // pending 쿼리에서 제외됨
           content_ko: '',
-          category: 'general',
+          category: 'market',
           cat_class: 'tag-convention',
           article_type: '뉴스',
         }],

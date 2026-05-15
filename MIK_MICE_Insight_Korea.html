@@ -59,10 +59,12 @@
     --cat-incentive-text: #C2410C;
     --cat-tech: #F5F3FF;
     --cat-tech-text: #6D28D9;
-    --cat-bio: #FFF0F6;
-    --cat-bio-text: #9D174D;
-    --cat-policy: #FFFBEB;
-    --cat-policy-text: #92400E;
+    --cat-sustainability: #ECFDF5;
+    --cat-sustainability-text: #065F46;
+    --cat-market: #FFFBEB;
+    --cat-market-text: #92400E;
+    --cat-policy: #FEF2F2;
+    --cat-policy-text: #991B1B;
   }
 
   /* ── 다크 모드 — 따뜻한 중성 계열 ── */
@@ -84,8 +86,9 @@
     --cat-convention:      #172B1E; --cat-convention-text:  #6DDDA0;
     --cat-incentive:       #2B1E10; --cat-incentive-text:   #FFBA78;
     --cat-tech:            #201830; --cat-tech-text:        #C0A8FF;
-    --cat-bio:             #2B1222; --cat-bio-text:         #FF9FCC;
-    --cat-policy:          #282012; --cat-policy-text:      #FFD080;
+    --cat-sustainability:  #0D2B1E; --cat-sustainability-text: #6DDDA0;
+    --cat-market:          #282012; --cat-market-text:      #FFD080;
+    --cat-policy:          #2B1010; --cat-policy-text:      #FF9F9F;
   }
 
   /* 구성 요소별 다크 재정의 */
@@ -118,8 +121,9 @@
   body.dark-mode .news-item.cat-convention  { border-left-color: #6DDDA0; }
   body.dark-mode .news-item.cat-incentive   { border-left-color: #FFBA78; }
   body.dark-mode .news-item.cat-tech        { border-left-color: #C0A8FF; }
-  body.dark-mode .news-item.cat-bio         { border-left-color: #FF9FCC; }
-  body.dark-mode .news-item.cat-policy      { border-left-color: #FFD080; }
+  body.dark-mode .news-item.cat-sustainability { border-left-color: #6DDDA0; }
+  body.dark-mode .news-item.cat-market         { border-left-color: #FFD080; }
+  body.dark-mode .news-item.cat-policy      { border-left-color: #FF9F9F; }
 
   /* 배지 */
   body.dark-mode .news-pending-badge { background: #252830; color: #6A6F88; }
@@ -353,24 +357,38 @@
   /* Sub-filter */
   .sub-filter {
     display: flex;
-    gap: 6px;
-    padding: 10px 16px;
+    gap: 0;
+    padding: 0 16px;
     border-bottom: 1px solid var(--border);
     align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  .sub-filter::-webkit-scrollbar { display: none; }
+
   .filter-pill {
-    padding: 4px 10px;
-    border-radius: 20px;
+    padding: 9px 11px;
+    border-radius: 0;
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: all .15s;
+    transition: color .15s, border-color .15s;
     border: none;
-    background: var(--bg);
-    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
-  .filter-pill.active { background: var(--text-primary); color: white; }
-  .filter-pill:hover:not(.active) { background: var(--border); }
+  .filter-pill.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 700;
+    background: transparent;
+  }
+  .filter-pill:hover:not(.active) { color: var(--text-primary); }
 
   .sort-select {
     margin-left: auto;
@@ -444,8 +462,9 @@
   .news-item.cat-convention  { border-left-color: #15803D; }
   .news-item.cat-incentive   { border-left-color: #C2410C; }
   .news-item.cat-tech        { border-left-color: #6D28D9; }
-  .news-item.cat-bio         { border-left-color: #9D174D; }
-  .news-item.cat-policy      { border-left-color: #92400E; }
+  .news-item.cat-sustainability { border-left-color: #065F46; }
+  .news-item.cat-market         { border-left-color: #92400E; }
+  .news-item.cat-policy      { border-left-color: #991B1B; }
 
   /* 상단 줄: 소스 · 시간 */
   .ni-top {
@@ -520,7 +539,8 @@
   .tag-convention { background: var(--cat-convention); color: var(--cat-convention-text); }
   .tag-incentive { background: var(--cat-incentive); color: var(--cat-incentive-text); }
   .tag-tech { background: var(--cat-tech); color: var(--cat-tech-text); }
-  .tag-bio { background: var(--cat-bio); color: var(--cat-bio-text); }
+  .tag-sustainability { background: var(--cat-sustainability); color: var(--cat-sustainability-text); }
+  .tag-market { background: var(--cat-market); color: var(--cat-market-text); }
   .tag-policy { background: var(--cat-policy); color: var(--cat-policy-text); }
 
   .time-ago { color: var(--text-muted); font-size: 11px; }
@@ -1647,14 +1667,19 @@
     </div>
   </div>
 
-  <!-- Sub filter -->
-  <div class="sub-filter">
-    <button class="filter-pill active" onclick="filterType('all', this)">전체</button>
-    <button class="filter-pill" onclick="filterType('전시', this)">전시</button>
-    <button class="filter-pill" onclick="filterType('컨벤션', this)">컨벤션</button>
-    <button class="filter-pill" onclick="filterType('인센티브', this)">인센티브</button>
-    <button class="filter-pill" onclick="filterType('테크', this)">테크</button>
-    <select class="sort-select" onchange="sortNews(this.value)">
+  <!-- Sub filter (가로 스크롤 탭) -->
+  <div style="display:flex; align-items:center; border-bottom:1px solid var(--border);">
+    <div class="sub-filter" style="flex:1; border-bottom:none; padding:0 0 0 16px;">
+      <button class="filter-pill active" onclick="filterType('all', this)">전체</button>
+      <button class="filter-pill" onclick="filterType('컨벤션·회의', this)">🏛 컨벤션</button>
+      <button class="filter-pill" onclick="filterType('전시·박람회', this)">🎪 전시</button>
+      <button class="filter-pill" onclick="filterType('인센티브·여행', this)">✈️ 인센티브</button>
+      <button class="filter-pill" onclick="filterType('기술·플랫폼', this)">🤖 기술</button>
+      <button class="filter-pill" onclick="filterType('지속가능성', this)">🌿 친환경</button>
+      <button class="filter-pill" onclick="filterType('시장·통계', this)">📊 시장</button>
+      <button class="filter-pill" onclick="filterType('정책·규제', this)">📋 정책</button>
+    </div>
+    <select class="sort-select" onchange="sortNews(this.value)" style="flex-shrink:0; margin:0 12px;">
       <option value="latest">최신순</option>
       <option value="views">인기순</option>
     </select>
@@ -1900,11 +1925,13 @@
             <div class="settings-control">
               <select id="settingDefaultCat" class="settings-select" onchange="saveSetting('defaultCat',this.value)">
                 <option value="all">전체</option>
-                <option value="전시">전시</option>
-                <option value="컨벤션">컨벤션</option>
-                <option value="인센티브">인센티브</option>
-                <option value="테크">테크</option>
-                <option value="정책">정책</option>
+                <option value="컨벤션·회의">🏛 컨벤션·회의</option>
+                <option value="전시·박람회">🎪 전시·박람회</option>
+                <option value="인센티브·여행">✈️ 인센티브·여행</option>
+                <option value="기술·플랫폼">🤖 기술·플랫폼</option>
+                <option value="지속가능성">🌿 지속가능성</option>
+                <option value="시장·통계">📊 시장·통계</option>
+                <option value="정책·규제">📋 정책·규제</option>
               </select>
             </div>
           </div>
@@ -1976,13 +2003,20 @@
 // ====== DATA ======
 const WORKER_URL = 'https://mik-worker.isg11882.workers.dev';
 const CAT_LABELS = {
-  'exhibition':'전시', 'convention':'컨벤션', 'incentive':'인센티브',
-  'tech':'테크', 'bio':'바이오', 'policy':'정책', 'general':'일반'
+  'convention':'컨벤션·회의', 'exhibition':'전시·박람회',
+  'incentive':'인센티브·여행', 'tech':'기술·플랫폼',
+  'sustainability':'지속가능성', 'market':'시장·통계',
+  'policy':'정책·규제',
+  // 하위 호환
+  'bio':'지속가능성', 'general':'시장·통계'
 };
 const CAT_CLASSES = {
-  'exhibition':'tag-exhibition', 'convention':'tag-convention',
+  'convention':'tag-convention', 'exhibition':'tag-exhibition',
   'incentive':'tag-incentive', 'tech':'tag-tech',
-  'bio':'tag-bio', 'policy':'tag-policy', 'general':'tag-convention'
+  'sustainability':'tag-sustainability', 'market':'tag-market',
+  'policy':'tag-policy',
+  // 하위 호환
+  'bio':'tag-sustainability', 'general':'tag-market'
 };
 let ARTICLES = [];
 let IS_LOADING = false;
