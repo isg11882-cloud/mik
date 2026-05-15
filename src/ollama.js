@@ -69,39 +69,48 @@ async function callOllama(prompt, env) {
 // ─────────────────────────────────────────────
 
 async function callCWAI(article, env) {
-  const content = (article.content || article.title || '').substring(0, 1500);
+  const content = (article.content || article.title || '').substring(0, 800);
 
-  const prompt = `Analyze this MICE article. Return ONLY valid JSON, no other text.
+  // Step 1: 분석 — content_ko 제외하고 토큰 절약
+  const analysisPrompt = `MICE industry analyst. Respond ONLY with this exact JSON, no other text:
+{"category":"general","article_type":"분석","title_ko":"제목 한국어","summary_points":["요점1","요점2","요점3"],"insight":"한국 MICE 담당자 시사점 2문장"}
 
 Title: ${article.title}
-Source: ${article.source}
-Content: ${content}
+Content: ${content.substring(0, 500)}
+category must be: exhibition convention incentive tech bio policy general`;
 
-Return this exact JSON structure:
-{
-  "category": "one of: exhibition|convention|incentive|tech|bio|policy|general",
-  "article_type": "one of: 속보|분석|리포트",
-  "title_ko": "Korean translation of the title",
-  "summary_points": ["Korean fact 1", "Korean data/figure 2", "Korean MICE market impact 3"],
-  "insight": "2-3 sentences of strategic insight for Korean PCOs/CVBs/Venues in Korean",
-  "content_ko": "<p>Korean translation of the article</p>"
-}`;
-
-  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+  const r1 = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
     messages: [
-      { role: 'system', content: 'You are a MICE industry analyst. Respond ONLY with valid JSON, no extra text.' },
-      { role: 'user', content: prompt },
+      { role: 'system', content: 'You are a MICE industry analyst. Respond ONLY with valid JSON.' },
+      { role: 'user', content: analysisPrompt },
     ],
-    max_tokens: 1500,
+    max_tokens: 700,
   });
 
-  const responseText = result?.response || '';
-  const firstBrace = responseText.indexOf('{');
-  const lastBrace = responseText.lastIndexOf('}');
-  if (firstBrace === -1 || lastBrace <= firstBrace) {
-    throw new Error('CW AI returned no JSON: ' + responseText.substring(0, 100));
+  const t1 = r1?.response || '';
+  const fb1 = t1.indexOf('{'), lb1 = t1.lastIndexOf('}');
+  if (fb1 === -1 || lb1 <= fb1) throw new Error('CW AI analysis returned no JSON: ' + t1.substring(0, 80));
+  const parsed = JSON.parse(t1.slice(fb1, lb1 + 1));
+
+  // Step 2: 번역 — 별도 호출로 토큰 한도 내에서 처리
+  let content_ko = '';
+  try {
+    const r2 = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+      messages: [
+        { role: 'system', content: '당신은 MICE 산업 전문 번역가입니다. 영어 기사를 자연스러운 한국어로 번역하세요. 번역문만 출력하세요.' },
+        { role: 'user', content: `제목: ${article.title}\n\n${content.substring(0, 600)}` },
+      ],
+      max_tokens: 1200,
+    });
+    const raw = (r2?.response || '').trim();
+    if (raw.length > 20) {
+      content_ko = '<p>' + raw.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+    }
+  } catch (e) {
+    console.warn('[CW-AI] Translation step failed:', e.message);
   }
-  return JSON.parse(responseText.slice(firstBrace, lastBrace + 1));
+
+  return { ...parsed, content_ko };
 }
 
 // ─────────────────────────────────────────────
@@ -235,9 +244,9 @@ function fallbackResult(article) {
     category: 'general',
     catClass: 'tag-convention',
     articleType: '뉴스',
-    titleKo: article.title,
+    titleKo: article.title,  // Keep English; AI will retry later
     summaryPoints: [],
-    insight: 'pending',
+    insight: 'pending',      // Non-empty: prevents infinite re-queue
     contentKo: '',
     url: article.link || article.url,
     source: article.source,

@@ -27,6 +27,7 @@
   ========================================= */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* ── 라이트 모드 (기본) ── */
   :root {
     --primary: #2563EB;
     --primary-light: #EFF6FF;
@@ -63,6 +64,35 @@
     --cat-policy: #FFFBEB;
     --cat-policy-text: #92400E;
   }
+
+  /* ── 다크 모드 ── */
+  body.dark-mode {
+    --bg: #0D1117;
+    --surface: #161B22;
+    --border: #30363D;
+    --text-primary: #E6EDF3;
+    --text-secondary: #8B949E;
+    --text-muted: #6E7681;
+    --primary-light: #1C2B4A;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+    --shadow: 0 4px 16px rgba(0,0,0,.4);
+    --cat-exhibition: #0D2137; --cat-exhibition-text: #58A6FF;
+    --cat-convention: #0D1F0D; --cat-convention-text: #3FB950;
+    --cat-incentive: #2D1B00; --cat-incentive-text: #D29922;
+    --cat-tech: #1A1140; --cat-tech-text: #BC8CFF;
+    --cat-bio: #2D0F1D; --cat-bio-text: #F778B5;
+    --cat-policy: #2D2200; --cat-policy-text: #D29922;
+  }
+  body.dark-mode .ai-summary-card { background: #1C2B3A; border-color: #2D4A6A; }
+  body.dark-mode .ai-insight-box  { background: #0D1F0D; border-color: #238636; }
+  body.dark-mode .ko-pending-wrap  { background: #161B22; border-color: #30363D; }
+  body.dark-mode .search-box { background: #161B22; border-color: #30363D; }
+  body.dark-mode .search-box input { color: var(--text-primary); }
+  body.dark-mode .mobile-back-bar { background: #161B22; border-color: #30363D; }
+  body.dark-mode .news-item:active { background: #1C2B4A!important; }
+  body.dark-mode .news-pending-badge{background:#21262D;color:#8B949E;}
+  body.dark-mode .news-ai-badge{background:#0D1F0D;color:#3FB950;}
+  body.dark-mode .news-trans-badge{background:#1C2B4A;color:#58A6FF;}
 
   body {
     font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif;
@@ -1178,17 +1208,66 @@
     border: none;
   }
 
-/* === MIK API & Mobile Enhancements === */
+/* === MIK 배지 === */
 .news-pending-badge{background:#F1F5F9;color:#64748B;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
 .news-ai-badge{background:#F0FDF4;color:#15803D;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
 .news-trans-badge{background:#EFF6FF;color:#2563EB;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
-#mobileDetailOverlay{display:none;}
+
+/* === 상세패널 메타 배지 === */
+.article-source-badge{font-size:12px;color:#64748B;font-weight:500;}
+.article-time-badge{font-size:12px;color:#94A3B8;margin-left:8px;}
+
+/* === 번역 대기 표시 === */
+.pending-text{color:#94A3B8;font-style:italic;}
+.ko-pending-wrap{display:flex;align-items:center;gap:12px;padding:20px;background:#F8FAFC;border-radius:8px;border:1px dashed #CBD5E1;color:#64748B;font-size:14px;line-height:1.6;}
+.ko-pending-wrap small{color:#94A3B8;font-size:12px;}
+.ko-pending-icon{font-size:24px;flex-shrink:0;}
+
+/* === source-tabs === */
 .source-tabs-wrap{overflow:hidden;position:relative;}
 .source-tabs{padding-left:0!important;}
+
+/* === 모바일 뒤로가기 헤더 === */
+.mobile-back-bar{
+  display:none;
+  align-items:center;
+  gap:10px;
+  padding:10px 16px;
+  background:#FFFFFF;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.mobile-back-btn{
+  background:none;border:none;
+  color:var(--primary);font-size:20px;
+  cursor:pointer;padding:0;line-height:1;
+  display:flex;align-items:center;gap:4px;
+  font-size:14px;font-weight:600;
+}
+.mobile-back-btn::before{content:'←';font-size:18px;}
+.mobile-source-label{font-size:13px;color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mobile-orig-link{background:var(--primary);color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;}
+
+/* === 모바일 레이아웃 전환 === */
 @media(max-width:768px){
-  .article-detail,.article-view,#articleDetail,.news-detail{display:none!important;}
-  .news-list,.news-panel,.left-panel{width:100%!important;flex:1!important;max-width:none!important;border-right:none!important;}
-  .main-layout,.content-layout,.news-layout{flex-direction:column!important;}
+  /* 기본: 리스트만 */
+  .alert-panel{display:none!important;}
+  #articleDetail{display:none!important;}
+  #noArticle{display:none!important;}
+  .list-panel{width:100%!important;flex:1!important;max-width:none!important;border-right:none!important;}
+  .detail-panel{display:none!important;width:100%!important;}
+  .sidebar{display:none!important;}
+
+  /* 기사 열림: 리스트 숨기고 상세 전체화면 */
+  body.mobile-article-open .list-panel{display:none!important;}
+  body.mobile-article-open .detail-panel{display:flex!important;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;overflow-y:auto;background:var(--bg);}
+  body.mobile-article-open #articleDetail{display:flex!important;flex:1;}
+  body.mobile-article-open .mobile-back-bar{display:flex!important;}
+  body.mobile-article-open .detail-header{display:none!important;}
+
   .source-tabs{padding:0 0 8px!important;}
   .news-item{cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .news-item:active{background:#EFF6FF!important;}
@@ -1224,7 +1303,10 @@
     <span>📧</span><small>레터</small>
   </button>
   <div class="sidebar-divider"></div>
-  <button class="sidebar-btn" title="설정" style="margin-top: auto;">
+  <button class="sidebar-btn" id="themeToggleBtn" title="다크/라이트 모드 전환" onclick="toggleTheme()" style="margin-top: auto;">
+    <span id="themeIcon">🌙</span><small id="themeLabel">다크</small>
+  </button>
+  <button class="sidebar-btn" title="설정">
     <span>⚙️</span><small>설정</small>
   </button>
   <button class="sidebar-btn" title="내 계정">
@@ -1277,6 +1359,13 @@
      DETAIL PANEL
 ========================================= -->
 <section class="detail-panel" id="detailPanel">
+  <!-- 모바일 전용 뒤로가기 헤더 -->
+  <div class="mobile-back-bar" id="mobileBackBar">
+    <button class="mobile-back-btn" onclick="closeMobileDetail()">목록</button>
+    <span class="mobile-source-label" id="mobileSourceLabel"></span>
+    <a class="mobile-orig-link" id="mobileOrigBtn" href="#" target="_blank" rel="noopener">원문 →</a>
+  </div>
+
   <!-- Default: no article selected -->
   <div class="no-article" id="noArticle">
     <div class="no-article-icon">🌏</div>
@@ -1506,90 +1595,136 @@ function renderNewsList(articles) {
   }).join('');
 }
 
-// ====== SHOW ARTICLE ======
+// ====== SHOW ARTICLE — CSS 클래스 기반 (인라인 스타일 없음) ======
+let _currentArticle = null;
+
 function showArticle(id) {
   currentArticleId = id;
   const a = ARTICLES.find(x => x.id === id);
   if (!a) return;
+  _currentArticle = a;
+
+  // 리스트 active 상태 업데이트
   document.querySelectorAll('.news-item').forEach(el => el.classList.remove('active'));
   const item = document.querySelector('[data-id="' + id + '"]');
   if (item) { item.classList.add('active'); item.scrollIntoView({block:'nearest',behavior:'smooth'}); }
   a.views = (a.views||0) + 1;
   const vEl = item && item.querySelector('.news-views');
   if (vEl) vEl.textContent = '👁 ' + a.views;
-  if (window.innerWidth <= 768) { showMobileDetail(a); return; }
-  renderDetailPanel(a);
+
+  // 기존 HTML 구조에 데이터 채우기
+  populateDetailPanel(a);
+
+  // 모바일: History API로 뒤로가기 지원
+  if (window.innerWidth <= 768) {
+    history.pushState({ articleId: id }, '', '#a' + id);
+    document.body.classList.add('mobile-article-open');
+  }
 }
 
-function buildDetailHTML(a) {
-  const title = a.title_ko || a.title || '';
-  const sum = a.summary_json && a.summary_json.length > 0;
-  let h = '';
-  if (sum) h += '<div style="background:#F0F7FF;border:1px solid #BFDBFE;border-radius:8px;padding:16px;margin-bottom:16px;">' +
-    '<div style="font-size:12px;color:#2563EB;font-weight:600;margin-bottom:8px;">📋 핵심 요약<' + '/div>' +
-    a.summary_json.map((s,i)=>'<div style="font-size:14px;color:#1F2937;padding:4px 0;">'+(i+1)+'. '+s+'<' + '/div>').join('') + '<' + '/div>';
-  if (a.insight) h += '<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:16px;margin-bottom:16px;">' +
-    '<div style="font-size:12px;color:#15803D;font-weight:600;margin-bottom:8px;">💡 AI MICE 인사이트<' + '/div>' +
-    '<div style="font-size:14px;color:#1F2937;line-height:1.6;">' + a.insight + '<' + '/div><' + '/div>';
-  const PEND2=/번역 대기|번역 처리 중|대기 중/i;
-  const hasRealKo = a.content_ko && !PEND2.test(a.content_ko) && a.content_ko.length > 30;
-  if (hasRealKo) {
-    h += '<div style="font-size:14px;color:#1F2937;line-height:1.8;">' + a.content_ko + '<' + '/div>';
-  } else if (a.enText && a.enText.length > 30) {
-    h += '<div style="border-left:3px solid #E2E8F0;padding:4px 16px;margin-bottom:4px;"><div style="font-size:11px;color:#94A3B8;margin-bottom:8px;">📄 원문 (AI 번역 준비 중)</div><div style="font-size:13px;color:#64748B;line-height:1.7;">' + a.enText + '<' + '/div><' + '/div>';
-  } else {
-    h += '<div style="color:#94A3B8;font-size:13px;padding:12px 0;">원문 보기 버튼을 클릭해 기사 전문을 확인하세요.</div>';
+// 기존 HTML 슬롯에 채우는 함수 — innerHTML 교체 없음
+function populateDetailPanel(a) {
+  const PEND = /번역 대기|번역 처리 중|대기 중|pending/i;
+
+  // 빈 화면 숨기고 상세 보이기
+  const noArt = document.getElementById('noArticle');
+  const panel = document.getElementById('articleDetail');
+  if (noArt) noArt.style.display = 'none';
+  if (panel) { panel.style.display = 'flex'; panel.style.flexDirection = 'column'; }
+
+  // 카테고리 태그
+  const tagWrap = document.getElementById('detailTagWrap');
+  if (tagWrap) tagWrap.innerHTML = '<span class="news-tag ' + (a.catClass||'tag-convention') + '">' + (a.cat||'') + '</span>';
+
+  // 제목
+  const titleEl = document.getElementById('detailTitleText');
+  if (titleEl) titleEl.textContent = a.title_ko || a.title || '';
+
+  // 메타
+  const metaEl = document.getElementById('articleMeta');
+  if (metaEl) metaEl.innerHTML =
+    '<span class="article-source-badge">' + (a.source||'') + '</span>' +
+    '<span class="article-time-badge">' + (a.time||'') + '</span>';
+
+  // 요약 포인트
+  const summaryEl = document.getElementById('aiSummaryPoints');
+  if (summaryEl) {
+    summaryEl.innerHTML = (a.summary_json && a.summary_json.length > 0)
+      ? a.summary_json.map(s => '<li>' + s + '</li>').join('')
+      : '<li class="pending-text">AI 분석을 준비하고 있습니다...</li>';
   }
-  return {title, h};
+
+  // 인사이트
+  const insightEl = document.getElementById('aiInsight');
+  if (insightEl) {
+    const hasInsight = a.insight && !PEND.test(a.insight) && a.insight.length > 5;
+    insightEl.textContent = hasInsight ? a.insight : 'AI 인사이트를 분석하고 있습니다...';
+    insightEl.classList.toggle('pending-text', !hasInsight);
+  }
+
+  // 원문(영문)
+  const enEl = document.getElementById('enContent');
+  if (enEl) {
+    enEl.innerHTML = (a.enText && a.enText.length > 20)
+      ? '<p>' + a.enText.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>') + '</p>'
+      : '<p class="pending-text">원문 전문은 \'원문 보기\'를 클릭하세요.</p>';
+  }
+
+  // 한국어 번역
+  const koEl = document.getElementById('koContent');
+  if (koEl) {
+    const hasKo = a.content_ko && !PEND.test(a.content_ko) && a.content_ko.length > 30;
+    if (hasKo) {
+      koEl.innerHTML = a.content_ko;
+      koEl.classList.remove('ko-pending-wrap');
+    } else {
+      koEl.innerHTML = '<div class="ko-pending-wrap"><div class="ko-pending-icon">⏳</div><div>AI가 번역하고 있습니다.<br><small>다음 번역 주기(매시간)에 자동 완성됩니다.</small></div></div>';
+    }
+  }
+
+  // 원문 링크 업데이트
+  const origBtn = document.querySelector('.action-btn.primary-btn');
+  if (origBtn) origBtn.onclick = () => window.open(a.url||'#', '_blank', 'noopener');
+
+  // 모바일 상단 원문 버튼
+  const mobileOrig = document.getElementById('mobileOrigBtn');
+  if (mobileOrig) { mobileOrig.href = a.url||'#'; }
+  const mobileSrc = document.getElementById('mobileSourceLabel');
+  if (mobileSrc) mobileSrc.textContent = a.source||'';
 }
 
-function showMobileDetail(a) {
-  let ov = document.getElementById('mobileDetailOverlay');
-  if (!ov) {
-    ov = document.createElement('div');
-    ov.id = 'mobileDetailOverlay';
-    ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#F8FAFC;z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;';
-    document.body.appendChild(ov);
+// 모바일 뒤로가기 (History API popstate)
+window.addEventListener('popstate', function(e) {
+  if (document.body.classList.contains('mobile-article-open')) {
+    document.body.classList.remove('mobile-article-open');
+    // 스크롤 복원
+    const listPanel = document.querySelector('.list-panel');
+    if (listPanel) listPanel.scrollTop = 0;
   }
-  const {title, h} = buildDetailHTML(a);
-  ov.innerHTML = '<div style="position:sticky;top:0;background:#FFFFFF;padding:12px 16px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:12px;z-index:1;box-shadow:0 1px 4px rgba(0,0,0,.06);">' +
-    '<button onclick="closeMobileDetail()" style="background:none;border:none;color:#64748B;font-size:22px;cursor:pointer;line-height:1;">←<' + '/button>' +
-    '<span style="font-size:13px;color:#64748B;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (a.source||'') + '<' + '/span>' +
-    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#2563EB;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;">원문 →<' + '/a><' + '/div>' +
-    '<div style="padding:20px 16px;">' +
-    '<div style="margin-bottom:12px;"><span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
-    '<span style="color:#64748B;font-size:12px;margin-left:8px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
-    '<h2 style="font-size:18px;font-weight:700;color:#0F172A;line-height:1.4;margin:0 0 16px;">' + title + '<' + '/h2>' + h + '<' + '/div>';
-  ov.style.display = 'block';
-  document.body.style.overflow = 'hidden';
-}
+});
 
 function closeMobileDetail() {
-  const ov = document.getElementById('mobileDetailOverlay');
-  if (ov) ov.style.display = 'none';
-  document.body.style.overflow = '';
+  history.back();
 }
 
-function renderDetailPanel(a) {
-  const noArt = document.getElementById('noArticle');
-  if (noArt) noArt.style.display = 'none';
-  const panel = document.getElementById('articleDetail') ||
-    document.querySelector('.article-detail, .article-view, .news-detail');
-  if (!panel) return;
-  panel.style.display = 'flex';
-  panel.style.flexDirection = 'column';
-  const {title, h} = buildDetailHTML(a);
-  panel.innerHTML = '<div style="padding:20px;border-bottom:1px solid #E2E8F0;background:#FFFFFF;">' +
-    '<div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
-    '<span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
-    '<span style="color:#64748B;font-size:12px;">' + (a.source||'') + '<' + '/span>' +
-    '<span style="color:#94A3B8;font-size:12px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
-    '<h2 style="font-size:17px;font-weight:700;color:#0F172A;line-height:1.4;margin:0 0 12px;">' + title + '<' + '/h2>' +
-    '<div style="display:flex;gap:8px;">' +
-    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#2563EB;color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none;">원문 보기 →<' + '/a>' +
-    '<button onclick="toggleBookmark(' + a.id + ')" style="background:#F1F5F9;color:#374151;border:1px solid #E2E8F0;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;">🔖 저장<' + '/button><' + '/div><' + '/div>' +
-    '<div style="padding:20px;overflow-y:auto;background:#F8FAFC;">' + h + '<' + '/div>';
+// ====== 다크/라이트 모드 토글 ======
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('mik-theme', isDark ? 'dark' : 'light');
+  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = isDark ? '라이트' : '다크';
 }
+// 저장된 테마 복원
+(function() {
+  const saved = localStorage.getItem('mik-theme');
+  if (saved === 'dark') {
+    document.body.classList.add('dark-mode');
+    const icon = document.getElementById('themeIcon');
+    const label = document.getElementById('themeLabel');
+    if (icon) icon.textContent = '☀️';
+    if (label) label.textContent = '라이트';
+  }
+})();
 
 // ====== SOURCE TABS DRAG SCROLL (데스크톱) ======
 (function() {
