@@ -154,6 +154,29 @@ export async function handleApiRequest(request, env) {
       return corsResponse(jsonResponse({ sources: result.results || [] }));
     }
 
+    // POST /api/recategorize — 키워드 기반 카테고리 일괄 재분류
+    if (path === '/api/recategorize' && request.method === 'POST') {
+      const { guessCategoryHint } = await import('./ollama.js');
+      const batchSize = parseInt(url.searchParams.get('limit') || '1000');
+      const CAT_CLASS_MAP = {
+        convention:'tag-convention', exhibition:'tag-exhibition', incentive:'tag-incentive',
+        tech:'tag-tech', sustainability:'tag-sustainability', market:'tag-market', policy:'tag-policy',
+      };
+      const result = await env.DB.prepare(
+        'SELECT id, title, content_en FROM articles ORDER BY created_at DESC LIMIT ?'
+      ).bind(batchSize).all();
+      const rows = result.results || [];
+      let updated = 0;
+      for (const row of rows) {
+        const catKey = guessCategoryHint(row.title, row.content_en || '');
+        const catClass = CAT_CLASS_MAP[catKey] || 'tag-convention';
+        await env.DB.prepare('UPDATE articles SET category = ?, cat_class = ? WHERE id = ?')
+          .bind(catKey, catClass, row.id).run();
+        updated++;
+      }
+      return corsResponse(jsonResponse({ status: 'ok', updated, total: rows.length }));
+    }
+
     // GET /api/process-ai — manually trigger AI queue from browser
     if (path === '/api/process-ai' && request.method === 'GET') {
       console.log('[API] Processing AI Queue manually (GET)...');

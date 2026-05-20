@@ -1678,22 +1678,23 @@
     </div>
   </div>
 
-  <!-- Sub filter (가로 스크롤 탭 + 오버플로 표시) -->
-  <div style="display:flex; align-items:center; border-bottom:1px solid var(--border); position:relative;">
-    <!-- 오른쪽 페이드 오버레이 (더 있음 표시) -->
-    <div id="filterFadeRight" style="
-      position:absolute; right:60px; top:0; bottom:0; width:32px; pointer-events:none;
-      background:linear-gradient(to right, transparent, var(--bg));
-      display:none; z-index:2;
-    "></div>
-    <!-- 오른쪽 스크롤 화살표 -->
-    <button id="filterScrollBtn" onclick="scrollFilterRight()" style="
-      display:none; flex-shrink:0; width:28px; height:28px; margin-right:6px;
+  <!-- Sub filter (가로 스크롤 탭 + 양방향 화살표 + 터치 스와이프) -->
+  <div style="display:flex; align-items:center; border-bottom:1px solid var(--border); position:relative; overflow:hidden;">
+    <!-- 왼쪽 스크롤 버튼 -->
+    <button id="filterScrollLeftBtn" onclick="scrollFilterLeft()" style="
+      display:none; flex-shrink:0; width:28px; height:28px; margin-left:6px;
       border:1px solid var(--border); border-radius:50%; background:var(--surface);
       cursor:pointer; font-size:13px; color:var(--text-secondary);
       position:relative; z-index:3; align-items:center; justify-content:center;
-    ">›</button>
-    <div class="sub-filter" id="filterTabBar" style="flex:1; border-bottom:none; padding:0 0 0 16px;">
+    ">‹</button>
+    <!-- 왼쪽 페이드 -->
+    <div id="filterFadeLeft" style="
+      position:absolute; left:34px; top:0; bottom:0; width:24px; pointer-events:none;
+      background:linear-gradient(to left, transparent, var(--bg));
+      display:none; z-index:2;
+    "></div>
+    <!-- 탭 바 -->
+    <div class="sub-filter" id="filterTabBar" style="flex:1; border-bottom:none; padding:0 8px; overflow-x:auto; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
       <button class="filter-pill active" onclick="filterType('all', this)">전체</button>
       <button class="filter-pill" onclick="filterType('컨벤션·회의', this)">🏛 컨벤션</button>
       <button class="filter-pill" onclick="filterType('전시·박람회', this)">🎪 전시</button>
@@ -1703,7 +1704,20 @@
       <button class="filter-pill" onclick="filterType('시장·통계', this)">📊 시장</button>
       <button class="filter-pill" onclick="filterType('정책·규제', this)">📋 정책</button>
     </div>
-    <select class="sort-select" onchange="sortNews(this.value)" style="flex-shrink:0; margin:0 12px;">
+    <!-- 오른쪽 페이드 -->
+    <div id="filterFadeRight" style="
+      position:absolute; right:34px; top:0; bottom:0; width:24px; pointer-events:none;
+      background:linear-gradient(to right, transparent, var(--bg));
+      display:none; z-index:2;
+    "></div>
+    <!-- 오른쪽 스크롤 버튼 -->
+    <button id="filterScrollBtn" onclick="scrollFilterRight()" style="
+      display:none; flex-shrink:0; width:28px; height:28px; margin-right:6px;
+      border:1px solid var(--border); border-radius:50%; background:var(--surface);
+      cursor:pointer; font-size:13px; color:var(--text-secondary);
+      position:relative; z-index:3; align-items:center; justify-content:center;
+    ">›</button>
+    <select class="sort-select" onchange="sortNews(this.value)" style="flex-shrink:0; margin:0 6px 0 0;">
       <option value="latest">최신순</option>
       <option value="views">인기순</option>
     </select>
@@ -2060,8 +2074,10 @@ function formatTime(d) {
 async function fetchArticles(params = {}) {
   if (IS_LOADING) return;
   IS_LOADING = true;
+  const isAppend = !!(params._append);
+  delete params._append;
   const grid = document.getElementById('newsList');
-  if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#64748B;"><div style="font-size:24px;margin-bottom:8px;">⏳<' + '/div>기사를 불러오는 중...<' + '/div>';
+  if (!isAppend && grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#64748B;"><div style="font-size:24px;margin-bottom:8px;">⏳</div>기사를 불러오는 중...</div>';
   try {
     const sp = new URLSearchParams(params);
     const res = await fetch(WORKER_URL + '/api/articles?' + sp.toString(), {
@@ -2069,7 +2085,7 @@ async function fetchArticles(params = {}) {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    ARTICLES = (data.articles || data || []).map(a => ({
+    const newItems = (data.articles || data || []).map(a => ({
       id: a.id, source: a.source||'',
       cat: CAT_LABELS[a.cat] || CAT_LABELS[a.category] || a.cat || a.category || '일반',
       catClass: a.catClass || CAT_CLASSES[a.cat] || a.cat_class || 'tag-convention',
@@ -2080,15 +2096,27 @@ async function fetchArticles(params = {}) {
       insight: a.insight||'',
       summary_json: (()=>{ if(Array.isArray(a.summaryPoints))return a.summaryPoints; try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
     }));
-    renderNewsList(ARTICLES);
+    ARTICLES_TOTAL = data.total || newItems.length;
+    if (isAppend) {
+      ARTICLES = ARTICLES.concat(newItems);
+    } else {
+      ARTICLES = newItems;
+      ARTICLES_OFFSET = 0;
+    }
+    ARTICLES_OFFSET = ARTICLES.length;
+    renderNewsList(ARTICLES, ARTICLES_OFFSET < ARTICLES_TOTAL);
     checkKeywordAlerts(ARTICLES);
     updateBookmarkBadge();
     renderSourceTabs(ARTICLES);
-    if (ARTICLES.length > 0) showArticle(ARTICLES[0].id);
+    if (!isAppend && ARTICLES.length > 0) showArticle(ARTICLES[0].id);
   } catch(e) {
     console.error('[MIK] API error:', e);
-    if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#EF4444;"><div style="font-size:24px;margin-bottom:8px;">⚠️<' + '/div>기사를 불러올 수 없습니다.<br><small style="color:#94A3B8">Worker API 상태를 확인해 주세요.<' + '/small><' + '/div>';
+    if (!isAppend && grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#EF4444;"><div style="font-size:24px;margin-bottom:8px;">⚠️</div>기사를 불러올 수 없습니다.<br><small style="color:#94A3B8">Worker API 상태를 확인해 주세요.</small></div>';
   } finally { IS_LOADING = false; }
+}
+
+async function loadMoreArticles() {
+  await fetchArticles({ limit: ARTICLES_PAGE_SIZE, sort: currentSort, offset: ARTICLES_OFFSET, _append: true });
 }
 
 const KEYWORDS_DEFAULT = ['Bio', 'CVB', 'Sustainability', 'AI Event', 'Korea MICE', 'PCO'];
@@ -2101,13 +2129,16 @@ let currentSource = 'all';
 let currentType = 'all';
 let currentSort = 'latest';
 let currentArticleId = null;
+let ARTICLES_OFFSET = 0;
+let ARTICLES_TOTAL = 0;
+const ARTICLES_PAGE_SIZE = 80;
 let keywords = [...KEYWORDS_DEFAULT];
 let filteredArticles = [...ARTICLES];
 
 // ====== INIT ======
 function init() {
   updateAuthUI();
-  fetchArticles({ limit: 30, sort: 'latest' });
+  fetchArticles({ limit: ARTICLES_PAGE_SIZE, sort: 'latest', offset: 0 });
 }
 
 // ====== RENDER NEWS LIST ======
@@ -2124,14 +2155,14 @@ function renderSourceTabs(articles) {
     }).join('');
 }
 
-function renderNewsList(articles) {
+function renderNewsList(articles, showMore) {
   const grid = document.getElementById('newsList');
   if (!grid) return;
   if (!articles || articles.length === 0) {
     grid.innerHTML = '<div style="padding:40px;text-align:center;color:#64748B;">' +
-      '<div style="font-size:32px;margin-bottom:12px;">📭<' + '/div>' +
-      '<div style="font-weight:600;margin-bottom:6px;">기사가 없습니다<' + '/div>' +
-      '<div style="font-size:12px;">RSS 크롤링 후 기사가 표시됩니다.<' + '/div><' + '/div>';
+      '<div style="font-size:32px;margin-bottom:12px;">📭</div>' +
+      '<div style="font-weight:600;margin-bottom:6px;">기사가 없습니다</div>' +
+      '<div style="font-size:12px;">RSS 크롤링 후 기사가 표시됩니다.</div></div>';
     return;
   }
   grid.innerHTML = articles.map(a => {
@@ -2153,7 +2184,10 @@ function renderNewsList(articles) {
         badge +
       '<' + '/div>' +
     '<' + '/div>';
-  }).join('');
+  }).join('') +
+  (showMore ? '<div style="padding:16px;text-align:center;">' +
+    '<button onclick="loadMoreArticles()" style="padding:10px 32px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text-secondary);font-size:13px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='var(--surface)'">' +
+    '더 보기 (' + (ARTICLES_TOTAL - ARTICLES_OFFSET) + '개 남음)</button></div>' : '');
 }
 
 // ====== SHOW ARTICLE — CSS 클래스 기반 (인라인 스타일 없음) ======
@@ -2337,30 +2371,52 @@ function filterSource(source, el) {
   applyFilters();
 }
 
-// ── 필터 탭 오버플로 화살표 ──
+// ── 필터 탭: 양방향 화살표 + 터치 스와이프 ──
 function initFilterScroll() {
-  const bar = document.getElementById('filterTabBar');
-  const fade = document.getElementById('filterFadeRight');
-  const btn  = document.getElementById('filterScrollBtn');
+  const bar     = document.getElementById('filterTabBar');
+  const fadeL   = document.getElementById('filterFadeLeft');
+  const fadeR   = document.getElementById('filterFadeRight');
+  const btnL    = document.getElementById('filterScrollLeftBtn');
+  const btnR    = document.getElementById('filterScrollBtn');
   if (!bar) return;
 
   function checkOverflow() {
-    const hasMore = bar.scrollWidth > bar.clientWidth + bar.scrollLeft + 4;
-    const show = hasMore ? 'flex' : 'none';
-    if (fade) fade.style.display = show;
-    if (btn)  btn.style.display  = show;
+    const canLeft  = bar.scrollLeft > 4;
+    const canRight = bar.scrollWidth > bar.clientWidth + bar.scrollLeft + 4;
+    if (fadeL) fadeL.style.display = canLeft  ? 'block' : 'none';
+    if (fadeR) fadeR.style.display = canRight ? 'block' : 'none';
+    if (btnL)  btnL.style.display  = canLeft  ? 'flex'  : 'none';
+    if (btnR)  btnR.style.display  = canRight ? 'flex'  : 'none';
   }
 
   bar.addEventListener('scroll', checkOverflow);
   window.addEventListener('resize', checkOverflow);
-  // 마우스 휠로도 가로 스크롤 (PC)
-  bar.addEventListener('wheel', e => { if (e.deltaY !== 0) { e.preventDefault(); bar.scrollLeft += e.deltaY; } }, { passive: false });
+
+  // PC: 마우스 휠 가로 스크롤
+  bar.addEventListener('wheel', e => {
+    if (e.deltaY !== 0) { e.preventDefault(); bar.scrollLeft += e.deltaY; }
+  }, { passive: false });
+
+  // 모바일: 터치 스와이프 (네이티브 touch 이벤트로 부드럽게)
+  let _touchX = 0;
+  bar.addEventListener('touchstart', e => { _touchX = e.touches[0].clientX; }, { passive: true });
+  bar.addEventListener('touchmove', e => {
+    const dx = _touchX - e.touches[0].clientX;
+    bar.scrollLeft += dx;
+    _touchX = e.touches[0].clientX;
+  }, { passive: true });
+
   setTimeout(checkOverflow, 200);
+}
+
+function scrollFilterLeft() {
+  const bar = document.getElementById('filterTabBar');
+  if (bar) bar.scrollBy({ left: -140, behavior: 'smooth' });
 }
 
 function scrollFilterRight() {
   const bar = document.getElementById('filterTabBar');
-  if (bar) bar.scrollBy({ left: 120, behavior: 'smooth' });
+  if (bar) bar.scrollBy({ left: 140, behavior: 'smooth' });
 }
 
 function filterType(type, el) {
@@ -2392,7 +2448,7 @@ function applyFilters() {
     filteredArticles.sort((a, b) => b.views - a.views);
   }
 
-  renderNewsList(filteredArticles);
+  renderNewsList(filteredArticles, ARTICLES_OFFSET < ARTICLES_TOTAL && currentSource === 'all' && currentType === 'all' && !document.getElementById('searchInput').value);
 }
 
 // ====== VIEW TOGGLE ======

@@ -278,7 +278,7 @@ function buildResult(article, parsed, source) {
 /**
  * 키워드 스코어링으로 카테고리 힌트 산출 (AI 분류 정확도 보조)
  */
-function guessCategoryHint(title, content) {
+export function guessCategoryHint(title, content) {
   const txt = ((title || '') + ' ' + (content || '')).toLowerCase();
 
   const scores = {
