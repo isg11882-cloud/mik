@@ -1667,9 +1667,22 @@
     </div>
   </div>
 
-  <!-- Sub filter (가로 스크롤 탭) -->
-  <div style="display:flex; align-items:center; border-bottom:1px solid var(--border);">
-    <div class="sub-filter" style="flex:1; border-bottom:none; padding:0 0 0 16px;">
+  <!-- Sub filter (가로 스크롤 탭 + 오버플로 표시) -->
+  <div style="display:flex; align-items:center; border-bottom:1px solid var(--border); position:relative;">
+    <!-- 오른쪽 페이드 오버레이 (더 있음 표시) -->
+    <div id="filterFadeRight" style="
+      position:absolute; right:60px; top:0; bottom:0; width:32px; pointer-events:none;
+      background:linear-gradient(to right, transparent, var(--bg));
+      display:none; z-index:2;
+    "></div>
+    <!-- 오른쪽 스크롤 화살표 -->
+    <button id="filterScrollBtn" onclick="scrollFilterRight()" style="
+      display:none; flex-shrink:0; width:28px; height:28px; margin-right:6px;
+      border:1px solid var(--border); border-radius:50%; background:var(--surface);
+      cursor:pointer; font-size:13px; color:var(--text-secondary);
+      position:relative; z-index:3; align-items:center; justify-content:center;
+    ">›</button>
+    <div class="sub-filter" id="filterTabBar" style="flex:1; border-bottom:none; padding:0 0 0 16px;">
       <button class="filter-pill active" onclick="filterType('all', this)">전체</button>
       <button class="filter-pill" onclick="filterType('컨벤션·회의', this)">🏛 컨벤션</button>
       <button class="filter-pill" onclick="filterType('전시·박람회', this)">🎪 전시</button>
@@ -2299,6 +2312,9 @@ function toggleTheme() {
     el.addEventListener('click', e => {
       if (didDrag) { e.stopPropagation(); e.preventDefault(); didDrag = false; }
     }, true);
+
+    // 필터 탭 오버플로 화살표 초기화
+    initFilterScroll();
   });
 })();
 
@@ -2308,6 +2324,32 @@ function filterSource(source, el) {
   document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   applyFilters();
+}
+
+// ── 필터 탭 오버플로 화살표 ──
+function initFilterScroll() {
+  const bar = document.getElementById('filterTabBar');
+  const fade = document.getElementById('filterFadeRight');
+  const btn  = document.getElementById('filterScrollBtn');
+  if (!bar) return;
+
+  function checkOverflow() {
+    const hasMore = bar.scrollWidth > bar.clientWidth + bar.scrollLeft + 4;
+    const show = hasMore ? 'flex' : 'none';
+    if (fade) fade.style.display = show;
+    if (btn)  btn.style.display  = show;
+  }
+
+  bar.addEventListener('scroll', checkOverflow);
+  window.addEventListener('resize', checkOverflow);
+  // 마우스 휠로도 가로 스크롤 (PC)
+  bar.addEventListener('wheel', e => { if (e.deltaY !== 0) { e.preventDefault(); bar.scrollLeft += e.deltaY; } }, { passive: false });
+  setTimeout(checkOverflow, 200);
+}
+
+function scrollFilterRight() {
+  const bar = document.getElementById('filterTabBar');
+  if (bar) bar.scrollBy({ left: 120, behavior: 'smooth' });
 }
 
 function filterType(type, el) {

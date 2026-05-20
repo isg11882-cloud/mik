@@ -78,18 +78,23 @@ async function callCWAI(article, env) {
   const analysisPrompt = `You are a MICE industry analyst. Output ONLY this JSON object with no other text:
 {"category":"convention","article_type":"분석","title_ko":"Korean title here","summary_points":["point1","point2","point3"],"insight":"2-sentence strategic insight for Korean MICE professionals"}
 
-Rules:
-- category must be exactly one of: convention exhibition incentive tech sustainability market policy
-  (convention=meetings/congress, exhibition=tradeshows/expos, incentive=incentive travel,
-   tech=event technology/platforms, sustainability=ESG/green meetings,
-   market=industry stats/research/trends, policy=regulations/government)
+CATEGORY DECISION RULES (pick the BEST match — read all rules before deciding):
+- "convention"    → international congress/conference, PCO, PCMA, ICCA, MPI, CVB, DMO, convention center, association meeting, hosted buyer, meeting planner, business event
+- "exhibition"    → trade show, expo, tradeshow, trade fair, booth, exhibitor, UFI, IAEE, show floor, exhibit hall, pavilion, display floor
+- "incentive"     → incentive travel, incentive trip, incentive program, DMC, SITE Global, fam trip, reward travel, group incentive, incentive destination
+- "tech"          → Cvent, Bizzabo, Stova, event app, event platform, virtual event, hybrid event technology, event software, AI tool for events, registration tech, streaming
+- "sustainability"→ ESG, green meeting, carbon neutral, net zero, sustainable event, eco-friendly, climate, renewable energy, environmental certification, GMIC
+- "market"        → market research, industry report, survey results, forecast, revenue data, statistics, economic impact, spending trend, growth outlook
+- "policy"        → government policy, regulation, ministry, legislation, visa, certification standard, official mandate, compliance, grant, subsidy
+IMPORTANT: If the article is about a specific EVENT or CONFERENCE → "convention". If about a TRADE SHOW or EXHIBITION → "exhibition". Do NOT default to "market" unless it is explicitly about data/research/statistics.
+
 - title_ko: translate the title to Korean
-- summary_points: 3 key facts in Korean
+- summary_points: 3 key facts in Korean (be specific with names, numbers, dates)
 - insight: 2 sentences in Korean for Korean PCO/CVB/venue managers
 
 Title: ${article.title}
 Source: ${article.source || ''}
-Content: ${content.substring(0, 500)}`;
+Content: ${content.substring(0, 600)}`;
 
   const r1 = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
     messages: [
@@ -270,20 +275,102 @@ function buildResult(article, parsed, source) {
   };
 }
 
+/**
+ * 키워드 스코어링으로 카테고리 힌트 산출 (AI 분류 정확도 보조)
+ */
+function guessCategoryHint(title, content) {
+  const txt = ((title || '') + ' ' + (content || '')).toLowerCase();
+
+  const scores = {
+    convention:     0,
+    exhibition:     0,
+    incentive:      0,
+    tech:           0,
+    sustainability: 0,
+    market:         0,
+    policy:         0,
+  };
+
+  // convention
+  for (const kw of ['congress','conference','pcma','icca ','mpi ','cvb ','dmo ','pco ','convention center','convention bureau','meeting planner','meeting professional','business event','hosted buyer','association meeting','annual meeting','delegate','keynote','breakout session','networking event','convention'])
+    if (txt.includes(kw)) scores.convention += 3;
+  for (const kw of ['meeting','meetings','summit','forum','symposium','seminar','workshop'])
+    if (txt.includes(kw)) scores.convention += 1;
+
+  // exhibition
+  for (const kw of ['trade show','tradeshow','trade fair','tradefair','exhibition ','exhibitor','ufi ','iaee','show floor','exhibit hall','booth ','booths','pavilion','floor plan','display floor','expo ','exposition'])
+    if (txt.includes(kw)) scores.exhibition += 3;
+  for (const kw of ['exhibit','expo','fair ','show '])
+    if (txt.includes(kw)) scores.exhibition += 1;
+
+  // incentive
+  for (const kw of ['incentive travel','incentive trip','incentive program','incentive group','dmc ','site global','fam trip','familiarization trip','reward travel','incentive destination','incentive tour'])
+    if (txt.includes(kw)) scores.incentive += 4;
+  for (const kw of ['incentive','reward','luxury travel','group travel'])
+    if (txt.includes(kw)) scores.incentive += 2;
+
+  // tech
+  for (const kw of ['cvent','bizzabo','stova','aventri','eventbrite','event app','event platform','event software','virtual event','hybrid event','event tech','eventtech','registration technology','event management software','ai-powered event','chatbot','rfid','facial recognition'])
+    if (txt.includes(kw)) scores.tech += 4;
+  for (const kw of ['technology platform','digital event','online event','livestream','streaming','mobile app','qr code'])
+    if (txt.includes(kw)) scores.tech += 2;
+
+  // sustainability
+  for (const kw of ['esg','green meeting','carbon neutral','net zero','sustainable event','eco-friendly event','gmic','climate','sustainability','renewable energy','environmental certification','carbon offset','zero waste'])
+    if (txt.includes(kw)) scores.sustainability += 4;
+  for (const kw of ['sustainable','green ','carbon','environment','ecology'])
+    if (txt.includes(kw)) scores.sustainability += 1;
+
+  // market
+  for (const kw of ['market research','industry report','survey results','forecast','revenue data','statistics','economic impact','spending trend','growth outlook','market size','market share','industry data','benchmark','study finds','report shows','according to research'])
+    if (txt.includes(kw)) scores.market += 4;
+  for (const kw of ['report','survey','research','data','trend','growth','revenue','forecast','outlook'])
+    if (txt.includes(kw)) scores.market += 1;
+
+  // policy
+  for (const kw of ['government policy','regulation','ministry','legislation','visa policy','certification standard','official mandate','compliance','grant','subsidy','government support','industry regulation','trade policy','tax incentive'])
+    if (txt.includes(kw)) scores.policy += 4;
+  for (const kw of ['policy','regulation','government','law ','standard','authority','official'])
+    if (txt.includes(kw)) scores.policy += 1;
+
+  // 최고 점수 카테고리 반환 (동점 시 우선순위: convention > exhibition > incentive > tech > sustainability > market > policy)
+  const priority = ['convention','exhibition','incentive','tech','sustainability','market','policy'];
+  let best = 'convention';
+  let bestScore = -1;
+  for (const cat of priority) {
+    if (scores[cat] > bestScore) {
+      bestScore = scores[cat];
+      best = cat;
+    }
+  }
+  return best;
+}
+
 function buildOllamaPrompt(article) {
+  // 키워드 기반 카테고리 힌트 산출 (AI 분류 정확도 향상)
+  const hint = guessCategoryHint(article.title, article.content);
+
   return 'You are a Senior MICE Industry Strategy Consultant.\n' +
     'Analyze the following English article and provide a high-precision analysis in Korean.\n' +
     'Respond ONLY in valid JSON — no markdown fences, no extra text.\n\n' +
     '[SOURCE]: ' + (article.source || '') + '\n' +
     '[ARTICLE TITLE]: ' + (article.title || '') + '\n' +
-    '[CONTENT]:\n' + (article.content || article.title || '') + '\n\n' +
+    '[CONTENT]:\n' + (article.content || article.title || '').substring(0, 1500) + '\n\n' +
+    '[CATEGORY HINT — strong signal from keyword analysis]: ' + hint + '\n\n' +
+    'CATEGORY RULES (choose the MOST specific match):\n' +
+    '  convention    = PCO/PCMA/ICCA/MPI/CVB, congress, conference, convention center, meeting planner, business event, hosted buyer\n' +
+    '  exhibition    = trade show/expo/tradeshow/trade fair, booth, exhibitor, UFI/IAEE, show floor, exhibit hall\n' +
+    '  incentive     = incentive travel/trip/program, DMC, SITE Global, fam trip, reward travel\n' +
+    '  tech          = Cvent/Bizzabo/Stova, event app/platform/software, virtual/hybrid event technology, AI tools for events\n' +
+    '  sustainability= ESG, green meeting, carbon neutral, net zero, sustainable events, eco certification\n' +
+    '  market        = market research, industry report, statistics, forecast, revenue data, economic impact study\n' +
+    '  policy        = government policy, regulation, ministry, legislation, visa, certification, grant\n' +
+    'RULE: Follow the hint unless clear evidence in content contradicts it.\n\n' +
     '{\n' +
-    '  "category": "convention|exhibition|incentive|tech|sustainability|market|policy",\n' +
-    '  // convention=국제회의, exhibition=전시박람회, incentive=인센티브여행,\n' +
-    '  // tech=이벤트기술, sustainability=친환경ESG, market=시장통계리서치, policy=정책규제\n' +
+    '  "category": "' + hint + '",\n' +
     '  "article_type": "속보|분석|리포트",\n' +
     '  "title_ko": "...",\n' +
-    '  "summary_points": ["핵심 사실", "구체적 수치/인용", "한국 MICE 시장 영향"],\n' +
+    '  "summary_points": ["핵심 사실 + 수치", "구체적 인용/출처", "한국 MICE 시장 영향"],\n' +
     '  "insight": "한국 PCO/CVB/베뉴 담당자를 위한 2-3문장 전략적 인사이트",\n' +
     '  "content_ko": "<p>전문 한국어 번역</p>"\n' +
     '}';

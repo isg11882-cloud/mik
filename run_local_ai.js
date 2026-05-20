@@ -127,23 +127,63 @@ async function callOllamaText(prompt) {
 }
 
 // ─────────────────────────────────────────────
+// 카테고리 힌트 산출 (키워드 스코어링)
+// ─────────────────────────────────────────────
+function guessCategoryHint(title, content) {
+  const txt = ((title || '') + ' ' + (content || '')).toLowerCase();
+  const scores = { convention:0, exhibition:0, incentive:0, tech:0, sustainability:0, market:0, policy:0 };
+
+  const rules = [
+    ['convention',     4, ['congress','pcma','icca ','mpi ','cvb ','pco ','convention center','meeting planner','hosted buyer','association meeting','business event']],
+    ['convention',     1, ['conference','meeting','summit','forum','symposium','delegate','convention']],
+    ['exhibition',     4, ['trade show','tradeshow','trade fair','ufi ','iaee','show floor','exhibit hall','exhibitor','booth ','pavilion','trade exhibition']],
+    ['exhibition',     1, ['exhibition ','expo ','fair ','show ','exhibit ']],
+    ['incentive',      4, ['incentive travel','incentive trip','incentive program','dmc ','site global','fam trip','reward travel','incentive group']],
+    ['incentive',      2, ['incentive','luxury travel','group travel']],
+    ['tech',           4, ['cvent','bizzabo','stova','event app','event platform','virtual event','hybrid event','event software','event tech','ai-powered','registration tech']],
+    ['tech',           2, ['technology platform','digital event','livestream','mobile app','qr code']],
+    ['sustainability', 4, ['esg','green meeting','carbon neutral','net zero','sustainable event','gmic','carbon offset','zero waste','eco-friendly event']],
+    ['sustainability', 1, ['sustainable','green ','carbon','environment']],
+    ['market',         4, ['market research','industry report','survey results','forecast','revenue data','statistics','economic impact','market size','benchmark study','report shows','according to research']],
+    ['market',         1, ['report','survey','research','data','trend','growth','revenue','forecast','outlook']],
+    ['policy',         4, ['government policy','regulation','ministry','legislation','visa policy','certification standard','compliance','grant','subsidy','government support']],
+    ['policy',         1, ['policy','regulation','government','law ','official']],
+  ];
+
+  for (const [cat, weight, keywords] of rules)
+    for (const kw of keywords)
+      if (txt.includes(kw)) scores[cat] += weight;
+
+  const priority = ['convention','exhibition','incentive','tech','sustainability','market','policy'];
+  let best = 'convention', bestScore = -1;
+  for (const cat of priority)
+    if (scores[cat] > bestScore) { bestScore = scores[cat]; best = cat; }
+  return best;
+}
+
+// ─────────────────────────────────────────────
 // 기사 분석 — 2단계 분리
 // ─────────────────────────────────────────────
 async function analyzeArticle(article) {
   const content = (article.content_en || article.title || '').slice(0, 1500);
 
   // ── Step 1: 메타 JSON (title_ko, category, summary, insight) ──
-  // content_ko 없음 → JSON이 짧아서 잘릴 일이 없음
+  const hint = guessCategoryHint(article.title, content);
+
   const metaPrompt = `You are a MICE industry analyst. Output ONLY this JSON object, nothing else:
 {"category":"convention","article_type":"분석","title_ko":"한국어제목","summary_points":["핵심사실1","핵심사실2","핵심사실3"],"insight":"한국PCO/CVB담당자를위한2문장인사이트"}
 
-STRICT RULES:
-- category: convention | exhibition | incentive | tech | sustainability | market | policy
-- sustainability: 친환경·ESG·그린미팅·탄소중립 관련
-- market: 시장동향·통계·리서치·수익·전망 관련
-- policy: 정부정책·규제·인증·비자 관련
-- Each summary_point: max 40 Korean characters (be concise!)
-- insight: max 100 Korean characters total
+CATEGORY HINT (keyword analysis says: "${hint}") — follow this unless content clearly contradicts it.
+CATEGORY RULES:
+- convention    = PCO/PCMA/ICCA, congress/conference, convention center, meeting planner, CVB, hosted buyer
+- exhibition    = trade show/expo, booth/exhibitor, UFI/IAEE, show floor, exhibit hall
+- incentive     = incentive travel/trip/program, DMC, SITE, fam trip, reward travel
+- tech          = Cvent/Bizzabo, event app/platform, virtual/hybrid event tech, AI tools for events
+- sustainability= ESG, green meeting, carbon neutral, net zero, sustainable events
+- market        = market research, industry report, statistics, forecast, revenue data, economic impact
+- policy        = government policy, regulation, ministry, legislation, visa, certification, grant
+- Each summary_point: max 40 Korean characters
+- insight: max 100 Korean characters
 - Output ONLY the JSON object. Start with { and end with }
 
 Article title: ${article.title}
