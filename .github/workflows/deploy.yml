@@ -40,8 +40,9 @@ jobs:
           set -o pipefail
           mkdir -p dist
           cp MIK_MICE_Insight_Korea.html dist/index.html
+          # --branch 미지정 시 git HEAD 브랜치(master) 자동 감지 → 프로덕션 배포
           npx wrangler pages deploy dist \
             --project-name mik-dashboard \
-            --branch main \
             --commit-dirty=true \
             2>&1 | tee /tmp/pages-deploy.log
+          cat /tmp/pages-deploy.log
