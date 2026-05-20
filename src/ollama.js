@@ -1,16 +1,19 @@
 /**
  * MIK AI Module
  * Handles full MICE article analysis.
- * Priority: Local Ollama → Cloudflare Workers AI → Fallback placeholder
+ * Priority: rapid-mlx → Ollama → Cloudflare Workers AI → Fallback
  *
  * Required env vars:
- *   OLLAMA_URL   — e.g. https://your-tunnel.trycloudflare.com (optional)
- *   OLLAMA_MODEL — e.g. qwen2.5:7b  (default: qwen2.5:7b)
- *   AI           — Cloudflare Workers AI binding (automatic via wrangler.toml)
+ *   RAPID_MLX_URL   — e.g. https://your-tunnel.trycloudflare.com  (rapid-mlx preferred)
+ *   RAPID_MLX_MODEL — e.g. mlx-community/gemma-3-4b-it-4bit       (default)
+ *   OLLAMA_URL      — fallback if rapid-mlx not set
+ *   OLLAMA_MODEL    — e.g. qwen2.5:7b
+ *   AI              — Cloudflare Workers AI binding (wrangler.toml)
  */
 
 const DEFAULT_MODEL = 'qwen2.5:7b';
-const FETCH_TIMEOUT_MS = 25000;
+const DEFAULT_MLX_MODEL = 'mlx-community/gemma-3-4b-it-4bit';
+const FETCH_TIMEOUT_MS = 30000;
 
 const CATEGORY_MAP = {
   'convention':     { ko: '컨벤션·회의',   catClass: 'tag-convention' },
@@ -27,6 +30,56 @@ const CATEGORY_MAP = {
 
 // ─────────────────────────────────────────────
 // Ollama
+// ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+// rapid-mlx  (OpenAI-compatible /v1/chat/completions)
+// ─────────────────────────────────────────────
+
+async function callRapidMLX(prompt, env) {
+  const baseUrl = (env.RAPID_MLX_URL || '').replace(/\/$/, '');
+  const model   = env.RAPID_MLX_MODEL || DEFAULT_MLX_MODEL;
+  if (!baseUrl) throw new Error('RAPID_MLX_URL not configured');
+
+  let response;
+  try {
+    response = await fetch(baseUrl + '/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.1,
+        max_tokens: 2048,
+        response_format: { type: 'json_object' },
+      }),
+    });
+  } catch (err) {
+    throw new Error('rapid-mlx unreachable: ' + err.message);
+  }
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => '');
+    throw new Error('rapid-mlx HTTP ' + response.status + ': ' + errText.substring(0, 200));
+  }
+
+  const data = await response.json();
+  const text = data?.choices?.[0]?.message?.content || '';
+  if (!text) throw new Error('Empty response from rapid-mlx');
+
+  // JSON 파싱
+  let cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace  = cleaned.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+  }
+  return JSON.parse(cleaned);
+}
+
+// ─────────────────────────────────────────────
+// Ollama  (/api/generate — classic)
 // ─────────────────────────────────────────────
 
 async function callOllama(prompt, env) {
@@ -196,6 +249,17 @@ export async function translateTitle(text, env) {
     }
   }
 
+  // rapid-mlx 우선 (빠름)
+  if (env.RAPID_MLX_URL) {
+    try {
+      const prompt = 'Translate to Korean (MICE industry professional style). Return JSON only: {"title_ko": "..."}\n\nInput: "' + text + '"';
+      const result = await callRapidMLX(prompt, env);
+      if (result?.title_ko && result.title_ko !== text) return result.title_ko;
+    } catch (err) {
+      console.error('[rapid-mlx] Title translation failed:', err.message);
+    }
+  }
+
   // Fallback: Ollama
   if (env.OLLAMA_URL) {
     try {
@@ -215,17 +279,29 @@ export async function translateTitle(text, env) {
 // ─────────────────────────────────────────────
 
 export async function processArticle(article, env) {
-  // 1st choice: Ollama (best quality, runs locally)
+  const prompt = buildOllamaPrompt(article); // rapid-mlx도 같은 프롬프트 사용
+
+  // 1순위: rapid-mlx (가장 빠름 — Apple Silicon MLX)
+  if (env.RAPID_MLX_URL) {
+    try {
+      const result = await callRapidMLX(prompt, env);
+      return buildResult(article, result, 'rapid-mlx');
+    } catch (err) {
+      console.error('[rapid-mlx] processArticle failed, trying Ollama:', err.message);
+    }
+  }
+
+  // 2순위: Ollama (로컬 GPU/CPU)
   if (env.OLLAMA_URL) {
     try {
-      const result = await callOllama(buildOllamaPrompt(article), env);
+      const result = await callOllama(prompt, env);
       return buildResult(article, result, 'ollama');
     } catch (err) {
       console.error('[Ollama] processArticle failed, trying CW AI:', err.message);
     }
   }
 
-  // 2nd choice: Cloudflare Workers AI (always available, free tier)
+  // 3순위: Cloudflare Workers AI (항상 사용 가능, 무료)
   if (env.AI) {
     try {
       const result = await callCWAI(article, env);
@@ -235,7 +311,7 @@ export async function processArticle(article, env) {
     }
   }
 
-  // Last resort: placeholder
+  // 최종 폴백
   return fallbackResult(article);
 }
 

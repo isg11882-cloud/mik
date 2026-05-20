@@ -19,12 +19,19 @@ binding = "AI"
 # Environment variables (non-secret)
 [vars]
 ENVIRONMENT = "production"
-# Ollama model to use for AI analysis and translation
+# rapid-mlx 모델 (기본값 — RAPID_MLX_URL secret 설정 후 활성화)
+RAPID_MLX_MODEL = "mlx-community/gemma-3-4b-it-4bit"
+# Ollama 모델 (rapid-mlx 미설정 시 fallback)
 OLLAMA_MODEL = "qwen2.5:7b"
 
-# Secrets — set via CLI before deploying:
-#   wrangler secret put OLLAMA_URL
+# Secrets — wrangler CLI로 설정:
+#   wrangler secret put RAPID_MLX_URL   ← rapid-mlx 터널 URL (우선순위 1)
+#   wrangler secret put OLLAMA_URL      ← Ollama 터널 URL   (우선순위 2)
 #   wrangler secret put JWT_SECRET
 #
-# OLLAMA_URL example: https://your-tunnel.trycloudflare.com
-# (expose local Ollama via: cloudflared tunnel --url http://localhost:11434)
+# rapid-mlx 터널 실행:
+#   python -m mlx_lm.server --model mlx-community/gemma-3-4b-it-4bit --port 8080
+#   cloudflared tunnel --url http://localhost:8080
+#
+# Ollama 터널 실행:
+#   cloudflared tunnel --url http://localhost:11434

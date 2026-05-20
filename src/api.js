@@ -49,6 +49,34 @@ export async function handleApiRequest(request, env) {
       return corsResponse(jsonResponse(result));
     }
 
+    // GET /api/test-rapid-mlx — rapid-mlx 연결 진단
+    if (path === '/api/test-rapid-mlx' && request.method === 'GET') {
+      const url2 = (env.RAPID_MLX_URL || '').replace(/\/$/, '');
+      const model = env.RAPID_MLX_MODEL || 'mlx-community/gemma-3-4b-it-4bit';
+      if (!url2) return corsResponse(jsonResponse({ status: 'error', message: 'RAPID_MLX_URL secret not set' }));
+      try {
+        const modelsRes = await fetch(`${url2}/v1/models`, { signal: AbortSignal.timeout(6000) });
+        if (!modelsRes.ok) throw new Error(`HTTP ${modelsRes.status}`);
+        const modelsData = await modelsRes.json();
+        const available = (modelsData.data || []).map(m => m.id);
+
+        // 번역 테스트
+        const testRes = await fetch(`${url2}/v1/chat/completions`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(20000),
+          body: JSON.stringify({
+            model, messages: [{ role: 'user', content: 'Return JSON {"title_ko":"MICE 인사이트 코리아"}' }],
+            temperature: 0.1, max_tokens: 60,
+          }),
+        });
+        const testData = await testRes.json();
+        const testText = testData?.choices?.[0]?.message?.content || '';
+        return corsResponse(jsonResponse({ status: 'ok', model, available, test_output: testText }));
+      } catch (err) {
+        return corsResponse(jsonResponse({ status: 'error', message: err.message }));
+      }
+    }
+
     // GET /api/test-ollama — Ollama 연결 및 모델 상태 진단
     if (path === '/api/test-ollama' && request.method === 'GET') {
       return corsResponse(await testOllama(env));

@@ -483,6 +483,18 @@
     margin-top: 4px;
   }
 
+  .load-more-btn {
+    padding: 9px 28px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .load-more-btn:hover { background: var(--hover, #F1F5F9); }
+
   /* News items */
   .news-list {
     flex: 1;
@@ -2236,9 +2248,7 @@ function renderNewsList(articles, showMore) {
       '<' + '/div>' +
     '<' + '/div>';
   }).join('') +
-  (showMore ? '<div style="padding:16px;text-align:center;">' +
-    '<button onclick="loadMoreArticles()" style="padding:10px 32px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text-secondary);font-size:13px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='var(--surface)'">' +
-    '더 보기 (' + (ARTICLES_TOTAL - ARTICLES_OFFSET) + '개 남음)</button></div>' : '');
+  (showMore ? '<div style="padding:16px;text-align:center;"><button onclick="loadMoreArticles()" class="load-more-btn">더 보기 (' + (ARTICLES_TOTAL - ARTICLES_OFFSET) + '개 남음)</button></div>' : '');
 }
 
 // ====== SHOW ARTICLE — CSS 클래스 기반 (인라인 스타일 없음) ======

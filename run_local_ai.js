@@ -13,12 +13,17 @@
  * 자동: node run_local_ai.js --watch  (30분마다 반복)
  */
 
-const WORKER_URL     = 'https://mik-worker.isg11882.workers.dev';
-const OLLAMA_URL     = 'http://localhost:11434';
-let   OLLAMA_MODEL   = process.env.OLLAMA_MODEL || 'qwen2.5:7b';
-const ADMIN_SECRET   = process.env.MIK_SECRET   || 'mik_secret_key_2026';
-const BATCH_SIZE     = parseInt(process.env.BATCH_SIZE || '10');
-const WATCH_MODE     = process.argv.includes('--watch');
+const WORKER_URL          = 'https://mik-worker.isg11882.workers.dev';
+// ── AI 백엔드 설정 (환경변수 or 직접 수정) ──────────────────────
+const RAPID_MLX_URL   = process.env.RAPID_MLX_URL   || 'http://localhost:8080';  // rapid-mlx 기본 포트
+const RAPID_MLX_MODEL = process.env.RAPID_MLX_MODEL || 'mlx-community/gemma-3-4b-it-4bit';
+const OLLAMA_URL      = process.env.OLLAMA_URL      || 'http://localhost:11434';
+let   OLLAMA_MODEL    = process.env.OLLAMA_MODEL    || 'qwen2.5:7b';
+// USE_RAPID_MLX=true 이면 rapid-mlx 우선, false면 Ollama 우선
+let   USE_RAPID_MLX   = process.env.USE_RAPID_MLX !== 'false'; // 기본값 true
+const ADMIN_SECRET    = process.env.MIK_SECRET      || 'mik_secret_key_2026';
+const BATCH_SIZE      = parseInt(process.env.BATCH_SIZE || '10');
+const WATCH_MODE      = process.argv.includes('--watch');
 const WATCH_INTERVAL_MIN = 30;
 
 // ── 반복 실패 추적: 기사 ID → 실패 횟수 ──────────────────────────
@@ -78,6 +83,34 @@ const CATEGORY_MAP = {
   bio:            'tag-sustainability',
   general:        'tag-market',
 };
+
+// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// rapid-mlx 호출 — OpenAI 호환 API (/v1/chat/completions)
+// ─────────────────────────────────────────────
+async function callRapidMLX(prompt, jsonMode = true) {
+  const res = await fetch(`${RAPID_MLX_URL}/v1/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: RAPID_MLX_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.1,
+      max_tokens: jsonMode ? 900 : 2000,
+      ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
+    }),
+    signal: AbortSignal.timeout(jsonMode ? 60000 : 90000),
+  });
+  if (!res.ok) throw new Error(`rapid-mlx HTTP ${res.status}`);
+  const data = await res.json();
+  const text = (data?.choices?.[0]?.message?.content || '').trim();
+  if (!text) throw new Error('rapid-mlx 응답 비어있음');
+  if (!jsonMode) return text;
+  const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+  const fb = cleaned.indexOf('{'), lb = cleaned.lastIndexOf('}');
+  if (fb === -1 || lb <= fb) throw new Error(`JSON 없음. 응답: ${text.slice(0, 100)}`);
+  return JSON.parse(cleaned.slice(fb, lb + 1));
+}
 
 // ─────────────────────────────────────────────
 // Ollama 호출 — JSON 모드 (메타 전용)
@@ -190,9 +223,12 @@ Article title: ${article.title}
 Source: ${article.source || ''}
 Content: ${content.slice(0, 700)}`;
 
-  const meta = await callOllamaJSON(metaPrompt);
+  // 백엔드에 따라 분기
+  const meta = USE_RAPID_MLX
+    ? await callRapidMLX(metaPrompt, true)
+    : await callOllamaJSON(metaPrompt);
 
-  // ── Step 2: 한국어 번역 (plain text, JSON 아님) ────────────────
+  // ── Step 2: 한국어 번역 (plain text) ──────────────────────────
   let content_ko = '';
   try {
     const transPrompt = `MICE 산업 전문 번역가입니다. 아래 영어 기사를 자연스러운 한국어로 번역하세요.
@@ -202,7 +238,9 @@ Content: ${content.slice(0, 700)}`;
 
 ${content.slice(0, 1000)}`;
 
-    const raw = await callOllamaText(transPrompt);
+    const raw = USE_RAPID_MLX
+      ? await callRapidMLX(transPrompt, false)
+      : await callOllamaText(transPrompt);
     if (raw.length > 30) {
       content_ko = '<p>' + raw.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
     }
@@ -288,23 +326,32 @@ async function skipArticle(id) {
 async function runOnce() {
   console.log(`\n[${new Date().toLocaleTimeString('ko-KR')}] ═══ MIK 로컬 AI 처리 시작 ═══`);
 
-  // 1. Ollama 연결 확인 + 모델 자동 선택
-  try {
-    const r = await fetch(`${OLLAMA_URL}/api/tags`, { signal: AbortSignal.timeout(5000) });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const d = await r.json();
-    const models = (d.models || []).map(m => m.name);
-    if (models.length === 0) { console.error('❌ 설치된 Ollama 모델 없음'); return; }
-
-    const hasModel = models.some(m => m.startsWith(OLLAMA_MODEL.split(':')[0]));
-    if (!hasModel) {
-      OLLAMA_MODEL = models[0];
-      console.log(`⚠️  모델 자동 선택: ${OLLAMA_MODEL}`);
+  // 1. AI 백엔드 연결 확인 (rapid-mlx 우선, Ollama 폴백)
+  if (USE_RAPID_MLX) {
+    try {
+      const r = await fetch(`${RAPID_MLX_URL}/v1/models`, { signal: AbortSignal.timeout(5000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      console.log(`✅ rapid-mlx OK | 모델: ${RAPID_MLX_MODEL} | URL: ${RAPID_MLX_URL}`);
+    } catch (e) {
+      console.warn(`⚠️  rapid-mlx 연결 실패 (${e.message}) → Ollama로 전환`);
+      USE_RAPID_MLX = false;
     }
-    console.log(`✅ Ollama OK | 모델: ${OLLAMA_MODEL}`);
-  } catch (e) {
-    console.error(`❌ Ollama 연결 실패: ${e.message}`);
-    return;
+  }
+  if (!USE_RAPID_MLX) {
+    try {
+      const r = await fetch(`${OLLAMA_URL}/api/tags`, { signal: AbortSignal.timeout(5000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      const models = (d.models || []).map(m => m.name);
+      if (models.length === 0) { console.error('❌ 설치된 Ollama 모델 없음'); return; }
+      const hasModel = models.some(m => m.startsWith(OLLAMA_MODEL.split(':')[0]));
+      if (!hasModel) { OLLAMA_MODEL = models[0]; console.log(`⚠️  모델 자동 선택: ${OLLAMA_MODEL}`); }
+      console.log(`✅ Ollama OK | 모델: ${OLLAMA_MODEL}`);
+    } catch (e) {
+      console.error(`❌ Ollama 연결 실패: ${e.message}`);
+      console.error('rapid-mlx 또는 Ollama 중 하나가 실행 중이어야 합니다.');
+      return;
+    }
   }
 
   // 2. 미번역 기사 가져오기
