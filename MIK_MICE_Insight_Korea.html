@@ -414,24 +414,42 @@
 
   /* Today's highlights */
   .highlights {
-    padding: 12px 16px;
+    padding: 10px 14px 12px;
     border-bottom: 1px solid var(--border);
-    background: linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%);
+    background: linear-gradient(135deg, #F0F4FF 0%, #F5F3FF 100%);
   }
+  body.dark-mode .highlights { background: linear-gradient(135deg, #1a1f2e 0%, #1e1a2e 100%); }
   .highlights-title {
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--text-primary);
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
     margin-bottom: 8px;
+    cursor: pointer;
+    user-select: none;
   }
+  .highlights-title .hl-left { display:flex; align-items:center; gap:5px; }
+  .highlights-title .hl-count { font-size:11px; font-weight:500; color:var(--text-secondary); background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1px 7px; }
+  .highlights-title .hl-toggle { font-size:16px; color:var(--text-secondary); transition:transform .2s; }
+  .highlights-title .hl-toggle.collapsed { transform: rotate(180deg); }
+  .highlight-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    overflow: hidden;
+    transition: max-height .3s ease, opacity .3s;
+    max-height: 400px;
+    opacity: 1;
+  }
+  .highlight-cards-grid.collapsed { max-height: 0; opacity: 0; pointer-events:none; }
+  @media (max-width: 400px) { .highlight-cards-grid { grid-template-columns: 1fr; } }
   .highlight-card {
-    background: white;
+    background: var(--surface);
     border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 12.5px;
+    padding: 9px 11px;
+    font-size: 12px;
     color: var(--text-primary);
     cursor: pointer;
     border: 1px solid var(--border);
@@ -439,12 +457,30 @@
     line-height: 1.4;
     box-shadow: var(--shadow-sm);
   }
-  .highlight-card:hover { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+  .highlight-card:hover { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99,102,241,.12); }
+  .highlight-card:active { opacity: 0.85; }
   .highlight-card .hc-meta {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 6px;
     margin-bottom: 5px;
+  }
+  .highlight-card .hc-title {
+    font-weight: 600;
+    font-size: 12.5px;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .highlight-card .hc-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
   }
 
   /* News items */
@@ -1725,6 +1761,20 @@
 
 
 
+  <!-- 오늘 주요뉴스 -->
+  <div class="highlights" id="highlightsSection" style="display:none;">
+    <div class="highlights-title" onclick="toggleHighlights()">
+      <div class="hl-left">
+        <span>🔥 오늘 주요뉴스</span>
+        <span class="hl-count" id="hlCount"></span>
+      </div>
+      <span class="hl-toggle" id="hlToggleIcon">∧</span>
+    </div>
+    <div class="highlight-cards-grid" id="highlightCards">
+      <!-- JS로 주입 -->
+    </div>
+  </div>
+
   <!-- News feed -->
   <div class="news-list" id="newsList">
     <!-- Items injected by JS -->
@@ -2105,6 +2155,7 @@ async function fetchArticles(params = {}) {
     }
     ARTICLES_OFFSET = ARTICLES.length;
     renderNewsList(ARTICLES, ARTICLES_OFFSET < ARTICLES_TOTAL);
+    if (!isAppend) renderHighlights(ARTICLES);
     checkKeywordAlerts(ARTICLES);
     updateBookmarkBadge();
     renderSourceTabs(ARTICLES);
@@ -2407,6 +2458,64 @@ function initFilterScroll() {
   }, { passive: true });
 
   setTimeout(checkOverflow, 200);
+}
+
+// ── 오늘 주요뉴스 ──────────────────────────────
+function renderHighlights(articles) {
+  const section  = document.getElementById('highlightsSection');
+  const grid     = document.getElementById('highlightCards');
+  const countEl  = document.getElementById('hlCount');
+  if (!section || !grid) return;
+
+  // 오늘 날짜 기준 (24시간 이내) 기사 중 insight 있는 것 우선, 없으면 최신순
+  const now = Date.now();
+  const todayMs = 24 * 3600 * 1000;
+
+  // insight 있는 최신 기사 최대 2개
+  let picks = articles
+    .filter(a => a.insight && a.insight.length > 10)
+    .slice(0, 2);
+
+  // insight 2개 미만이면 최신 기사로 보충
+  if (picks.length < 2) {
+    const extra = articles
+      .filter(a => !picks.includes(a))
+      .slice(0, 2 - picks.length);
+    picks = picks.concat(extra);
+  }
+
+  if (picks.length === 0) { section.style.display = 'none'; return; }
+
+  countEl.textContent = picks.length + '건';
+  section.style.display = 'block';
+
+  grid.innerHTML = picks.map(a => {
+    const borderColor = {
+      'tag-convention':'#15803D','tag-exhibition':'#0369A1','tag-incentive':'#C2410C',
+      'tag-tech':'#6D28D9','tag-sustainability':'#065F46','tag-market':'#92400E','tag-policy':'#991B1B'
+    }[a.catClass] || '#6366F1';
+
+    return '<div class="highlight-card" onclick="showArticle(' + a.id + ')" style="border-left:3px solid ' + borderColor + ';">' +
+      '<div class="hc-meta">' +
+        '<span class="news-tag ' + (a.catClass||'tag-convention') + '" style="font-size:10px;">' + (a.cat||'') + '</span>' +
+        '<span class="ni-time" style="font-size:10.5px;">' + (a.time||'') + '</span>' +
+      '</div>' +
+      '<div class="hc-title">' + (a.title_ko || a.title || '') + '</div>' +
+      '<div class="hc-foot">' +
+        '<span class="ni-source" style="font-size:10.5px;">' + (a.source||'') + '</span>' +
+        '<span style="font-size:10.5px;color:#94A3B8;">👁 ' + (a.views||0) + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+let _hlCollapsed = false;
+function toggleHighlights() {
+  _hlCollapsed = !_hlCollapsed;
+  const grid = document.getElementById('highlightCards');
+  const icon = document.getElementById('hlToggleIcon');
+  if (grid) grid.classList.toggle('collapsed', _hlCollapsed);
+  if (icon) icon.classList.toggle('collapsed', _hlCollapsed);
 }
 
 function scrollFilterLeft() {
