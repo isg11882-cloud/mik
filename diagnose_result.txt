@@ -1,0 +1,93 @@
+=== D1 Database 진단 Thu May 21 16:42:37 UTC 2026 ===
+--- 총 기사 수 ---
+
+{
+  "error": {
+    "text": "A request to the Cloudflare API (/accounts/819988a3aa561a7efcadcc9dab75276c/d1/database/bf91713c-3474-4e48-8ece-9a759707754b/query) failed.",
+    "notes": [
+      {
+        "text": "The given account is not valid or is not authorized to access this service [code: 7403]"
+      }
+    ],
+    "kind": "error",
+    "name": "APIError",
+    "code": 7403,
+    "accountTag": "819988a3aa561a7efcadcc9dab75276c"
+  }
+}
+query failed
+--- 카테고리 분포 ---
+
+{
+  "error": {
+    "text": "A request to the Cloudflare API (/accounts/819988a3aa561a7efcadcc9dab75276c/d1/database/bf91713c-3474-4e48-8ece-9a759707754b/query) failed.",
+    "notes": [
+      {
+        "text": "The given account is not valid or is not authorized to access this service [code: 7403]"
+      }
+    ],
+    "kind": "error",
+    "name": "APIError",
+    "code": 7403,
+    "accountTag": "819988a3aa561a7efcadcc9dab75276c"
+  }
+}
+query failed
+--- insight 상태 분포 ---
+
+{
+  "error": {
+    "text": "A request to the Cloudflare API (/accounts/819988a3aa561a7efcadcc9dab75276c/d1/database/bf91713c-3474-4e48-8ece-9a759707754b/query) failed.",
+    "notes": [
+      {
+        "text": "The given account is not valid or is not authorized to access this service [code: 7403]"
+      }
+    ],
+    "kind": "error",
+    "name": "APIError",
+    "code": 7403,
+    "accountTag": "819988a3aa561a7efcadcc9dab75276c"
+  }
+}
+query failed
+--- 최근 3개 기사 (전체 컬럼) ---
+
+{
+  "error": {
+    "text": "A request to the Cloudflare API (/accounts/819988a3aa561a7efcadcc9dab75276c/d1/database/bf91713c-3474-4e48-8ece-9a759707754b/query) failed.",
+    "notes": [
+      {
+        "text": "The given account is not valid or is not authorized to access this service [code: 7403]"
+      }
+    ],
+    "kind": "error",
+    "name": "APIError",
+    "code": 7403,
+    "accountTag": "819988a3aa561a7efcadcc9dab75276c"
+  }
+}
+query failed
+
+=== Worker API 테스트 Thu May 21 16:42:41 UTC 2026 ===
+--- /health ---
+{"status":"ok","service":"MIK Worker","timestamp":"2026-05-21T16:42:41.788Z","deploy_version":"DEBUG_LOGS_ENABLED_V3"}
+--- /api/articles?limit=1 (전체 JSON) ---
+{"articles":[{"id":599,"source":"Skift Meetings","cat":"general","catClass":"tag-convention","type":"분석","time":"41분 전","views":0,"title":"Lisbon Tops ICCA’s Association Meeting Rankings","titleKo":"리스본, ICCA 협회 회의 순위에서 글로벌 1위 등극","url":"https://meetings.skift.com/2026/05/21/lisbon-tops-iccas-association-meeting-rankings/","author":"Skift Meetings","date":"2026-05-21","summaryPoints":["리스본이 국제 협회 회의 글로벌 순위에서 1위를 차지하며 성공적인 관광지 이미지를 확장했습니다.","ICCA의 2025년 보고서에 따르면, 파리가 2위, 바르셀로네가 3위를 기록했습니다.","리스본은 188개의 협회 회의를 유치하며 10만 명 이상의 참가자를 끌어모아 도시 경제와 국제적 인지도를 높였습니다."],"insight":"리스본의 성공은 관광객 유치에만 머무르지 않고, 전문 컨벤션 개최 능력까지 입증하며 MICE 산업의 다각화된 매력을 보여줍니다. 한국 MICE 담당자들은 도시의 기존 강점(예: 관광)과 전문 컨벤션 개최 역량을 결합한 마케팅 전략을 수립하는 것이 중요합니다.","enText":"Skift Take Lisbon's success story as a leisure destination is now also reflected in the latest ICCA association meeting rankings. Summarize Story Share WhatsApp LinkedIn X Facebook Email How does the U.S. perform in association meeting rankings at both the country and city levels? What are ICCA's projections for association meetings and delegate spending by 2030? Which cities and countries experienced the largest gains or losses in ICCA's 2025 rankings? Select a question above or ask something else After podium finishes in the last four ICCA city rankings, Lisbon has secured the top position in the global ranking for international association meetings. Visit Lisboa Managing Director António Valle highlights how Lisbon’s 188 association meetings attracted over 100,000 participants, boosting the city’s economy and international visibility, in a Portuguese LinkedIn post . City Rankings ICCA released its GlobeWatch: Business Analytics – Country & City Rankings 2025 report, ranking Paris #2 and Barcelona #3. Paris was expected to recover from its Olympic year. The city consistently held a podium position in the ICCA rankings, including the top spot for 2023, but dropped to sixth for 2024. Barcelona’s third place is a return to the podium after being first in the 2017 rankings but not back in the top 3 until now. Copenhagen, London and Tokyo broke into the top 10, replacing Bangkok, Rome and Athens. Europe holds 53% of all ICCA-tracked meetings and has seven of the top 10 cities. Lisbon Paris Barcelona Vienna Singapore Prague Copenhagen London Seoul Tokyo Outside the top 10, Porto, Portugal — host of the 2025 ICCA Congress — Dubai, Mexico City, Lima, Sao Paulo, and Bogota gained significant market share compared to 2024. Dubai’s rise may not last in 2026 due to the Iran war . Meanwhile Milan, Stockholm, Helsinki, Melbourne, and Ljubljana lost market share compared to 2024. Country Rankings At a country level, the U.S. once again leads the pack: U.S Italy Germany Spain UK Japan France Portugal Netherlands China As in previous years, the U.S. has no single destination in the top positions. The first U.S. city in ICCA’s 2025 rankings is Washington, D.C., at #53 with 47 meetings. If ICCA’s criteria included association meetings rotating within the U.S. and Canada, this count would be higher. Italy remains in second place, ahead of Germany, which consistently held the second spot pre-Covid. ICCA’s numbers reveal a drop from 635 in 2024 to 616, representing a drop from 5.72% to 4.95% in Italy’s share of meetings. China returned to the ICCA’s top 10, but not at the pre-Covid heights of seventh place. China leads countries increasing their market share, with Canada, Portugal, and Mexico among the sharpest risers. Brazil’s rise is notable as their 2025 total of 276 meetings is higher than its pre-Covid peak of 244. This supports the increase in Latin America, with 1,124 association meetings in 2025 up from 903 in 2024. Italy drops the most, followed by Finland, Spain, Sweden, Greece, the UK, and Belgium, which also lose out. The Value of Association Meetings The report states that direct expenditure from ICCA-tracked meetings was $13.57 billion in 2025. This represents an average delegate spend of $2,708 (up from $2,624). The average association meeting registration fee was $596 with meetings lasting 3.7 days. ICCA forecasts that by 2030 it will track over 15,000 association meetings, close to 6.7 million participants generating $18.54 billion in delegate expenditure. ICCA argues that association meetings of all sizes are valuable for destinations. However, it describes meetings of 500 to 1,000 participants as offering the “best attainability and return.” ICCA’s estimates of the average delegate spend for meetings of different sizes. 50–249: $300,000 250–999: $1.3 million 1,000–1,999: $4.4 million 2,000–2,999: $9 million 3,000+: $20 million For its 2025 rankings, ICCA tracked 12,438 meetings, an increase of 1,339 (10.8%) from last year. This number is close to the peak of 13,329 (-6.7%) in 2019. ICCA only includes association meetings with a regular cadence (annual, biennial or other) of 50+ persons rotating internationally within at least three countries or territories. Data on the meetings is reported by the destinations and tracked by ICCA’s research team. \" > Up Next Destinations Cvent’s 2026 Top Meeting Destinations and Hotels Planners sourcing on Cvent stuck to their guns on destination selection. On the hotel front, Cvent’s criteria shift now rewards hotels that bid the most, resulting in significant ranking shifts. Miguel Neves | 22 minutes ago","koText":"<p>스킵트(Skift)에 따르면, 리스본의 성공 스토리가 레저 목적지로서의 이미지를 넘어 최신 ICCA 협회 회의 순위에서도 반영되고 있습니다. ICCA가 발표한 2025년 글로벌 보고서(GlobeWatch: Business Analytics – Country & City Rankings)에 따르면, 리스본이 국제 협회 회의 글로벌 순위에서 1위를 차지하며 선두를 지켰습니다. 리스본의 매니징 디렉터 안토니오 바예(António Valle)는 리스본이 개최한 188개의 협회 회의가 10만 명 이상의 참가자를 유치하며 도시 경제와 국제적 가시성을 높였다고 강조했습니다. 이 보고서에는 파리가 2위, 바르셀로네가 3위로 순위에 올랐습니다. 파리는 올림픽 개최지였던 해의 회복세가 예상되었으나, 2023년 1위를 차지했던 것과 비교하여 2025년에는 6위로 하락했습니다.</p>"}],"total":429,"limit":1,"offset":0}
+--- /api/articles?limit=3 total 카운트 ---
+total=429  articles_returned=3
+--- /api/pending?limit=3 ---
+pending count=3
+--- CORS headers (Origin: pages.dev) ---
+HTTP/2 404 
+date: Thu, 21 May 2026 16:42:42 GMT
+content-type: application/json
+access-control-allow-origin: *
+access-control-allow-headers: Content-Type
+access-control-allow-methods: GET, POST, OPTIONS
+access-control-max-age: 86400
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=hHhAujl7l6dwuWzIckGJl27f8jwKLIiaUTK%2Ftsa5QoWBH5CLTgCOJHnIXqiLPyxURC6bUmpc%2BYXdYTTzt392N27G5y%2F5QVJ15z%2F6Nx%2FNXbDkk7em5Wdy8bdbFYnJsNojbotPZDXRBKC1%2F2kz5NR%2FMoYr"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: 9ff5093159081321-SJC
+alt-svc: h3=":443"; ma=86400
+
