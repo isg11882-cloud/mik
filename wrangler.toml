@@ -1,0 +1,19 @@
+# ──────────────────────────────────────────────────────
+# Cloudflare Pages / Workers 설정
+# ──────────────────────────────────────────────────────
+
+name = "ex-back"
+compatibility_date = "2024-11-18"
+compatibility_flags = ["nodejs_compat"]
+
+# ── 환경변수 ─────────────────────────────────────────
+[vars]
+GEMMA_MODEL_ID = "gemini-1.5-flash-latest"
+NEXT_PUBLIC_APP_URL = "https://ex-back.pages.dev"
+NEXT_PUBLIC_SUPABASE_URL = "https://duiwsicqmpqijuhobhun.supabase.co"
+
+# ── 빌드 설정 ─────────────────────────────────────────
+# Cloudflare Pages 대시보드 설정이 우선되지만, 로컬 테스트를 위해 남겨둡니다.
+[build]
+command = "npm run build"
+path = ".next"
