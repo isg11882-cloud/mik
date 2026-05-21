@@ -1,5 +1,5 @@
 name: Diagnose MIK System
-# v3 - 2026-05-22: Worker API 전체 응답 + D1 직접 진단 강화
+# v3b - 2026-05-22 run2: Worker API 전체 응답 + D1 직접 진단 강화
 
 on:
   workflow_dispatch:
