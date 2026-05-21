@@ -65,7 +65,8 @@ jobs:
           npx wrangler pages deploy dist \
             --project-name mik-dashboard \
             --branch master \
-            --commit-dirty=true 2>&1 | tee -a pages_deploy.log
+            --commit-dirty=true \
+            --commit-message="ci-deploy-$(date -u +%Y%m%d-%H%M%S)" 2>&1 | tee -a pages_deploy.log
 
           echo "=== Done. Check mik-dashboard.pages.dev ===" | tee -a pages_deploy.log
 
