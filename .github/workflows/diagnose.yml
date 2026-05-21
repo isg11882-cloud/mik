@@ -77,7 +77,7 @@ jobs:
           echo "=============================="
           git config user.email "premierplanlab@gmail.com"
           git config user.name "MIK-CI"
-          git checkout -B ci-results
+          git checkout -B ci-diagnose
           git add -f diagnose_result.txt
           git commit -m "diagnose: $(date -u +%H:%M:%S) [skip ci]" || true
-          git push origin ci-results --force 2>&1 || true
+          git push origin ci-diagnose --force 2>&1 || true
