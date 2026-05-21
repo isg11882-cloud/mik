@@ -8,6 +8,7 @@
 import { fetchAllFeeds, fetchFullContent } from './rss-parser.js';
 import { processArticles, translateTitle } from './ollama.js';
 import { handleApiRequest } from './api.js';
+import { isMiceRelevant } from './mice-filter.js';
 
 /**
  * Translate a title.
@@ -80,30 +81,43 @@ export async function fetchAndStoreRawRSS(env) {
   }
 
   const newItems = await deduplicateItems(feedItems, env);
-  console.log(`[Crawl] ${newItems.length} new items to store as RAW`);
+  console.log(`[Crawl] ${newItems.length} new items after dedup`);
 
   if (newItems.length === 0) {
     return { status: 'no_new', message: 'All items already in DB' };
   }
 
   let storedCount = 0;
+  let filteredCount = 0;
+
   for (const item of newItems) {
-    console.log(`[Crawl] Fetching & Translating: ${item.title}`);
     try {
+      // ── MICE 관련성 필터 ──────────────────────────────────────────
+      const preCheck = isMiceRelevant(item.title, item.content || '');
+      if (!preCheck.pass) {
+        console.log(`[Filter] SKIP (score=${preCheck.score}): ${item.title.slice(0, 60)}`);
+        filteredCount++;
+        continue;
+      }
+      console.log(`[Filter] PASS (score=${preCheck.score}): ${item.title.slice(0, 60)}`);
+
+      // ── 본문 전문 가져오기 (필터 재검사 없음 — 제목 기반 필터 통과 시 저장)
       const fullContent = await fetchFullContent(item.link);
-      if (fullContent) {
+      if (fullContent && fullContent.length > 100) {
         item.content = fullContent;
       }
-      
-      // Free translation for Title right away!
+
+      // ── 제목 즉시 번역 ─────────────────────────────────────────────
       item.title_ko = await translateText(item.title, env);
-      
+
       await storeArticleRaw(item, env);
       storedCount++;
     } catch (e) {
       console.error(`[Crawl] Failed to store raw article ${item.title}:`, e.message);
     }
   }
+
+  console.log(`[Crawl] MICE filter: ${filteredCount} articles blocked, ${storedCount} stored`);
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   console.log(`[Crawl] Raw fetch complete: ${storedCount} articles stored in ${elapsed}s`);
@@ -122,7 +136,7 @@ export async function processAIQueue(env, limit = 2) {
     return { status: 'error', message: 'No AI service configured' };
   }
 
-  const query = `SELECT * FROM articles WHERE insight = '' OR insight IS NULL OR insight LIKE '%대기%' ORDER BY created_at DESC LIMIT ?`;
+  const query = `SELECT * FROM articles WHERE (insight = '' OR insight IS NULL OR insight LIKE 'AI 분석%' OR insight LIKE 'pending%') AND insight != 'skip-non-mice' ORDER BY created_at DESC LIMIT ?`;
   const debugLogs = [`Executing query: ${query} with limit ${limit}`];
 
   const pending = await env.DB.prepare(query).bind(limit).all();
@@ -240,7 +254,7 @@ async function storeArticle(article, env) {
  * Store a raw article without AI processing.
  */
 async function storeArticleRaw(item, env) {
-  const defaultInsight = 'AI 분석 대기 중입니다.';
+  const defaultInsight = '';
   await env.DB.prepare(`
     INSERT OR IGNORE INTO articles 
     (guid, title, title_ko, link, pub_date, source, category, cat_class, article_type, author, summary_json, insight, content_en, content_ko)
@@ -259,7 +273,7 @@ async function storeArticleRaw(item, env) {
     JSON.stringify([item.title, `${item.source} 보도`, 'AI 분석 대기 중']),
     defaultInsight,
     item.content || '',
-    item.content_ko || '<p>AI 번역 대기 중입니다.</p>'
+    item.content_ko || ''
   ).run();
 }
 

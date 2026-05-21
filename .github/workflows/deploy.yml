@@ -1,4 +1,4 @@
-name: Deploy MIK to Cloudflare
+name: Deploy MIK Worker to Cloudflare
 
 on:
   push:
@@ -6,10 +6,12 @@ on:
       - master
 
 jobs:
-  deploy:
-    name: Deploy
+  deploy-worker:
+    name: Deploy Worker + Pages
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -28,20 +30,59 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          set -o pipefail
-          npx wrangler deploy 2>&1 | tee /tmp/worker-deploy.log
+        run: npx wrangler deploy 2>&1
 
-      - name: Deploy HTML to Cloudflare Pages
+      - name: Deploy HTML to Cloudflare Pages (production)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          set -o pipefail
           mkdir -p dist
           cp MIK_MICE_Insight_Korea.html dist/index.html
+          cp og-image.png dist/og-image.png 2>/dev/null || true
+          cp _redirects dist/_redirects 2>/dev/null || true
+
+          # 1) 현재 Pages 프로젝트의 production_branch 확인
+          echo "=== Checking current Pages project settings ===" | tee pages_deploy.log
+          PROJ_INFO=$(curl -s \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/mik-dashboard" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          CURRENT_PROD=$(echo "$PROJ_INFO" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('result',{}).get('production_branch','UNKNOWN'))" 2>/dev/null || echo "PARSE_ERROR")
+          echo "Current production_branch: $CURRENT_PROD" | tee -a pages_deploy.log
+
+          # 2) production_branch를 master로 변경 시도
+          echo "=== Setting production_branch to master ===" | tee -a pages_deploy.log
+          PATCH_RESP=$(curl -s -X PATCH \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/mik-dashboard" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"production_branch":"master"}')
+          PATCH_OK=$(echo "$PATCH_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK:'+d.get('result',{}).get('production_branch','?')) if d.get('success') else print('FAIL:'+str(d.get('errors')))" 2>/dev/null || echo "PARSE_ERROR")
+          echo "PATCH result: $PATCH_OK" | tee -a pages_deploy.log
+
+          # 3) master 브랜치로 배포 (production_branch=master이면 production URL에 반영됨)
+          echo "=== Deploying to Pages (--branch master) ===" | tee -a pages_deploy.log
           npx wrangler pages deploy dist \
             --project-name mik-dashboard \
             --branch master \
-            --commit-dirty=true \
-            2>&1 | tee /tmp/pages-deploy.log
+            --commit-dirty=true 2>&1 | tee -a pages_deploy.log
+
+          echo "=== Done. Check mik-dashboard.pages.dev ===" | tee -a pages_deploy.log
+
+      - name: Recategorize articles via D1
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/recategorize.js 2>&1 | tail -20 || true
+
+      - name: Save results and push to ci-results
+        if: always()
+        run: |
+          [ -f recategorize_result.json ] || echo '{"status":"no_result"}' > recategorize_result.json
+          git config user.email "premierplanlab@gmail.com"
+          git config user.name "MIK-CI"
+          git checkout -B ci-results
+          git add -f recategorize_result.json pages_deploy.log 2>/dev/null || true
+          git commit -m "ci: 배포결과 $(date -u +%H:%M:%S) [skip ci]" || true
+          git push origin ci-results --force 2>&1 || true

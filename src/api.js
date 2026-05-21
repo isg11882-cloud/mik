@@ -49,10 +49,122 @@ export async function handleApiRequest(request, env) {
       return corsResponse(jsonResponse(result));
     }
 
+    // GET /api/test-ollama — Ollama 연결 및 모델 상태 진단
+    if (path === '/api/test-ollama' && request.method === 'GET') {
+      return corsResponse(await testOllama(env));
+    }
+
     // POST /api/repair/titles — repair English titles using free AI
     if (path === '/api/repair/titles' && request.method === 'POST') {
       const { repairTitles } = await import('./index.js');
       const result = await repairTitles(env);
+      return corsResponse(jsonResponse(result));
+    }
+
+    // GET /api/pending — 미번역 기사 목록 반환 (로컬 AI 스크립트용)
+    if (path === '/api/pending' && request.method === 'GET') {
+      const limit = parseInt(url.searchParams.get('limit') || '20');
+      const result = await env.DB.prepare(`
+        SELECT id, title, content_en, source, link
+        FROM articles
+        WHERE (insight = '' OR insight IS NULL OR insight LIKE 'AI 분석%' OR insight = 'pending')
+          AND (insight IS NULL OR insight != 'skip-non-mice')
+        ORDER BY created_at DESC LIMIT ?
+      `).bind(limit).all();
+      return corsResponse(jsonResponse({ articles: result.results || [], count: (result.results||[]).length }));
+    }
+
+    // POST /api/admin/sync — 로컬 Ollama 처리 결과 업로드
+    if (path === '/api/admin/sync' && request.method === 'POST') {
+      const authHeader = request.headers.get('Authorization') || '';
+      const token = authHeader.replace('Bearer ', '').trim();
+      const secret = env.JWT_SECRET || 'mik_secret_key_2026';
+      if (token !== secret) {
+        return corsResponse(jsonResponse({ error: 'Unauthorized' }, 401));
+      }
+      let body;
+      try { body = await request.json(); } catch(e) { return corsResponse(jsonResponse({ error: 'Invalid JSON' }, 400)); }
+      const articles = body.articles || [];
+      if (!Array.isArray(articles) || articles.length === 0) {
+        return corsResponse(jsonResponse({ error: 'articles array required' }, 400));
+      }
+      let updated = 0;
+      for (const a of articles) {
+        if (!a.id) continue;
+        try {
+          await env.DB.prepare(`
+            UPDATE articles SET
+              title_ko = ?, summary_json = ?, insight = ?,
+              content_ko = ?, category = ?, cat_class = ?, article_type = ?
+            WHERE id = ?
+          `).bind(
+            a.title_ko || '', JSON.stringify(a.summary_points || []),
+            a.insight || 'done', a.content_ko || '',
+            a.category || 'general', a.cat_class || 'tag-convention',
+            a.article_type || '분석', a.id
+          ).run();
+          updated++;
+        } catch(err) { console.error('[Sync] Update failed for id', a.id, err.message); }
+      }
+      return corsResponse(jsonResponse({ status: 'ok', updated, total: articles.length }));
+    }
+
+    // GET /api/stats — 카테고리별/날짜별 기사 통계 (리포트 패널용)
+    if (path === '/api/stats' && request.method === 'GET') {
+      const [catStats, dateStats, sourceStats, totalResult] = await Promise.all([
+        env.DB.prepare(`
+          SELECT category, COUNT(*) as count
+          FROM articles
+          WHERE insight != '' AND insight != 'skip-non-mice' AND insight IS NOT NULL
+          GROUP BY category ORDER BY count DESC
+        `).all(),
+        env.DB.prepare(`
+          SELECT DATE(created_at) as date, COUNT(*) as count
+          FROM articles
+          WHERE created_at >= datetime('now', '-14 days')
+          GROUP BY DATE(created_at) ORDER BY date ASC
+        `).all(),
+        env.DB.prepare(`
+          SELECT source, COUNT(*) as count
+          FROM articles
+          WHERE insight != '' AND insight != 'skip-non-mice'
+          GROUP BY source ORDER BY count DESC LIMIT 10
+        `).all(),
+        env.DB.prepare(`SELECT COUNT(*) as total FROM articles WHERE insight != 'skip-non-mice'`).first(),
+      ]);
+      return corsResponse(jsonResponse({
+        byCategory: catStats.results || [],
+        byDate: dateStats.results || [],
+        bySource: sourceStats.results || [],
+        total: totalResult?.total || 0,
+      }));
+    }
+
+    // GET /api/sources/status — RSS 소스별 최근 수집 현황
+    if (path === '/api/sources/status' && request.method === 'GET') {
+      const result = await env.DB.prepare(`
+        SELECT source,
+               COUNT(*) as total,
+               MAX(created_at) as last_seen,
+               SUM(CASE WHEN insight != '' AND insight IS NOT NULL AND insight != 'skip-non-mice' THEN 1 ELSE 0 END) as analyzed
+        FROM articles
+        GROUP BY source
+        ORDER BY total DESC
+      `).all();
+      return corsResponse(jsonResponse({ sources: result.results || [] }));
+    }
+
+    // POST /api/recategorize — keyword 기반으로 기존 기사 카테고리 일괄 재분류
+    if (path === '/api/recategorize' && request.method === 'POST') {
+      return corsResponse(await recategorizeArticles(url, env));
+    }
+
+    // GET /api/process-ai — manually trigger AI queue from browser
+    if (path === '/api/process-ai' && request.method === 'GET') {
+      console.log('[API] Processing AI Queue manually (GET)...');
+      const limit = parseInt(url.searchParams.get('limit') || '10');
+      const { processAIQueue } = await import('./index.js');
+      const result = await processAIQueue(env, limit);
       return corsResponse(jsonResponse(result));
     }
 
@@ -437,6 +549,48 @@ function corsResponse(response) {
 }
 
 /**
+ * POST /api/recategorize — keyword 기반으로 기존 기사 카테고리 일괄 재분류
+ */
+async function recategorizeArticles(url, env) {
+  const batchSize = Math.min(parseInt(url.searchParams.get('limit') || '500'), 1000);
+
+  const { guessCategoryHint } = await import('./ollama.js');
+
+  const CAT_CLASS = {
+    convention:     'tag-convention',
+    exhibition:     'tag-exhibition',
+    incentive:      'tag-incentive',
+    tech:           'tag-tech',
+    sustainability: 'tag-sustainability',
+    market:         'tag-market',
+    policy:         'tag-policy',
+  };
+
+  const rows = await env.DB.prepare(
+    'SELECT id, title, content_en FROM articles ORDER BY created_at DESC LIMIT ?'
+  ).bind(batchSize).all();
+
+  const articles = rows.results || [];
+  let updated = 0;
+
+  for (const row of articles) {
+    const catKey = guessCategoryHint(row.title || '', row.content_en || '');
+    const catClass = CAT_CLASS[catKey] || 'tag-convention';
+    await env.DB.prepare(
+      'UPDATE articles SET category = ?, cat_class = ? WHERE id = ?'
+    ).bind(catKey, catClass, row.id).run();
+    updated++;
+  }
+
+  // 카테고리별 분포 집계
+  const dist = await env.DB.prepare(
+    'SELECT category, COUNT(*) as cnt FROM articles GROUP BY category ORDER BY cnt DESC'
+  ).all();
+
+  return jsonResponse({ status: 'ok', updated, distribution: dist.results || [] });
+}
+
+/**
  * POST /api/crawl — trigger manual full sync (Raw + AI)
  */
 async function triggerCrawl(env) {
@@ -448,4 +602,71 @@ async function triggerCrawl(env) {
     raw: rawResult,
     ai: aiResult
   });
+}
+
+/**
+ * GET /api/test-ollama — Ollama 연결 상태 및 모델 진단
+ */
+async function testOllama(env) {
+  const ollamaUrl = (env.OLLAMA_URL || '').replace(/\/$/, '');
+  const model = env.OLLAMA_MODEL || 'qwen2.5:7b';
+
+  if (!ollamaUrl) {
+    return jsonResponse({ status: 'error', message: 'OLLAMA_URL not set in environment' });
+  }
+
+  const result = { ollamaUrl, model, steps: [] };
+
+  // 1. 연결 확인 (/api/tags)
+  try {
+    const tagsRes = await fetch(`${ollamaUrl}/api/tags`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!tagsRes.ok) throw new Error(`HTTP ${tagsRes.status}`);
+    const tagsData = await tagsRes.json();
+    const availableModels = (tagsData.models || []).map(m => m.name);
+    result.steps.push({ step: 'connection', status: 'ok', availableModels });
+
+    // 2. 모델 존재 여부 확인
+    const modelExists = availableModels.some(m => m.startsWith(model.split(':')[0]));
+    result.steps.push({ step: 'model_check', status: modelExists ? 'ok' : 'missing', model, availableModels });
+
+    if (!modelExists) {
+      return jsonResponse({
+        ...result,
+        status: 'error',
+        message: `Model "${model}" not found. Available: ${availableModels.join(', ')}. Run: ollama pull ${model}`,
+      });
+    }
+  } catch (err) {
+    result.steps.push({ step: 'connection', status: 'error', error: err.message });
+    return jsonResponse({
+      ...result,
+      status: 'error',
+      message: `Cannot reach Ollama at ${ollamaUrl}. Is Ollama running? Is the tunnel active?`,
+    });
+  }
+
+  // 3. 번역 기능 테스트
+  try {
+    const testRes = await fetch(`${ollamaUrl}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(30000),
+      body: JSON.stringify({
+        model,
+        prompt: 'Translate to Korean. Return ONLY JSON {"title_ko":"..."} Input: "MICE industry growth accelerates in Asia"',
+        stream: false,
+        format: 'json',
+        options: { temperature: 0.1, num_predict: 100 },
+      }),
+    });
+    const testData = await testRes.json();
+    const parsed = JSON.parse(testData.response || '{}');
+    result.steps.push({ step: 'translation_test', status: 'ok', result: parsed });
+    return jsonResponse({ ...result, status: 'ok', message: 'Ollama is working correctly' });
+  } catch (err) {
+    result.steps.push({ step: 'translation_test', status: 'error', error: err.message });
+    return jsonResponse({ ...result, status: 'error', message: 'Translation test failed: ' + err.message });
+  }
 }
