@@ -1,8 +1,6 @@
 import { buildSystemPrompt, phaseFromDays, type UserContext } from '@/lib/ai-system-prompt'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
-export const runtime = 'edge'
-
 // Gemini 모델 (무료 티어 할당량 이슈 우회를 위해 flash-latest 사용)
 const AI_MODEL = process.env.GEMMA_MODEL_ID || 'gemini-flash-latest'
 
