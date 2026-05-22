@@ -107,6 +107,15 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
   const [isStreaming, setIsStreaming] = useState(false)
   const [errorState, setErrorState] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<{ file: File; preview: string } | null>(null)
+
+  const typeNames: Record<string, string> = {
+    A: '감정소진형',
+    B: '갈등반복형',
+    C: '대체자형',
+    D: '장기이별형',
+  }
+  const typeName = userContext.breakupType ? typeNames[userContext.breakupType] : '정밀분석'
+  const phaseLabel = `PHASE ${userContext.currentPhase || 1}`
   
   const {
     user,
@@ -327,9 +336,17 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
           </button>
           <div>
             <h2 className="text-sm font-black text-white">AI 재이 상담소</h2>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Online</span>
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mr-1">Online</span>
+              {userContext.breakupType && (
+                <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] font-black">
+                  {typeName}
+                </span>
+              )}
+              <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-black">
+                {phaseLabel}
+              </span>
             </div>
           </div>
         </div>

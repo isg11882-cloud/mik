@@ -109,6 +109,7 @@ export default function DiagnosisPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const setDiagnosis = useAppStore(s => s.setDiagnosis)
   const setBreakupDate = useAppStore(s => s.setBreakupDate)
+  const clearChatHistory = useAppStore(s => s.clearChatHistory)
 
   const isDateStep = currentQ >= QUESTIONS.length
   const question = QUESTIONS[currentQ]
@@ -168,6 +169,7 @@ export default function DiagnosisPage() {
         daysSinceBreakup: result.daysSinceBreakup,
       }
       setDiagnosis(diagnosisPayload)
+      clearChatHistory()
 
       // 로그인 상태이면 profiles 캐시도 동기화 (fire-and-forget — 결과 페이지로 즉시 이동)
       // 실패해도 다음 로그인 시 reconcileProfileOnLogin 이 보정함
