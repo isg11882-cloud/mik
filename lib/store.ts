@@ -43,6 +43,10 @@ export interface ActiveMission {
 const DYNAMIC_MISSION_DEFAULT_POINTS = 50
 
 interface AppState {
+  // 코칭 스타일
+  coachingStyle: 'healing' | 'analytical' | 'action'
+  setCoachingStyle: (style: 'healing' | 'analytical' | 'action') => void
+
   // 사용자 프로필
   nickname: string
   setNickname: (name: string) => void
@@ -104,6 +108,9 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
+      coachingStyle: 'healing',
+      setCoachingStyle: (style) => set({ coachingStyle: style }),
+
       nickname: '',
       setNickname: (name) => set({ nickname: name }),
 
@@ -183,6 +190,7 @@ export const useAppStore = create<AppState>()(
       clearChatHistory: () => set({ chatHistory: [] }),
 
       resetAll: () => set({
+        coachingStyle: 'healing',
         nickname: '',
         diagnosis: null,
         breakupDate: null,

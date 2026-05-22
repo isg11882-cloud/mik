@@ -126,6 +126,8 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
     isMissionActiveByTitle,
     isMissionCompletedByTitle,
     lastLoginPromptedAt,
+    coachingStyle,
+    setCoachingStyle,
   } = useAppStore()
 
   // 초기 메시지 설정 (저장된 내역이 있으면 그것을 사용, 없으면 빈 배열로 시작하여 useEffect에서 처리)
@@ -240,7 +242,7 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [...historyForAPI, { role: 'user', content: userMsg.content }],
-          userContext,
+          userContext: { ...userContext, coachingStyle },
           image: imageData,
         }),
       })
@@ -368,6 +370,46 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
             전체 미션
           </button>
         </div>
+      </div>
+
+      {/* Coaching Style Selector */}
+      <div className="flex justify-around items-center px-4 py-2.5 bg-gray-900/60 border-b border-gray-800 backdrop-blur-md gap-2">
+        <button
+          type="button"
+          onClick={() => setCoachingStyle('healing')}
+          className={clsx(
+            "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all duration-300 border",
+            coachingStyle === 'healing'
+              ? "bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-[0_0_12px_rgba(244,63,94,0.2)]"
+              : "bg-gray-950/40 text-gray-500 border-transparent hover:text-gray-300"
+          )}
+        >
+          <span>🌸</span> 공감 힐링
+        </button>
+        <button
+          type="button"
+          onClick={() => setCoachingStyle('analytical')}
+          className={clsx(
+            "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all duration-300 border",
+            coachingStyle === 'analytical'
+              ? "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+              : "bg-gray-950/40 text-gray-500 border-transparent hover:text-gray-300"
+          )}
+        >
+          <span>🧠</span> 냉철 팩폭
+        </button>
+        <button
+          type="button"
+          onClick={() => setCoachingStyle('action')}
+          className={clsx(
+            "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all duration-300 border",
+            coachingStyle === 'action'
+              ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)]"
+              : "bg-gray-950/40 text-gray-500 border-transparent hover:text-gray-300"
+          )}
+        >
+          <span>⚡</span> 실전 지침
+        </button>
       </div>
 
       {/* Messages List */}
