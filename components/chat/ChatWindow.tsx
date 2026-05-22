@@ -23,6 +23,7 @@ interface Message {
   content: string
   isError?: boolean
   timestamp?: number
+  imagePreview?: string
   missionRecommend?: {
     phase: number
     category: string
@@ -115,7 +116,7 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
     D: '장기이별형',
   }
   const typeName = userContext.breakupType ? typeNames[userContext.breakupType] : '정밀분석'
-  const phaseLabel = `PHASE ${userContext.currentPhase || 1}`
+  const phaseLabel = `${userContext.currentPhase || 1}단계`
   
   const {
     user,
@@ -192,11 +193,14 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
   const sendMessage = useCallback(async (text: string) => {
     if ((!text.trim() && !selectedImage) || isStreaming) return
 
+    const previewUrl = selectedImage?.preview
+
     const userMsg: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: text.trim() || (selectedImage ? '이미지를 확인해 주세요.' : ''),
       timestamp: Date.now(),
+      imagePreview: previewUrl,
     }
 
     const historyForAPI = messages
@@ -292,7 +296,7 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
       setIsStreaming(false)
       inputRef.current?.focus()
     }
-  }, [messages, userContext, isStreaming])
+  }, [messages, userContext, isStreaming, selectedImage, coachingStyle])
 
   const handleRetry = () => {
     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')
@@ -340,7 +344,7 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
             <h2 className="text-sm font-black text-white">AI 재이 상담소</h2>
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mr-1">Online</span>
+              <span className="text-[10px] text-gray-400 font-bold tracking-wider mr-1">온라인</span>
               {userContext.breakupType && (
                 <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] font-black">
                   {typeName}
@@ -449,6 +453,15 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
                     : 'bg-gray-800 text-gray-100 rounded-tl-sm border border-gray-700/50'
                 } ${msg.isError ? 'border-red-500/50 bg-red-950/20' : ''}`}
               >
+                {msg.imagePreview && (
+                  <div className="mb-2.5 max-w-full rounded-xl overflow-hidden border border-white/10 bg-gray-950/50 p-1 shadow-[inset_0_0_12px_rgba(255,255,255,0.05)]">
+                    <img 
+                      src={msg.imagePreview} 
+                      alt="첨부 이미지" 
+                      className="w-full h-auto object-contain max-h-64 rounded-lg" 
+                    />
+                  </div>
+                )}
                 {msg.content ? formatContent(msg.content) : (isStreaming && msg.role === 'assistant' ? (
                   <span className="inline-flex gap-1 items-center py-1">
                     <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -585,9 +598,9 @@ function getWelcomeMessage(ctx: UserContext): string {
   const typeName = ctx.breakupType ? typeNames[ctx.breakupType] : '진단'
   
   const phaseMessages: Record<number, string> = {
-    1: `안녕하세요 💙 이별 후 힘든 시간을 보내고 계시는군요.\n\n진단 결과를 보니 지금은 **공백기(PHASE 1)**에 계세요. **${typeName}** 케이스의 경우, 이 시기에는 프레임 회복과 감정 안정이 가장 우선입니다.\n\n오늘 가장 마음에 걸리는 것이 무엇인지 편하게 이야기해 주세요. 함께 하나씩 풀어나가겠습니다.`,
-    2: `다시 뵙네요 🌱 공백기를 잘 견디고 **자기계발기(PHASE 2)**까지 오셨네요.\n\n이제 변화를 통해 가치를 증명할 시간입니다. 지금 어떤 부분에서 성장을 만들고 싶으신가요? 구체적인 계획을 함께 세워보겠습니다.`,
-    3: `드디어 **재접근기(PHASE 3)** 💫 여기까지 오신 것만으로도 정말 대단한 일을 하신 거예요.\n\n이제 전략적인 재접촉이 필요합니다. 상대방의 반응을 예측하고 최선의 타이밍을 잡아야 해요. 현재 준비 상황을 말씀해 주세요.`,
+    1: `안녕하세요 💙 이별 후 힘든 시간을 보내고 계시는군요.\n\n진단 결과를 보니 지금은 **1단계 (공백기)**에 계세요. **${typeName}** 케이스의 경우, 이 시기에는 프레임 회복과 감정 안정이 가장 우선입니다.\n\n오늘 가장 마음에 걸리는 것이 무엇인지 편하게 이야기해 주세요. 함께 하나씩 풀어나가겠습니다.`,
+    2: `다시 뵙네요 🌱 공백기를 잘 견디고 **2단계 (자기계발기)**까지 오셨네요.\n\n이제 변화를 통해 가치를 증명할 시간입니다. 지금 어떤 부분에서 성장을 만들고 싶으신가요? 구체적인 계획을 함께 세워보겠습니다.`,
+    3: `드디어 **3단계 (재접근기)** 💫 여기까지 오신 것만으로도 정말 대단한 일을 하신 거예요.\n\n이제 전략적인 재접촉이 필요합니다. 상대방의 반응을 예측하고 최선의 타이밍을 잡아야 해요. 현재 준비 상황을 말씀해 주세요.`,
   }
   
   return phaseMessages[ctx.currentPhase] || phaseMessages[1]
