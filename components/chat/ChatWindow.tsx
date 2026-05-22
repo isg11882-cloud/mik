@@ -135,6 +135,31 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
   const [messages, setMessages] = useState<Message[]>(chatHistory.length > 0 ? chatHistory : [])
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
 
+  // 모바일 가상 키보드 대응 visualViewport 높이 측정 및 스크롤 원위치 강제화
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+
+    const handleResize = () => {
+      const vv = window.visualViewport
+      if (vv) {
+        document.documentElement.style.setProperty('--vv-height', `${vv.height}px`)
+        // 가상 키보드가 활성화될 때 레이아웃 뷰포트 스크롤이 밀려 붕 뜨는 현상을 원천 방지하기 위해 강제 리셋합니다.
+        window.scrollTo(0, 0)
+        document.body.scrollTop = 0
+      }
+    }
+
+    const vv = window.visualViewport
+    vv.addEventListener('resize', handleResize)
+    vv.addEventListener('scroll', handleResize)
+    handleResize() // 초기 기동
+
+    return () => {
+      vv.removeEventListener('resize', handleResize)
+      vv.removeEventListener('scroll', handleResize)
+    }
+  }, [])
+
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -322,7 +347,7 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
   const quickReplies = QUICK_REPLIES[userContext.currentPhase] || []
 
   return (
-    <div className="flex flex-col h-full bg-gray-950">
+    <div className="flex flex-col bg-gray-950 overflow-hidden" style={{ height: 'var(--vv-height, 100dvh)' }}>
 
       <LoginPromptModal
         open={showLoginPrompt}

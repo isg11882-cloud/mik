@@ -232,18 +232,19 @@ async function runLocalOrMockAI(
   userContext: UserContext,
   image?: { mimeType: string; data: string }
 ): Promise<Response> {
-  const OLLAMA_URL = process.env.OLLAMA_API_URL || 'http://localhost:11434/api/chat'
+  // macOS 등에서 localhost DNS 확인 지연(IPv6 ::1 대기 시간)을 피하기 위해 127.0.0.1 을 기본으로 지정합니다.
+  const OLLAMA_URL = process.env.OLLAMA_API_URL || 'http://127.0.0.1:11434/api/chat'
   
   try {
-    // 500ms timeout을 주어 Ollama 서버 연결을 조기 타임아웃하여 지연 차단
+    // Ollama 서버 헬스체크 및 모델 유무 검증 (1500ms 넉넉한 타이머로 지연 핸드쉐이크 커버)
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 500)
+    const timeoutId = setTimeout(() => controller.abort(), 1500)
     
     const checkRes = await fetch(OLLAMA_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: process.env.OLLAMA_MODEL || 'gemma2',
+        model: process.env.OLLAMA_MODEL || 'gemma4:e4b',
         messages: [{ role: 'user', content: 'test' }],
         stream: false
       }),
@@ -259,7 +260,7 @@ async function runLocalOrMockAI(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: process.env.OLLAMA_MODEL || 'gemma2',
+          model: process.env.OLLAMA_MODEL || 'gemma4:e4b',
           messages: [
             { role: 'system', content: systemPrompt },
             ...messages.map(m => ({
@@ -315,10 +316,14 @@ async function runLocalOrMockAI(
             'X-Accel-Buffering': 'no',
           }
         })
+      } else {
+        throw new Error(`Ollama stream request failed with status: ${ollamaResponse?.status}`)
       }
+    } else {
+      throw new Error('Ollama check failed or model not available')
     }
-  } catch (err) {
-    console.log('[Ollama] Local server connection failed or unavailable. Falling back to Mock AI...')
+  } catch (err: any) {
+    console.log(`[Ollama] Local server check failed/errored: ${err.message}. Falling back to Mock AI...`)
   }
 
   // 최종 Fallback: 초고품질 Mock AI 스트리밍 엔진 작동
@@ -345,12 +350,17 @@ function generateMockAIResponse(
 
   // 1. 이미지가 첨부된 경우 -> 카카오톡 캡처 5단계 이미지 초정밀 심리 분석 분기 작동
   if (image) {
+    const hasCustomMsg = lastUserMsg && lastUserMsg !== '이미지를 확인해 주세요.'
+    const headerPrefix = hasCustomMsg 
+      ? `보내주신 카카오톡 대화 캡처본과 함께 올려주신 소중한 고민("${lastUserMsg}")을 심리학적으로 다각도에서 정밀 독해하였습니다.\n\n`
+      : ''
+
     if (style === 'healing') {
-      reply = `[카카오톡 캡처 초정밀 5단계 심리 분석 보고서] 📸\n\n` +
+      reply = `${headerPrefix}[카카오톡 캡처 초정밀 5단계 심리 분석 보고서] 📸\n\n` +
         `1. 대화 템포 분석 ⏱️\n` +
         `- 상대방이 답장을 하는 속도가 다소 느리거나 띄엄띄엄 이루어지고 있네요. 당신의 따뜻한 연락에 비해 상대방은 현재 자신의 마음을 지키기 위한 일종의 '방어벽'을 세우고 있는 템포입니다. 서두르지 않고 상대의 속도에 맞춰주는 여유가 필요한 시점입니다.\n\n` +
         `2. 텍스트 디테일 분석 💬\n` +
-        `- 문장 끝에 물음표가 전혀 없고 온점(.)이나 마침표 위주로 끝나는 건조한 어조입니다. 하트나 웃음 기호가 현저히 줄어든 것은 현재 상대방이 의도적으로 차분함을 유지하려 애쓰는 심리적 상태를 반영합니다.\n\n` +
+        `- 문장 끝에 물음표가 전혀 없고 온점(.)이나 마침표 위주로 끝나는 건조한 어조입니다. 하트나 웃음 기호가 현저히 줄어든 것은 현재 상대방이 의도적으로 차분함을 유지하려 애쓰는 심리적 상태를 반영합니다.${hasCustomMsg ? ` 특히 적어주신 고민내용처럼 상대방의 이러한 차갑고 단호한 반응으로 인해 깊은 불안과 고독을 느끼시는 심리를 충분히 헤아릴 수 있습니다. 지금은 흔들릴지언정 완전히 꺾인 것은 아닙니다.` : ''}\n\n` +
         `3. 관심 및 호감도 평가 ❤️\n` +
         `- 현재 호감도 게이지: 3.5점 / 10점\n` +
         `- 비록 지금은 차갑고 단호해 보이지만, 당신의 물음에 답장을 꼬박꼬박 하고 있는 행위 자체는 당신이라는 존재에 대한 미련과 책임감이 아직 완전히 소진되지는 않았음을 시사합니다. 희망을 잃지 마세요. 🫂\n\n` +
@@ -365,11 +375,11 @@ function generateMockAIResponse(
         reason: "상대방의 차가운 톡 반응에 지친 뇌를 쉬게 하고 내적 가치(#내적프레임)를 회복하기 위해, 감시를 일시 중단하고 마음을 다스려야 하는 골든타임 미션입니다."
       };
     } else if (style === 'analytical') {
-      reply = `[카카오톡 캡처 초정밀 5단계 심리 분석 보고서] 📸\n\n` +
+      reply = `${headerPrefix}[카카오톡 캡처 초정밀 5단계 심리 분석 보고서] 📸\n\n` +
         `1. 대화 템포 분석 ⏱️\n` +
         `- 템포 분석 결과, 처참한 비대칭 상태입니다. 내담자님은 칼답으로 1초 만에 답장하는 반면, 상대방은 반나절 혹은 수 시간이 지난 후에 마지못해 답장하고 있습니다. 이는 현재 내담자님의 가치(#프레임)가 완전히 바닥으로 쳐 박혀 상대가 대화에 아무런 흥미와 긴장감을 느끼지 못하고 있음을 증명합니다.\n\n` +
         `2. 텍스트 디테일 분석 💬\n` +
-        `- 상대방은 단답형(네, 아니오, 바빠서)과 무미건조한 텍스트로 일관하고 있습니다. 반면에 내담자님은 장문의 설명조 카톡을 전송하고 있군요. 심리학적으로 문장의 길이는 '갈망하는 자'의 척도입니다. 이미 당신은 패를 다 보여주었습니다.\n\n` +
+        `- 상대방은 단답형(네, 아니오, 바빠서)과 무미건조한 텍스트로 일관하고 있습니다. 반면에 내담자님은 장문의 설명조 카톡을 전송하고 있군요. 심리학적으로 문장의 길이는 '갈망하는 자'의 척도입니다. 이미 당신은 패를 다 보여주었습니다.${hasCustomMsg ? ` 올려주신 구체적 고민에서도 보듯 상대방의 반응 하나하나에 휘둘리는 상태가 대화 양상에 고스란히 반영되어 있어 주도권이 원천 차단되고 있습니다.` : ''}\n\n` +
         `3. 관심 및 호감도 평가 ❤️\n` +
         `- 현재 호감도 게이지: 2.0점 / 10점\n` +
         `- 현시점에서 상대방에게 남아있는 감정은 '호감'이 아니라 '귀찮음'과 '방어기제'입니다. 의무감으로 답하는 최소한의 예의일 뿐, 이 관계에 주도적으로 끌리는 에너지는 0에 가깝습니다. 착각에서 벗어나야 합니다. 🧠\n\n` +
@@ -384,11 +394,11 @@ function generateMockAIResponse(
         reason: "도파민 중독처럼 연락을 갈구하는 중독 상태에서 벗어나 본래의 강인한 주체적 자아를 다잡아 가치(#프레임)를 회생시키는 행동 처방 지침입니다."
       };
     } else { // action
-      reply = `[카카오톡 캡처 초정밀 5단계 심리 분석 보고서] 📸\n\n` +
+      reply = `${headerPrefix}[카카오톡 캡처 초정밀 5단계 심리 분석 보고서] 📸\n\n` +
         `1. 대화 템포 분석 ⏱️\n` +
         `- 대화 템포: 1대 4의 비대칭 지연 템포. 상대방의 느린 리액션 템포는 방어기제 발동 상태를 뜻합니다.\n\n` +
         `2. 텍스트 디테일 분석 💬\n` +
-        `- 텍스트 특성: 이모티콘 사용률 0%, 문장 부호(?, !) 생략, 건조한 단답. 심리 상태: 경계심 최고조.\n\n` +
+        `- 텍스트 특성: 이모티콘 사용률 0%, 문장 부호(?, !) 생략, 건조한 단답. 심리 상태: 경계심 최고조.${hasCustomMsg ? ` 내담자님이 보내주신 대화 맥락과 고민글("${lastUserMsg}")에 기반할 때, 이 경계심은 감정적 대화만으로 절대 풀리지 않으며 즉각적인 행동 설계가 필요합니다.` : ''}\n\n` +
         `3. 관심 및 호감도 평가 ❤️\n` +
         `- 관심도 레벨: 3.0점 / 10점. 감정적 거부 반응이 가라앉지 않은 상태로, 추가적인 감정 톡은 점수를 더 깎아내릴 뿐입니다.\n\n` +
         `4. 프레임 주도권 판정 ⚖️\n` +
@@ -577,22 +587,24 @@ function generateMockAIResponse(
 
   const stream = new ReadableStream({
     async start(controller) {
-      function pushNextCharacter() {
-        if (currentPos < chunkText.length) {
+      const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+      try {
+        while (currentPos < chunkText.length) {
           const chunk = chunkText.slice(currentPos, currentPos + 4)
           controller.enqueue(encoder.encode(chunk))
           currentPos += 4
-          setTimeout(pushNextCharacter, 20)
-        } else {
-          // 텍스트 스트리밍 종료 직후 미션 추천 노드 주입
-          if (recommendedMission) {
-            const missionTag = `\n\n<mission_recommend>\n${JSON.stringify(recommendedMission, null, 2)}\n</mission_recommend>`
-            controller.enqueue(encoder.encode(missionTag))
-          }
-          controller.close()
+          await sleep(20)
         }
+        // 텍스트 스트리밍 종료 직후 미션 추천 노드 주입
+        if (recommendedMission) {
+          const missionTag = `\n\n<mission_recommend>\n${JSON.stringify(recommendedMission, null, 2)}\n</mission_recommend>`
+          controller.enqueue(encoder.encode(missionTag))
+        }
+      } catch (err) {
+        console.error('[Mock AI Stream Error]', err)
+      } finally {
+        controller.close()
       }
-      pushNextCharacter()
     }
   })
 

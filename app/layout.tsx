@@ -36,6 +36,7 @@ export const metadata: Metadata = {
 
 import BottomNav from '@/components/layout/BottomNav'
 import AuthObserver from '@/components/auth/AuthObserver'
+import MainContainer from '@/components/layout/MainContainer'
 
 export default function RootLayout({
   children,
@@ -46,11 +47,12 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`bg-gray-950 text-white min-h-screen`}>
         <AuthObserver />
-        <main className="pb-24"> {/* 내비게이션 바 공간 확보 */}
+        <MainContainer>
           {children}
-        </main>
+        </MainContainer>
         <BottomNav />
       </body>
     </html>
   );
 }
+

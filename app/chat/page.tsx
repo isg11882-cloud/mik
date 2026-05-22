@@ -25,7 +25,7 @@ function ChatPageContent() {
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-gray-950">
+    <div className="flex flex-col bg-gray-950 overflow-hidden" style={{ height: 'var(--vv-height, 100dvh)' }}>
       <ChatWindow userContext={userContext} />
     </div>
   )
