@@ -6,7 +6,7 @@ const AI_MODEL = process.env.GEMMA_MODEL_ID || 'gemini-flash-latest'
 
 interface GeminiMessage {
   role: 'user' | 'model'
-  parts: Array<{ text?: string; inline_data?: { mime_type: string; data: string } }>
+  parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }>
 }
 
 /**
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
       const isLastUserMessage = idx === messages.length - 1 && m.role === 'user'
       const parts: GeminiMessage['parts'] = [{ text: m.content || '(내용 없음)' }]
       if (isLastUserMessage && image) {
-        parts.push({ inline_data: { mime_type: image.mimeType, data: image.data } })
+        parts.push({ inlineData: { mimeType: image.mimeType, data: image.data } })
       }
       return {
         role: m.role === 'assistant' ? 'model' : 'user',

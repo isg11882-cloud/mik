@@ -64,6 +64,49 @@ function cleanContent(text: string) {
   return text.replace(/<?mission_recommend>[\s\S]*?(?:<\/mission_recommend>|$)/g, '').trim()
 }
 
+// 클라이언트 단 이미지 압축 헬퍼 함수 (최대 가로 800px, 퀄리티 0.75로 압축하여 대용량 이미지 전송 실패를 원천 방지)
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const maxDimension = 800
+        let width = img.width
+        let height = img.height
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width)
+            width = maxDimension
+          } else {
+            width = Math.round((width * maxDimension) / height)
+            height = maxDimension
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          reject(new Error('Canvas context not available'))
+          return
+        }
+
+        ctx.drawImage(img, 0, 0, width, height)
+        // JPEG 0.75 압축률로 고속 압축하여 전송 용량을 100KB 내외로 최소화
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.75)
+        resolve(dataUrl.split(',')[1]) // base64 부위만 추출
+      }
+      img.onerror = () => reject(new Error('Image loading failed'))
+      img.src = event.target?.result as string
+    }
+    reader.onerror = () => reject(new Error('File reading failed'))
+    reader.readAsDataURL(file)
+  })
+}
+
 // 해시태그(#이론명) 강조 렌더링
 function formatContent(text: string) {
   if (!text) return null
@@ -237,21 +280,16 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
     setIsStreaming(true)
     setErrorState(null)
 
-    // 이미지 파일 처리 (base64)
+    // 이미지 파일 처리 (대용량 전송 실패 방지를 위해 브라우저 단에서 100KB 수준 압축)
     let imageData = null
     if (selectedImage) {
       try {
         const file = selectedImage.file
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve((reader.result as string).split(',')[1])
-          reader.onerror = reject
-          reader.readAsDataURL(file)
-        })
-        imageData = { mimeType: file.type, data: base64 }
+        const base64 = await compressImage(file)
+        imageData = { mimeType: 'image/jpeg', data: base64 } // 압축 결과는 항상 jpeg 포맷
         setSelectedImage(null)
       } catch (e) {
-        console.error('Image processing failed:', e)
+        console.error('Image compression and processing failed:', e)
       }
     }
 
