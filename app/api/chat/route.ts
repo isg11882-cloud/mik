@@ -92,9 +92,10 @@ export async function POST(request: Request) {
     const userContext = await resolveUserContext(clientContext)
     const systemPrompt = buildSystemPrompt(userContext)
 
-    // 로컬 개발 환경 강제 또는 API Key 누락 시 즉각 로컬/Mock AI로 우회
-    if (process.env.USE_LOCAL_AI === 'true' || !apiKey) {
-      console.warn('[chat] Using local/mock AI fallback due to configuration or missing API Key.')
+    // MVP 무료 모드 최적화: USE_REAL_GEMINI 가 명시적으로 'true'가 아니면
+    // 요금 과금 한계 방지를 위해 100% 안전한 로컬/Mock AI로 즉각 기본 우회합니다.
+    if (process.env.USE_REAL_GEMINI !== 'true' || !apiKey) {
+      console.log('[chat] MVP Safe Mode: Defaulting to local/mock AI fallback to prevent API billing limits.')
       return runLocalOrMockAI(messages, userContext, image)
     }
 
