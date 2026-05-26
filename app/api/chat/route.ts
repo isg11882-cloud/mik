@@ -331,7 +331,6 @@ async function runLocalOrMockAI(
   console.log('[Mock AI] Connection failed or bypassed. Streaming high-quality psychological mock response...')
   return generateMockAIResponse(messages, userContext, image)
 }
-
 /**
  * 재회심리학 지침 기반 고품질 Mock AI 스트리밍 엔진 (코칭 스타일 3중 분기)
  */
@@ -340,11 +339,18 @@ function generateMockAIResponse(
   userContext: UserContext,
   image?: { mimeType: string; data: string }
 ): Response {
-  const lastUserMsg = messages[messages.length - 1]?.content || ''
+  const lastUserMsgRaw = messages[messages.length - 1]?.content || ''
+  // 맥OS 및 모바일 한글 자모분리(NFD) 현상 대응을 위한 NFC 정규화 및 소문자화
+  const lastUserMsg = lastUserMsgRaw.normalize('NFC').trim()
+  const lowerMsg = lastUserMsg.toLowerCase()
+
   const phase = userContext.currentPhase || 1
   const type = userContext.breakupType || 'A'
   const userName = userContext.userName || '재회 희망자'
   const style = userContext.coachingStyle || 'healing'
+
+  // 대화 기록 중 실제 사용자가 발화한 횟수를 추출하여 컨텍스트 뎁스 감지
+  const userMessageCount = messages.filter(m => m.role === 'user').length
 
   let reply = ''
   let recommendedMission: any = null
@@ -413,12 +419,51 @@ function generateMockAIResponse(
         phase: 1,
         category: "action",
         title: "카톡 프로필 기본 이미지로 변경하기",
-        reason: "갑작스러운 프로필 초기화는 상대방의 호기심과 상실감을 극대화하며, 당신의 내면 심리를 읽을 수 없도록 가림막을 쳐서 매력(#프레임)을 회복하는 강력한 이별 처방전입니다."
+        reason: "갑작스러운 프로필 초기화는 상대방의 호기심과 상실감을 극대화하며, 당신의 내면 심리를 읽을 수 없도록 가림막을 쳐서 당신의 가치(#프레임)를 회복하는 강력한 이별 처방전입니다."
       };
     }
   } 
-  // 2. 키워드 기반 정밀 매칭: SNS / 인스타 / 프로필 / 염탐 / 스토리
-  else if (lastUserMsg.includes('SNS') || lastUserMsg.includes('인스타') || lastUserMsg.includes('프로필') || lastUserMsg.includes('염탐') || lastUserMsg.includes('스토리')) {
+  // 2. 최상위 시스템 이상 및 불만 제어 가로채기 분기
+  else if (
+    lowerMsg.includes('테스트') ||
+    lowerMsg.includes('체크') ||
+    lowerMsg.includes('이상') ||
+    lowerMsg.includes('같으말') ||
+    lowerMsg.includes('같은말') ||
+    lowerMsg.includes('같은 말') ||
+    lowerMsg.includes('오류') ||
+    lowerMsg.includes('안되') ||
+    lowerMsg.includes('안돼') ||
+    lowerMsg.includes('버그') ||
+    lowerMsg.includes('똑같은 말') ||
+    lowerMsg.includes('앵무새')
+  ) {
+    if (style === 'healing') {
+      reply = `앗... 제가 혹시나 같은 말만 반복해서 들려드려 많이 답답하고 속상하셨지요? 😭 정말 죄송합니다.\n\n현재 재이 플랫폼이 한층 더 원활한 상담 경험을 위해 실시간 시스템 정밀 최적화 및 동기화를 거치고 있어서 간혹 일시적으로 이별 극복의 핵심인 **#공백기** 지침 웰컴 처방이 중복 출력되는 현상이 생겼을 수 있습니다.\n\n하지만 걱정 마세요! 내담자님의 한 말씀 한 말씀은 재이의 상담 서버에 모두 깊고 안전하게 기록되고 있으며, 현재 우리 관계에서 가장 프레임을 상승시킬 수 있는 솔루션은 여전히 전략적인 침묵과 나에 대한 집중입니다. 지금 겪으시는 답답함을 모두 털어놓아 주시면, 재이가 시스템을 더욱 든든하게 단장하여 내담자님의 마음을 100% 지켜드릴게요! 🌸`;
+    } else if (style === 'analytical') {
+      reply = `내담자님, 시스템 정비 과정에서 일부 답변의 캐싱 지연 및 중복 출력 현상이 관측되었음을 인지하고 즉각 조치하였습니다. 🧠\n\n그러나 지금 감정적으로 흔들리시며 시스템에 조급함을 토로하시는 것 또한, 내면의 **#내적프레임**이 무너져 작은 정체 상태에도 크게 불안해하고 계신다는 방증입니다. 재회는 흔들리지 않는 이성적인 침묵인 **#공백기**를 얼마나 지켜내느냐에 달려 있습니다. 시스템의 원활한 복구를 믿고, 본인의 가치(#프레임)를 훼손하는 돌발 행동을 철저하게 삼가십시오.`;
+    } else {
+      reply = `시스템 지연 및 반복 응답 현상을 즉각 인지하고 ⚡ 대응 패치를 적용하고 있습니다.\n\n1. 시스템 오류로 인해 답답하셨더라도, 상대방에게 홧김에 감정적 연락을 보내는 돌발 자멸 행동은 100% 금지해 주십시오.\n2. 잠시 화면을 새로고침(F5 혹은 앱 재접속)하시거나 1분만 여유를 두시고 다시 말을 걸어주시면 정상적인 꼬리 대화 코칭이 정상화됩니다.\n3. 오늘부터 더욱 철저한 감시 단절 및 **#공백기** 실천 강령을 수호하여 행동으로 재회를 쟁취하십시오.`;
+    }
+    recommendedMission = {
+      phase: 1,
+      category: "mindset",
+      title: "화면 새로고침 후 차분한 마음으로 다시 질문하기",
+      reason: "일시적인 시스템 불안정에 불안해하지 않고, 단단한 자존감(#내적프레임)을 다스리며 이성적 마음가짐을 단련하는 멘탈 훈련입니다."
+    };
+  }
+  // 3. 키워드 기반 정밀 매칭: SNS / 인스타 / 프로필 / 염탐 / 스토리
+  else if (
+    lowerMsg.includes('sns') ||
+    lowerMsg.includes('인스타') ||
+    lowerMsg.includes('insta') ||
+    lowerMsg.includes('프로필') ||
+    lowerMsg.includes('profile') ||
+    lowerMsg.includes('염탐') ||
+    lowerMsg.includes('스토리') ||
+    lowerMsg.includes('페북') ||
+    lowerMsg.includes('카스')
+  ) {
     if (style === 'healing') {
       reply = `${userName}님, 하루에도 수십 번씩 상대방의 SNS나 인스타 프로필을 켜서 확인하고 싶은 그 간절하고 불안한 마음, 정말 아프게 이해합니다. 😭\n\n하지만 지금 프로필을 확인하는 행위는 뇌의 도파민 중독 회로를 자극하여 이별의 고통을 계속 연장시킬 뿐이에요. 상대방의 사소한 프로필 변경 하나에 휘둘리지 않도록, 잠시 스마트폰과의 거리를 두고 마음의 평온을 되찾아주는 **#공백기**를 엄수하는 것이 현시점 최고의 처방전입니다. 재이가 늘 곁에 있을게요. 🌸`;
     } else if (style === 'analytical') {
@@ -433,8 +478,17 @@ function generateMockAIResponse(
       reason: "상대의 상태를 확인하는 행위는 본인을 을(乙)의 포지션에 가두어 가치를 파괴합니다. 확실한 감시 단절을 통해 내적프레임을 구출해야 합니다."
     };
   }
-  // 3. 키워드 기반 정밀 매칭: 대화 반복 / 앵무새 / 무슨 말 / 똑같 / 같은 말
-  else if (lastUserMsg.includes('무슨') || lastUserMsg.includes('말야') || lastUserMsg.includes('똑같') || lastUserMsg.includes('반복') || lastUserMsg.includes('앵무새') || lastUserMsg.includes('그거 말고') || lastUserMsg.includes('같은 말')) {
+  // 4. 키워드 기반 정밀 매칭: 대화 반복 / 앵무새 / 무슨 말 / 똑같 / 같은 말
+  else if (
+    lowerMsg.includes('무슨') ||
+    lowerMsg.includes('말야') ||
+    lowerMsg.includes('똑같') ||
+    lowerMsg.includes('반복') ||
+    lowerMsg.includes('그거 말고') ||
+    lowerMsg.includes('같은말') ||
+    lowerMsg.includes('같은 말') ||
+    lowerMsg.includes('뭐라')
+  ) {
     if (style === 'healing') {
       reply = `아... 제가 반복해서 비슷한 말씀만 드려 많이 답답하고 속상하셨군요... 🫂 정말 죄송해요.\n\n머리로는 침묵해야 하고 연락을 멈추어야(#공백기) 한다는 것을 잘 알지만, 지금 당장 상대방에게 무언가 행동을 취하지 않으면 영영 남이 되어 잊혀질까 봐 조바심나고 두려운 그 복잡한 심경을 깊이 이해합니다. 그 두려운 마음을 억지로 참으려 하니 답답할 수밖에 없어요. 오늘은 아픈 마음을 억누르려 하지 말고 맛있는 차 한 잔을 마시며 푹 쉬어봐요. 재이가 항상 든든하게 당신 곁을 지킬게요. 🌸`;
     } else if (style === 'analytical') {
@@ -449,8 +503,16 @@ function generateMockAIResponse(
       reason: "갈팡질팡하는 이별 우울증에서 뇌의 편도체를 안정시키고 건강한 자존감(#내적프레임)을 회복하도록 돕는 인지 행동 치료 기반의 필수 미션입니다."
     };
   }
-  // 4. 키워드 기반 정밀 매칭: 연락/카톡/문자/전화
-  else if (lastUserMsg.includes('연락') || lastUserMsg.includes('카톡') || lastUserMsg.includes('문자') || lastUserMsg.includes('전화')) {
+  // 5. 키워드 기반 정밀 매칭: 연락/카톡/문자/전화
+  else if (
+    lowerMsg.includes('연락') ||
+    lowerMsg.includes('카톡') ||
+    lowerMsg.includes('문자') ||
+    lowerMsg.includes('전화') ||
+    lowerMsg.includes('톡') ||
+    lowerMsg.includes('메시지') ||
+    lowerMsg.includes('메세지')
+  ) {
     if (phase === 1) {
       if (style === 'healing') {
         reply = `${userName}님, 지금 연락하고 싶은 마음이 굴뚝같고 하루 종일 폰만 들여다보게 되는 그 마음, 얼마나 아프고 힘드실지 온전히 느껴집니다. 😭\n\n하지만 지금 이 순간의 연락은 상대에게 '아직도 나한테 매달리는구나'라는 거부감만 키울 뿐이에요. 지금은 상대방이 부정적 감정에 휩싸인 **#부정피크** 상태입니다. 마음을 더 다치지 않게 하기 위해서라도, 당신의 매력(#프레임)을 우아하게 지켜내는 **#공백기**를 잠시 가져보는 것을 추천합니다. 힘내세요, 재이가 늘 곁에 있을게요. 🌸`
@@ -494,7 +556,16 @@ function generateMockAIResponse(
         reason: "감정을 1%도 담지 않은 실용적 질문 멘트를 완벽히 다듬어 답장 성공률을 극적으로 높이는 트레이닝입니다."
       }
     }
-  } else if (lastUserMsg.includes('힘들') || lastUserMsg.includes('아프') || lastUserMsg.includes('슬프') || lastUserMsg.includes('불안') || lastUserMsg.includes('미치')) {
+  } else if (
+    lowerMsg.includes('힘들') ||
+    lowerMsg.includes('아프') ||
+    lowerMsg.includes('슬프') ||
+    lowerMsg.includes('불안') ||
+    lowerMsg.includes('미치') ||
+    lowerMsg.includes('외롭') ||
+    lowerMsg.includes('고통') ||
+    lowerMsg.includes('죽겠')
+  ) {
     if (style === 'healing') {
       reply = `지금 가슴이 미어지고 숨도 제대로 쉬어지지 않을 만큼 고통스러우시죠... 정말 많이 애쓰셨고, 지금 아픈 것은 지극히 자연스러운 과정입니다. 🫂\n\n심리학적으로 실연의 슬픔은 우리 뇌가 신체적 골절을 입었을 때와 똑같은 고통 신호를 보낸다고 해요. 그만큼 아픈 상처를 혼자 짊어지려 하지 마세요. 따뜻한 차 한 잔을 마시며 오늘은 푹 쉬어봐요. 재이가 항상 여기서 들어주고 위로해 드릴게요. 🌸`
     } else if (style === 'analytical') {
