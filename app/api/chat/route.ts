@@ -76,6 +76,17 @@ export async function POST(request: Request) {
       image?: { mimeType: string; data: string }
     } = body
 
+    // 서버 컨텍스트 머지: 로그인 사용자는 profiles 우선, 비로그인은 클라 값 그대로
+    const userContext = await resolveUserContext(clientContext)
+    const systemPrompt = buildSystemPrompt(userContext)
+
+    // MVP 무료 모드 최적화: USE_REAL_GEMINI 가 명시적으로 'true'가 아니면
+    // 요금 과금 한계 방지를 위해 100% 안전한 로컬/Mock AI로 즉각 기본 우회합니다.
+    if (process.env.USE_REAL_GEMINI !== 'true') {
+      console.log('[chat] MVP Safe Mode: Defaulting to local/mock AI fallback to prevent API billing limits.')
+      return runLocalOrMockAI(messages, userContext, image)
+    }
+
     const apiKey = process.env.GOOGLE_AI_API_KEY
     if (!apiKey) {
       console.error('[CRITICAL] GOOGLE_AI_API_KEY is not set in Vercel environment variables.')
@@ -86,17 +97,6 @@ export async function POST(request: Request) {
         }),
         { status: 503, headers: { 'Content-Type': 'application/json' } }
       )
-    }
-
-    // 서버 컨텍스트 머지: 로그인 사용자는 profiles 우선, 비로그인은 클라 값 그대로
-    const userContext = await resolveUserContext(clientContext)
-    const systemPrompt = buildSystemPrompt(userContext)
-
-    // MVP 무료 모드 최적화: USE_REAL_GEMINI 가 명시적으로 'true'가 아니면
-    // 요금 과금 한계 방지를 위해 100% 안전한 로컬/Mock AI로 즉각 기본 우회합니다.
-    if (process.env.USE_REAL_GEMINI !== 'true' || !apiKey) {
-      console.log('[chat] MVP Safe Mode: Defaulting to local/mock AI fallback to prevent API billing limits.')
-      return runLocalOrMockAI(messages, userContext, image)
     }
 
     const contents: GeminiMessage[] = messages.map((m, idx) => {
