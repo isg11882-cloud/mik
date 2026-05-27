@@ -165,6 +165,7 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
     user,
     chatHistory,
     setChatHistory,
+    clearChatHistory,
     activeMissions,
     startMission,
     isMissionActiveByTitle,
@@ -370,6 +371,18 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
     }
   }
 
+  const handleResetChat = useCallback(() => {
+    if (window.confirm('이전 대화 기록을 지우고 최신 상담 지침으로 대화를 새로 시작할까요?')) {
+      clearChatHistory()
+      const welcome = getWelcomeMessage(userContext)
+      setMessages([
+        { id: 'welcome', role: 'assistant', content: welcome, timestamp: Date.now() }
+      ])
+      setInput('')
+      setErrorState(null)
+    }
+  }, [clearChatHistory, userContext])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     sendMessage(input)
@@ -421,7 +434,7 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
         </div>
         
         {/* Quick Mission View Toggle */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {activeMissions.length > 0 && (
             <button 
               onClick={() => router.push('/mission?filter=active')}
@@ -430,6 +443,12 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
               🎯 진행중 {activeMissions.length}
             </button>
           )}
+          <button 
+            onClick={handleResetChat}
+            className="text-xs text-rose-400 font-bold px-2.5 py-1 rounded-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all duration-300 flex items-center gap-1"
+          >
+            🔄 대화 리셋
+          </button>
           <button 
             onClick={() => router.push('/mission')}
             className="text-xs text-gray-500 font-bold px-2 py-1 hover:text-gray-300 transition-colors"
