@@ -1396,49 +1396,178 @@ async function fetchArticles(params = {}) {
   if (IS_LOADING) return;
   IS_LOADING = true;
   const grid = document.getElementById('newsList');
+  const fetchStart = Date.now();
+
   if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;"><div style="font-size:24px;margin-bottom:8px;">⏳<' + '/div>기사를 불러오는 중...<' + '/div>';
+
+  // ── 타임아웃 가드 (10초) ──────────────────────────────────────
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+    console.error('[MIK][TIMEOUT] /api/articles 요청이 10초를 초과하여 자동 중단됨');
+  }, 10000);
+
   try {
     const sp = new URLSearchParams(params);
-    const res = await fetch(WORKER_URL + '/api/articles?' + sp.toString(), {
-      mode: 'cors', headers: { 'Accept': 'application/json' }
+    const url = WORKER_URL + '/api/articles?' + sp.toString();
+
+    console.group('[MIK] fetchArticles 시작');
+    console.log('  요청 URL     :', url);
+    console.log('  파라미터     :', params);
+    console.log('  요청 시각    :', new Date().toISOString());
+
+    const res = await fetch(url, {
+      mode: 'cors',
+      headers: { 'Accept': 'application/json' },
+      signal: controller.signal
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    ARTICLES = (data.articles || data || []).map(a => ({
-      id: a.id, source: a.source||'',
-      cat: CAT_LABELS[a.cat] || CAT_LABELS[a.category] || a.cat || a.category || '일반',
-      catClass: a.catClass || CAT_CLASSES[a.cat] || a.cat_class || 'tag-convention',
-      type: a.type || a.article_type || '분석',
-      time: a.time || formatTime(a.pub_date||a.created_at), views: a.views||0,
-      title: a.title||'', title_ko: a.titleKo||a.title_ko||a.title||'',
-      url: a.url||a.link||'#', content_ko: a.koText||a.content_ko||'',
-      insight: a.insight||'',
-      summary_json: (()=>{ if(Array.isArray(a.summaryPoints))return a.summaryPoints; try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
-    }));
+    clearTimeout(timeoutId);
+
+    // ── HTTP 상태 로그 ────────────────────────────────────────
+    console.log('  HTTP 상태    :', res.status, res.statusText);
+    console.log('  Content-Type :', res.headers.get('content-type'));
+    console.log('  CF-Ray       :', res.headers.get('cf-ray') || '(없음)');
+    console.log('  CORS Origin  :', res.headers.get('access-control-allow-origin') || '(없음)');
+
+    if (!res.ok) {
+      let bodyPreview = '(응답 본문 없음)';
+      try { bodyPreview = (await res.text()).substring(0, 500); } catch(_) {}
+      console.error('[MIK][HTTP ERROR] 상태코드:', res.status, res.statusText);
+      console.error('[MIK][HTTP ERROR] 응답 본문 미리보기:', bodyPreview);
+      throw new Error('HTTP ' + res.status + ' — ' + res.statusText);
+    }
+
+    // ── JSON 파싱 분리 try-catch ──────────────────────────────
+    let data;
+    try {
+      data = await res.json();
+    } catch (jsonErr) {
+      let rawText = '(텍스트 추출 실패)';
+      try { rawText = (await res.clone().text()).substring(0, 500); } catch(_) {}
+      console.error('[MIK][JSON PARSE] JSON 파싱 실패:', jsonErr.message);
+      console.error('[MIK][JSON PARSE] 원시 응답 미리보기:', rawText);
+      throw new Error('JSON parse error: ' + jsonErr.message);
+    }
+
+    // ── 응답 형태 검증 (Array.isArray 기반) ───────────────────
+    let rawArticles;
+    if (Array.isArray(data)) {
+      rawArticles = data;
+      console.log('  응답 구조    : 배열 (직접 반환)');
+    } else if (data && Array.isArray(data.articles)) {
+      rawArticles = data.articles;
+      console.log('  응답 구조    : { articles: [...] }');
+    } else if (data && typeof data === 'object') {
+      console.warn('[MIK][DATA SHAPE] 예상치 못한 응답 구조. 키 목록:', Object.keys(data));
+      console.warn('[MIK][DATA SHAPE] 실제 데이터 미리보기:', JSON.stringify(data).substring(0, 300));
+      rawArticles = [];
+    } else {
+      console.error('[MIK][DATA SHAPE] 응답이 null 또는 알 수 없는 타입:', typeof data, data);
+      rawArticles = [];
+    }
+
+    // 최종 안전망: rawArticles가 배열인지 한 번 더 확인
+    if (!Array.isArray(rawArticles)) {
+      console.error('[MIK][ARRAY CHECK] rawArticles가 배열이 아님 — 강제로 []로 초기화:', typeof rawArticles);
+      rawArticles = [];
+    }
+
+    console.log('  수신 기사    :', rawArticles.length + '건');
+
+    // ── 각 기사 매핑 (개별 에러 격리) ────────────────────────
+    ARTICLES = rawArticles.map((a, idx) => {
+      if (!a || typeof a !== 'object') {
+        console.warn('[MIK][MAP] index ' + idx + ' 항목이 객체가 아님 — 스킵:', a);
+        return null;
+      }
+      try {
+        return {
+          id: a.id, source: a.source||'',
+          cat: CAT_LABELS[a.cat] || CAT_LABELS[a.category] || a.cat || a.category || '일반',
+          catClass: a.catClass || CAT_CLASSES[a.cat] || a.cat_class || 'tag-convention',
+          type: a.type || a.article_type || '분석',
+          time: a.time || formatTime(a.pub_date||a.created_at), views: a.views||0,
+          title: a.title||'', title_ko: a.titleKo||a.title_ko||a.title||'',
+          url: a.url||a.link||'#', content_ko: a.koText||a.content_ko||'',
+          insight: a.insight||'',
+          summary_json: (()=>{ if(Array.isArray(a.summaryPoints))return a.summaryPoints; try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
+        };
+      } catch (mapErr) {
+        console.warn('[MIK][MAP] id=' + a.id + ' 매핑 실패 — 스킵:', mapErr.message);
+        return null;
+      }
+    }).filter(Boolean); // null 항목 제거
+
+    const elapsed = Date.now() - fetchStart;
+    console.log('  유효 기사    :', ARTICLES.length + '건 (매핑 실패 제외)');
+    console.log('  소요 시간    :', elapsed + 'ms');
+    console.groupEnd();
+
     renderNewsList(ARTICLES);
     renderSourceTabs(ARTICLES);
+
     if (ARTICLES.length > 0) {
       showArticle(ARTICLES[0].id);
     } else if (grid) {
-      grid.innerHTML = '<div style="padding:40px;text-align:center;color:#6B7280;">' +
-        '<div style="font-size:32px;margin-bottom:8px;">📭</div>' +
-        '<div style="font-weight:600;margin-bottom:4px;">기사가 없습니다</div>' +
-        '<div style="font-size:12px;">RSS 수집 크론이 아직 실행되지 않았거나 필터 조건에 맞는 기사가 없습니다.</div>' +
-        '</div>';
+      grid.innerHTML = buildEmptyPanel(rawArticles.length);
     }
+
   } catch(e) {
-    console.error('[MIK] fetchArticles error:', e.message);
+    clearTimeout(timeoutId);
+    const elapsed = Date.now() - fetchStart;
+
+    // AbortError → 사람이 읽기 좋은 메시지로 교체
+    if (e.name === 'AbortError') {
+      e.message = 'TIMEOUT: 요청이 10초를 초과하여 자동 중단되었습니다';
+    }
+
+    console.error('[MIK][FETCH FAILED] 기사 로딩 최종 실패');
+    console.error('  오류 유형    :', e.name);
+    console.error('  오류 메시지  :', e.message);
+    console.error('  WORKER_URL  :', WORKER_URL);
+    console.error('  요청 파라미터:', params);
+    console.error('  소요 시간    :', elapsed + 'ms');
+    console.error('  스택 트레이스:', e.stack);
+    console.groupEnd();
+
     if (grid) grid.innerHTML = buildErrorPanel(e);
-  } finally { IS_LOADING = false; }
+  } finally {
+    IS_LOADING = false;
+  }
+}
+
+// buildEmptyPanel: API는 성공했으나 기사가 0건일 때 표시
+// rawCount = API가 반환한 원시 배열 길이 (매핑 전), 0이면 DB도 비어있음
+function buildEmptyPanel(rawCount) {
+  const isDbEmpty = (rawCount === 0);
+  return '<div style="padding:48px 24px;text-align:center;color:#6B7280;">' +
+    '<div style="font-size:40px;margin-bottom:12px;">📭<' + '/div>' +
+    '<div style="font-size:15px;font-weight:600;color:#374151;margin-bottom:6px;">' +
+      (isDbEmpty ? '등록된 기사가 없습니다' : '표시할 기사가 없습니다') +
+    '<' + '/div>' +
+    '<div style="font-size:13px;color:#9CA3AF;margin-bottom:20px;">' +
+      (isDbEmpty
+        ? 'RSS 수집 크론이 아직 실행되지 않았습니다. 잠시 후 다시 확인해 주세요.'
+        : '현재 필터 조건에 맞는 기사가 없습니다. 필터를 변경해 보세요.') +
+    '<' + '/div>' +
+    '<button onclick="fetchArticles({limit:30,sort:\'latest\'})"' +
+      ' style="padding:8px 18px;background:#2563EB;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">' +
+      '🔄 새로고침' +
+    '<' + '/button>' +
+  '<' + '/div>';
 }
 
 function buildErrorPanel(err) {
   const msg = err ? err.message || String(err) : 'Unknown error';
-  let userMsg = '기사를 불러올 수 없습니다.';
+  let userMsg = '데이터를 불러올 수 없습니다.';
   let hint = '잠시 후 새로고침해 주세요.';
   let debugType = 'unknown';
 
-  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) {
+  if (msg.includes('TIMEOUT') || (err && err.name === 'AbortError')) {
+    userMsg = '요청 시간이 초과되었습니다. (10초)';
+    hint = 'Worker 서버가 응답하지 않거나 네트워크가 느립니다. 잠시 후 다시 시도해 주세요.';
+    debugType = 'timeout';
+  } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) {
     userMsg = 'API 서버에 연결할 수 없습니다.';
     hint = '네트워크 상태를 확인하거나, 잠시 후 다시 시도해 주세요.';
     debugType = 'fetch_failed';
@@ -1451,12 +1580,12 @@ function buildErrorPanel(err) {
     hint = '잠시 후 다시 시도해 주세요. 문제가 지속되면 관리자에게 문의하세요.';
     debugType = 'http_5xx';
   } else if (msg.includes('CORS') || msg.includes('cors') || msg.includes('Cross-Origin')) {
-    userMsg = 'API 접근 오류가 발생했습니다.';
-    hint = '브라우저 콘솔에서 CORS 오류를 확인해 주세요.';
+    userMsg = 'API 접근 오류가 발생했습니다. (CORS)';
+    hint = '브라우저 콘솔(F12 → Console)에서 CORS 오류 메시지를 확인해 주세요.';
     debugType = 'cors';
   } else if (msg.includes('JSON') || msg.includes('json') || msg.includes('Unexpected token')) {
     userMsg = 'API 응답 형식 오류가 발생했습니다.';
-    hint = '서버 응답이 올바르지 않습니다. 잠시 후 다시 시도해 주세요.';
+    hint = '서버가 JSON이 아닌 응답을 반환했습니다. 잠시 후 다시 시도해 주세요.';
     debugType = 'json_parse';
   }
 
@@ -1518,22 +1647,28 @@ function renderSourceTabs(articles) {
   if (!tabs) return;
   // Collect unique sources from loaded articles
   const sources = [...new Set((articles || ARTICLES).map(a => a.source).filter(Boolean))].sort();
-  tabs.innerHTML = '<div class="source-tab active" onclick="filterSource('all', this)">전체<' + '/div>' +
+  tabs.innerHTML = '<div class="source-tab active" onclick="filterSource(\'all\', this)">전체<' + '/div>' +
     sources.map(s => {
       // Shorten long source names for display
       const label = s.replace(' Meetings','').replace(' News','').replace(' Blog','').replace(' Index','');
-      return '<div class="source-tab" onclick="filterSource('' + s + '', this)">' + label + '<' + '/div>';
+      return '<div class="source-tab" onclick="filterSource(\'' + s + '\', this)">' + label + '<' + '/div>';
     }).join('');
 }
 
 function renderNewsList(articles) {
   const grid = document.getElementById('newsList');
   if (!grid) return;
-  if (!articles || articles.length === 0) {
-    grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;">' +
-      '<div style="font-size:32px;margin-bottom:12px;">📭<' + '/div>' +
-      '<div style="font-weight:600;margin-bottom:6px;">기사가 없습니다<' + '/div>' +
-      '<div style="font-size:12px;">RSS 크롤링 후 기사가 표시됩니다.<' + '/div><' + '/div>';
+
+  // ── Array.isArray 완충 가드 ──────────────────────────────────
+  // articles가 배열이 아닌 경우(null, undefined, 객체 등) Silent Crash 방지
+  if (!Array.isArray(articles)) {
+    console.warn('[MIK][renderNewsList] articles 인자가 배열이 아님 — 빈 화면으로 처리:', typeof articles, articles);
+    grid.innerHTML = buildEmptyPanel(0);
+    return;
+  }
+
+  if (articles.length === 0) {
+    grid.innerHTML = buildEmptyPanel(0);
     return;
   }
   grid.innerHTML = articles.map(a => {
