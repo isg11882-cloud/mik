@@ -1,8 +1,0 @@
--- ⚠️ DEPRECATED — 이 파일은 더 이상 사용되지 않습니다.
--- 단일 진실의 출처(Source of Truth): ../db-schema.sql
---
--- 본 파일은 초기 설계안이었고, 현재 코드(`lib/sync.ts`, `lib/supabase.ts`)는
--- `lib/db-schema.sql`의 테이블명(profiles / diagnosis_results / chat_history /
--- user_missions / mission_completions / emotion_checkins)을 사용합니다.
---
--- Supabase에 스키마를 적용할 때는 반드시 `lib/db-schema.sql`을 SQL Editor에 실행하세요.

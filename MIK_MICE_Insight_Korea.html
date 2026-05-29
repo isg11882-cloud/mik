@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<!-- MIK v2.4 — nuclear 2026-05-14 -->
+<html lang="ko">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-X99ZRRY0WP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-X99ZRRY0WP');
+  </script>
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wlcgownhib");
+  </script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIK — MICE Insight Korea</title>
+<style>
+  /* =========================================
+     CSS Reset & Variables
+  ========================================= */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2563EB;
+    --primary-light: #EFF6FF;
+    --primary-dark: #1E40AF;
+    --accent: #0EA5E9;
+    --accent2: #7C3AED;
+    --success: #10B981;
+    --warn: #F59E0B;
+    --danger: #EF4444;
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --border: #E2E8F0;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --text-muted: #94A3B8;
+    --sidebar-w: 64px;
+    --list-w: 380px;
+    --radius: 10px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+    --shadow: 0 4px 16px rgba(0,0,0,.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+
+    /* Category tag colors */
+    --cat-exhibition: #E0F2FE;
+    --cat-exhibition-text: #0369A1;
+    --cat-convention: #F0FDF4;
+    --cat-convention-text: #15803D;
+    --cat-incentive: #FFF7ED;
+    --cat-incentive-text: #C2410C;
+    --cat-tech: #F5F3FF;
+    --cat-tech-text: #6D28D9;
+    --cat-bio: #FFF0F6;
+    --cat-bio-text: #9D174D;
+    --cat-policy: #FFFBEB;
+    --cat-policy-text: #92400E;
+  }
+
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* =========================================
+     Left Sidebar
+  ========================================= */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    color: white;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(37,99,235,.3);
+  }
+
+  .sidebar-divider {
+    width: 32px;
+    height: 1px;
+    background: var(--border);
+    margin: 6px 0;
+  }
+
+  .sidebar-btn {
+    width: 52px;
+    height: auto;
+    min-height: 44px;
+    padding: 6px 4px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 18px;
+    transition: all .15s ease;
+    position: relative;
+    border: none;
+    background: transparent;
+  }
+  .sidebar-btn:hover { background: var(--primary-light); color: var(--primary); }
+  .sidebar-btn.active { background: var(--primary-light); color: var(--primary); }
+  .sidebar-btn small {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+    line-height: 1;
+    color: inherit;
+    display: block;
+    text-align: center;
+    max-width: 48px;
+  }
+  .sidebar-btn .badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--danger);
+    border: 1.5px solid white;
+  }
+
+  /* =========================================
+     News List Panel
+  ========================================= */
+  .list-panel {
+    width: var(--list-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .list-header {
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .list-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 8px;
+    gap: 8px;
+  }
+  .list-header-top .search-box { flex: 1; }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    transition: border-color .15s;
+  }
+  .search-box:focus-within { border-color: var(--primary); background: white; }
+  .search-box input {
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    color: var(--text-primary);
+    outline: none;
+    width: 100%;
+  }
+  .search-box input::placeholder { color: var(--text-muted); }
+  .search-icon { color: var(--text-muted); font-size: 14px; }
+
+  /* Source tabs */
+  .source-tabs {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 0;
+  }
+  .source-tabs::-webkit-scrollbar { display: none; }
+  .source-tab {
+    padding: 7px 12px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    white-space: nowrap;
+    transition: all .15s;
+    flex-shrink: 0;
+  }
+  .source-tab:hover { color: var(--primary); }
+  .source-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+  /* Sub-filter */
+  .sub-filter {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .filter-pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    border: none;
+    background: var(--bg);
+    color: var(--text-secondary);
+  }
+  .filter-pill.active { background: var(--text-primary); color: white; }
+  .filter-pill:hover:not(.active) { background: var(--border); }
+
+  .sort-select {
+    margin-left: auto;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    background: white;
+    cursor: pointer;
+  }
+
+  /* Today's highlights */
+  .highlights {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%);
+  }
+  .highlights-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .highlight-card {
+    background: white;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    color: var(--text-primary);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all .15s;
+    line-height: 1.4;
+    box-shadow: var(--shadow-sm);
+  }
+  .highlight-card:hover { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+  .highlight-card .hc-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+
+  /* News items */
+  .news-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .news-list::-webkit-scrollbar { width: 4px; }
+  .news-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .news-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .news-item:hover { background: var(--primary-light); }
+  .news-item.active { background: var(--primary-light); border-left: 3px solid var(--primary); }
+
+  .news-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+
+  .news-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .news-item.active .news-item-title { color: var(--primary-dark); font-weight: 600; }
+
+  .news-item-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .news-item-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Tags */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+  .tag-exhibition { background: var(--cat-exhibition); color: var(--cat-exhibition-text); }
+  .tag-convention { background: var(--cat-convention); color: var(--cat-convention-text); }
+  .tag-incentive { background: var(--cat-incentive); color: var(--cat-incentive-text); }
+  .tag-tech { background: var(--cat-tech); color: var(--cat-tech-text); }
+  .tag-bio { background: var(--cat-bio); color: var(--cat-bio-text); }
+  .tag-policy { background: var(--cat-policy); color: var(--cat-policy-text); }
+
+  .time-ago { color: var(--text-muted); font-size: 11px; }
+  .view-count { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--text-muted); }
+
+  /* =========================================
+     Detail Panel
+  ========================================= */
+  .detail-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .detail-header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .detail-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .detail-title-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--text-secondary);
+    transition: all .15s;
+  }
+  .action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .action-btn.primary-btn {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  .action-btn.primary-btn:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+  .detail-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    scrollbar-width: thin;
+  }
+
+  /* AI Summary Card */
+  .ai-summary-card {
+    background: linear-gradient(135deg, #1E40AF 0%, #2563EB 60%, #0EA5E9 100%);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 20px;
+    color: white;
+    box-shadow: 0 4px 20px rgba(37,99,235,.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-summary-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+  }
+  .ai-summary-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -20px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.04);
+  }
+
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-summary-label {
+    font-size: 12px;
+    font-weight: 700;
+    opacity: .75;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-summary-points {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-summary-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    font-weight: 400;
+  }
+
+  .ai-point-num {
+    background: rgba(255,255,255,.2);
+    border-radius: 4px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .ai-insight-box {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-insight-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    opacity: .8;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .ai-insight-text {
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: .95;
+  }
+
+  /* Dual View */
+  .dual-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .dual-view-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .view-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .view-toggle-btn {
+    padding: 4px 10px;
+    font-size: 11.5px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all .15s;
+  }
+  .view-toggle-btn.active { background: white; color: var(--primary); font-weight: 600; box-shadow: var(--shadow-sm); }
+
+  .dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .article-col {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .article-col-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: var(--bg);
+  }
+
+  .lang-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .lang-en { background: #FEF3C7; color: #92400E; }
+  .lang-ko { background: #DBEAFE; color: #1E40AF; }
+
+  .article-col-body {
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text-primary);
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .article-col-body p { margin-bottom: 12px; }
+  .article-col-body p:last-child { margin-bottom: 0; }
+
+  .source-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    color: var(--primary);
+    text-decoration: none;
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--primary-light);
+    background: var(--primary-light);
+    transition: all .15s;
+  }
+  .source-link:hover { background: var(--primary); color: white; }
+
+  /* Article metadata */
+  .article-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Alert panel */
+  .alert-panel {
+    width: 280px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .alert-panel-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .alert-panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .alert-panel-desc {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  .alert-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+
+  .alert-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 10px;
+  }
+
+  .keyword-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .keyword-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all .15s;
+  }
+  .keyword-chip:hover { background: var(--primary); color: white; }
+  .keyword-chip .chip-x {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(37,99,235,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    cursor: pointer;
+  }
+  .keyword-chip:hover .chip-x { background: rgba(255,255,255,.3); }
+
+  .keyword-add-row {
+    display: flex;
+    gap: 6px;
+  }
+  .keyword-input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-size: 12px;
+    outline: none;
+    color: var(--text-primary);
+    transition: border-color .15s;
+    background: var(--bg);
+  }
+  .keyword-input:focus { border-color: var(--primary); background: white; }
+  .keyword-add-btn {
+    padding: 6px 10px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .keyword-add-btn:hover { background: var(--primary-dark); }
+
+  /* Alert notification */
+  .alert-noti-item {
+    display: flex;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .alert-noti-item:last-child { border-bottom: none; }
+  .alert-noti-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .alert-noti-content { flex: 1; min-width: 0; }
+  .alert-noti-keyword { font-size: 10.5px; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
+  .alert-noti-title { font-size: 11.5px; color: var(--text-primary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .alert-noti-time { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Media source list */
+  .media-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background .1s;
+  }
+  .media-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    flex-shrink: 0;
+  }
+  .media-dot.inactive { background: var(--text-muted); }
+  .media-name { font-size: 12px; color: var(--text-primary); flex: 1; }
+  .media-count { font-size: 11px; color: var(--text-muted); }
+
+  /* Alert panel scroll */
+  .alert-scroll { flex: 1; overflow-y: auto; scrollbar-width: thin; }
+
+  /* Loading state */
+  .loading-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: .3; transform: scale(.8); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Live indicator */
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    display: inline-block;
+    animation: livePulse 2s ease-in-out infinite;
+  }
+  @keyframes livePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,.5); }
+    50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+  }
+
+  /* Tooltip / placeholder when no article selected */
+  .no-article {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    gap: 12px;
+    padding: 40px;
+    text-align: center;
+  }
+  .no-article-icon { font-size: 52px; opacity: .3; }
+  .no-article-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); }
+  .no-article-desc { font-size: 13px; line-height: 1.5; }
+
+  /* Responsive adjustments */
+  @media (max-width: 1200px) {
+    .alert-panel { display: none; }
+  }
+
+  /* ===== MOBILE RESPONSIVE (768px) ===== */
+  @media (max-width: 768px) {
+    :root {
+      --sidebar-w: 60px;
+    }
+
+    /* Bottom navigation bar */
+    .sidebar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 60px;
+      flex-direction: row;
+      justify-content: space-around;
+      padding: 0 8px;
+      gap: 0;
+      border-right: none;
+      border-top: 1px solid var(--border);
+      z-index: 200;
+    }
+    .sidebar-logo { display: none; }
+    .sidebar-bottom { display: none; }
+    .sidebar-btn {
+      width: auto;
+      flex: 1;
+      max-width: 60px;
+      padding: 4px 2px;
+      border-radius: 6px;
+    }
+    .sidebar-btn small {
+      font-size: 8px;
+    }
+
+    /* Main content full width */
+    .main-content, .content, main, .app-main {
+      margin-left: 0 !important;
+      padding-bottom: 70px;
+    }
+
+    /* Header adjustments */
+    .header, .top-bar {
+      padding: 8px 12px;
+    }
+
+    /* Cards: single column */
+    .news-grid, .card-grid, .articles-grid {
+      grid-template-columns: 1fr !important;
+      gap: 8px;
+    }
+    .card, .news-card, .article-card {
+      border-radius: 8px;
+    }
+
+    /* Source tabs: horizontal scroll */
+    .source-tabs {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-wrap: nowrap;
+      gap: 4px;
+      padding-bottom: 4px;
+    }
+    .source-tab {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Article detail: full screen */
+    .article-detail, .article-view {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 60px;
+      z-index: 150;
+      overflow-y: auto;
+      border-radius: 0;
+    }
+
+    /* Search box: full width */
+    .search-box {
+      width: 100%;
+      margin: 0;
+    }
+
+    /* Modal: full screen on mobile */
+    .modal-content {
+      width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      margin: 5vh auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .card-tags, .article-tags { display: none; }
+    .insight-box { font-size: 13px; }
+    .summary-list li { font-size: 13px; }
+    .card-title, .article-title { font-size: 15px; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Empty detail view */
+  .detail-inner { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .article-source-url {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 240px;
+  }
+
+  /* ===== AUTH MODAL ===== */
+  .auth-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .auth-modal-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    overflow: hidden;
+  }
+  .privacy-content { max-width: 560px; }
+  .auth-tabs {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding: 4px 16px 0;
+    gap: 4px;
+  }
+  .auth-tab {
+    background: none;
+    border: none;
+    padding: 12px 16px 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .auth-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .auth-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 8px;
+  }
+  .auth-panel { padding: 20px; }
+  .auth-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    text-align: center;
+  }
+  .oauth-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background .15s;
+  }
+  .google-btn { background: var(--surface); color: var(--text); }
+  .google-btn:hover { background: var(--bg); }
+  .kakao-btn { background: #FEE500; color: #3C1E1E; border-color: #FEE500; }
+  .kakao-btn:hover { background: #F0D800; }
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .auth-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+    outline: none;
+  }
+  .auth-input:focus { border-color: var(--accent); }
+  .auth-submit {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: opacity .15s;
+  }
+  .auth-submit:hover { opacity: .88; }
+  .auth-footer {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 12px 0 0;
+  }
+  .auth-footer a { color: var(--accent); cursor: pointer; }
+  .auth-privacy {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 8px 0;
+  }
+  .auth-privacy input[type=checkbox] { margin-right: 6px; }
+
+  /* Login button in header */
+  .btn-login {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--accent);
+    background: none;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-login:hover { background: var(--accent); color: #fff; }
+  .user-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+  }
+
+/* === MIK API & Mobile Enhancements === */
+.news-pending-badge{background:#2d333b;color:#8b949e;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+.news-ai-badge{background:#0d1f0d;color:#3fb950;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+.news-trans-badge{background:#0d1c34;color:#58a6ff;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+#mobileDetailOverlay{display:none;}
+.source-tabs{padding-left:0!important;}
+@media(max-width:768px){
+  .article-detail,.article-view,#articleDetail,.news-detail{display:none!important;}
+  .news-list,.news-panel,.left-panel{width:100%!important;flex:1!important;max-width:none!important;border-right:none!important;}
+  .main-layout,.content-layout,.news-layout{flex-direction:column!important;}
+  .source-tabs{padding:0 0 8px!important;}
+  .news-item{cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .news-item:active{background:#21262d!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- =========================================
+     LEFT SIDEBAR
+========================================= -->
+<aside class="sidebar">
+  <div class="sidebar-logo" title="MICE Insight Korea">MIK</div>
+
+  <button class="sidebar-btn active" title="뉴스 피드">
+    <span>📰</span><small>뉴스</small>
+  </button>
+  <button class="sidebar-btn" title="즐겨찾기">
+    <span>🔖</span><small>즐겨찾기</small>
+  </button>
+  <button class="sidebar-btn" title="알림">
+    <span>🔔</span><small>알림</small>
+    <span class="badge"></span>
+  </button>
+  <div class="sidebar-divider"></div>
+  <button class="sidebar-btn" title="MICE 매체 관리">
+    <span>🌐</span><small>매체</small>
+  </button>
+  <button class="sidebar-btn" title="리포트">
+    <span>📊</span><small>리포트</small>
+  </button>
+  <button class="sidebar-btn" title="뉴스레터">
+    <span>📧</span><small>레터</small>
+  </button>
+  <div class="sidebar-divider"></div>
+  <button class="sidebar-btn" title="설정" style="margin-top: auto;">
+    <span>⚙️</span><small>설정</small>
+  </button>
+  <button class="sidebar-btn" title="내 계정">
+    <span>👤</span><small>계정</small>
+  </button>
+</aside>
+
+<!-- =========================================
+     NEWS LIST PANEL
+========================================= -->
+<section class="list-panel">
+  <div class="list-header">
+    <div class="list-header-top">
+      <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="키워드 검색 (예: PCMA, AI, CVB...)" id="searchInput" oninput="filterNews()">
+    </div><!-- end search-box -->
+      <button class="btn-login" id="headerLoginBtn" onclick="openAuthModal('login')">로그인</button>
+      <button class="user-avatar" id="headerUserBtn" style="display:none" onclick="openAuthModal('login')" title="내 계정"></button>
+    </div><!-- end list-header-top -->
+    <div class="source-tabs" id="sourceTabs" style="padding: 0 16px 12px;">
+      <div class="source-tab active" onclick="filterSource('all', this)">전체</div>
+    </div>
+  </div>
+
+  <!-- Sub filter -->
+  <div class="sub-filter">
+    <button class="filter-pill active" onclick="filterType('all', this)">전체</button>
+    <button class="filter-pill" onclick="filterType('전시', this)">전시</button>
+    <button class="filter-pill" onclick="filterType('컨벤션', this)">컨벤션</button>
+    <button class="filter-pill" onclick="filterType('인센티브', this)">인센티브</button>
+    <button class="filter-pill" onclick="filterType('테크', this)">테크</button>
+    <select class="sort-select" onchange="sortNews(this.value)">
+      <option value="latest">최신순</option>
+      <option value="views">인기순</option>
+    </select>
+  </div>
+
+
+
+  <!-- News feed -->
+  <div class="news-list" id="newsList">
+    <!-- Items injected by JS -->
+  </div>
+</section>
+
+<!-- =========================================
+     DETAIL PANEL
+========================================= -->
+<section class="detail-panel" id="detailPanel">
+  <!-- Default: no article selected -->
+  <div class="no-article" id="noArticle">
+    <div class="no-article-icon">🌏</div>
+    <div class="no-article-title">글로벌 MICE 인사이트 허브</div>
+    <div class="no-article-desc">
+      왼쪽 뉴스 목록에서 기사를 선택하면<br>
+      AI가 번역·요약한 전문가 인사이트를<br>듀얼 뷰로 확인할 수 있습니다.
+    </div>
+    <div style="font-size:13px;color:#8b949e;margin-top:12px;">기사를 선택하면 상세 내용이 여기에 표시됩니다</div>
+  </div>
+
+  <!-- Article detail (hidden until selected) -->
+  <div class="detail-inner" id="articleDetail" style="display:none;">
+    <div class="detail-header">
+      <div class="detail-header-left" style="min-width:0;flex:1;">
+        <div id="detailTagWrap"></div>
+        <div class="detail-title-text" id="detailTitleText" style="min-width:0;flex:1;"></div>
+      </div>
+      <div class="detail-actions">
+        <button class="action-btn" onclick="toggleBookmark()" id="bookmarkBtn">🔖 저장</button>
+        <button class="action-btn" onclick="shareArticle()">🔗 공유</button>
+        <button class="action-btn primary-btn" onclick="openOriginal()">🌐 원문</button>
+      </div>
+    </div>
+    <div class="detail-body">
+      <!-- Article metadata -->
+      <div class="article-meta-row" id="articleMeta"></div>
+
+      <!-- AI Summary Card -->
+      <div class="ai-summary-card">
+        <div class="ai-badge">✨ MIK AI 분석</div>
+        <div class="ai-summary-label">📋 3줄 핵심 요약</div>
+        <ul class="ai-summary-points" id="aiSummaryPoints"></ul>
+        <div class="ai-insight-box">
+          <div class="ai-insight-label">💡 한국 MICE 업계 시사점</div>
+          <div class="ai-insight-text" id="aiInsight"></div>
+        </div>
+      </div>
+
+      <!-- Dual View -->
+      <div class="dual-view-header">
+        <div class="dual-view-title">📄 원문 · 번역 비교 보기</div>
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" onclick="setView('dual', this)">듀얼</button>
+          <button class="view-toggle-btn" onclick="setView('en', this)">영문</button>
+          <button class="view-toggle-btn" onclick="setView('ko', this)">한국어</button>
+        </div>
+      </div>
+
+      <div class="dual-grid" id="dualGrid">
+        <!-- English column -->
+        <div class="article-col" id="enCol">
+          <div class="article-col-header">
+            <span class="lang-badge lang-en">🇺🇸 EN</span>
+            원문 (English)
+          </div>
+          <div class="article-col-body" id="enContent"></div>
+        </div>
+
+        <!-- Korean column -->
+        <div class="article-col" id="koCol">
+          <div class="article-col-header">
+            <span class="lang-badge lang-ko">🇰🇷 KO</span>
+            AI 번역 (Korean)
+          </div>
+          <div class="article-col-body" id="koContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================
+     RIGHT ALERT PANEL
+========================================= -->
+<aside class="alert-panel">
+  <div class="alert-panel-header">
+    <div class="alert-panel-title">
+      <span class="live-dot"></span>
+      키워드 알림
+    </div>
+    <div class="alert-panel-desc">설정한 키워드가 포함된 기사 발생 시 알림을 수신합니다.</div>
+  </div>
+
+  <div class="alert-scroll">
+    <!-- Keyword management -->
+    <div class="alert-section">
+      <div class="alert-section-title">내 관심 키워드</div>
+      <div class="keyword-chips" id="keywordChips"></div>
+      <div class="keyword-add-row">
+        <input class="keyword-input" type="text" placeholder="키워드 추가..." id="keywordInput" onkeydown="if(event.key==='Enter') addKeyword()">
+        <button class="keyword-add-btn" onclick="addKeyword()">+추가</button>
+      </div>
+    </div>
+
+    <!-- Recent alerts -->
+    <div class="alert-section">
+      <div class="alert-section-title">최근 알림</div>
+      <div id="recentAlerts"></div>
+    </div>
+
+    <!-- Media sources -->
+    <div class="alert-section">
+      <div class="alert-section-title">수집 매체 현황</div>
+      <div id="mediaList"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- =========================================
+     JAVASCRIPT
+========================================= -->
+<script>
+// ====== DATA ======
+const WORKER_URL = 'https://mik-worker.isg11882.workers.dev';
+const CAT_LABELS = {
+  'exhibition':'전시', 'convention':'컨벤션', 'incentive':'인센티브',
+  'tech':'테크', 'bio':'바이오', 'policy':'정책', 'general':'일반'
+};
+const CAT_CLASSES = {
+  'exhibition':'tag-exhibition', 'convention':'tag-convention',
+  'incentive':'tag-incentive', 'tech':'tag-tech',
+  'bio':'tag-bio', 'policy':'tag-policy', 'general':'tag-convention'
+};
+let ARTICLES = [];
+let IS_LOADING = false;
+
+function formatTime(d) {
+  if (!d) return '';
+  try {
+    const dt = new Date(d), now = new Date(), diff = now - dt;
+    if (isNaN(diff)) return d;
+    if (diff < 3600000) return Math.floor(diff/60000) + '분 전';
+    if (diff < 86400000) return Math.floor(diff/3600000) + '시간 전';
+    if (diff < 604800000) return Math.floor(diff/86400000) + '일 전';
+    return dt.toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
+  } catch(e) { return ''; }
+}
+
+async function fetchArticles(params = {}) {
+  if (IS_LOADING) return;
+  IS_LOADING = true;
+  const grid = document.getElementById('newsList');
+  if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;"><div style="font-size:24px;margin-bottom:8px;">⏳<' + '/div>기사를 불러오는 중...<' + '/div>';
+  try {
+    const sp = new URLSearchParams(params);
+    const res = await fetch(WORKER_URL + '/api/articles?' + sp.toString(), {
+      mode: 'cors', headers: { 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    ARTICLES = (data.articles || data || []).map(a => ({
+      id: a.id, source: a.source||'',
+      cat: CAT_LABELS[a.cat] || CAT_LABELS[a.category] || a.cat || a.category || '일반',
+      catClass: a.catClass || CAT_CLASSES[a.cat] || a.cat_class || 'tag-convention',
+      type: a.type || a.article_type || '분석',
+      time: a.time || formatTime(a.pub_date||a.created_at), views: a.views||0,
+      title: a.title||'', title_ko: a.titleKo||a.title_ko||a.title||'',
+      url: a.url||a.link||'#', content_ko: a.koText||a.content_ko||'',
+      insight: a.insight||'',
+      summary_json: (()=>{ if(Array.isArray(a.summaryPoints))return a.summaryPoints; try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
+    }));
+    renderNewsList(ARTICLES);
+    renderSourceTabs(ARTICLES);
+    if (ARTICLES.length > 0) showArticle(ARTICLES[0].id);
+  } catch(e) {
+    console.error('[MIK] API error:', e);
+    if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#f85149;"><div style="font-size:24px;margin-bottom:8px;">⚠️<' + '/div>기사를 불러올 수 없습니다.<br><small style="color:#8b949e">Worker API 상태를 확인해 주세요.<' + '/small><' + '/div>';
+  } finally { IS_LOADING = false; }
+}
+
+const KEYWORDS_DEFAULT = ['Bio', 'CVB', 'Sustainability', 'AI Event', 'Korea MICE', 'PCO'];
+const MEDIA_SOURCES = []; // 동적으로 API에서 로드
+
+const ALERTS = []; // 알림은 키워드 설정 후 동적으로 수신
+
+// ====== STATE ======
+let currentSource = 'all';
+let currentType = 'all';
+let currentSort = 'latest';
+let currentArticleId = null;
+let keywords = [...KEYWORDS_DEFAULT];
+let filteredArticles = [...ARTICLES];
+
+// ====== INIT ======
+function init() {
+  updateAuthUI();
+  fetchArticles({ limit: 30, sort: 'latest' });
+}
+
+// ====== RENDER NEWS LIST ======
+function renderSourceTabs(articles) {
+  const tabs = document.getElementById('sourceTabs');
+  if (!tabs) return;
+  // Collect unique sources from loaded articles
+  const sources = [...new Set((articles || ARTICLES).map(a => a.source).filter(Boolean))].sort();
+  tabs.innerHTML = '<div class="source-tab active" onclick="filterSource('all', this)">전체<' + '/div>' +
+    sources.map(s => {
+      // Shorten long source names for display
+      const label = s.replace(' Meetings','').replace(' News','').replace(' Blog','').replace(' Index','');
+      return '<div class="source-tab" onclick="filterSource('' + s + '', this)">' + label + '<' + '/div>';
+    }).join('');
+}
+
+function renderNewsList(articles) {
+  const grid = document.getElementById('newsList');
+  if (!grid) return;
+  if (!articles || articles.length === 0) {
+    grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;">' +
+      '<div style="font-size:32px;margin-bottom:12px;">📭<' + '/div>' +
+      '<div style="font-weight:600;margin-bottom:6px;">기사가 없습니다<' + '/div>' +
+      '<div style="font-size:12px;">RSS 크롤링 후 기사가 표시됩니다.<' + '/div><' + '/div>';
+    return;
+  }
+  grid.innerHTML = articles.map(a => {
+    const title = a.title_ko || a.title || '제목 없음';
+    const badge = a.insight ? '<span class="news-ai-badge">AI분석</span>' :
+                  a.content_ko ? '<span class="news-trans-badge">번역완료</span>' :
+                  '<span class="news-pending-badge">번역대기</span>';
+    return '<div class="news-item" data-id="' + a.id + '" onclick="showArticle(' + a.id + ')">' +
+      '<div class="news-item-header"><span class="news-tag ' + (a.catClass||'tag-convention') + '">' + (a.cat||'') + '<' + '/span>' +
+      '<span class="news-type">' + (a.type||'') + '<' + '/span><span class="news-time">' + (a.time||'') + '<' + '/span><' + '/div>' +
+      '<div class="news-title">' + title + '<' + '/div>' +
+      '<div class="news-meta"><span class="news-source">' + (a.source||'') + '<' + '/span>' +
+      '<span class="news-views">👁 ' + (a.views||0) + '<' + '/span>' + badge + '<' + '/div><' + '/div>';
+  }).join('');
+}
+
+// ====== SHOW ARTICLE ======
+function showArticle(id) {
+  currentArticleId = id;
+  const a = ARTICLES.find(x => x.id === id);
+  if (!a) return;
+  document.querySelectorAll('.news-item').forEach(el => el.classList.remove('active'));
+  const item = document.querySelector('[data-id="' + id + '"]');
+  if (item) { item.classList.add('active'); item.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+  a.views = (a.views||0) + 1;
+  const vEl = item && item.querySelector('.news-views');
+  if (vEl) vEl.textContent = '👁 ' + a.views;
+  if (window.innerWidth <= 768) { showMobileDetail(a); return; }
+  renderDetailPanel(a);
+}
+
+function buildDetailHTML(a) {
+  const title = a.title_ko || a.title || '';
+  const sum = a.summary_json && a.summary_json.length > 0;
+  let h = '';
+  if (sum) h += '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:16px;">' +
+    '<div style="font-size:12px;color:#58a6ff;font-weight:600;margin-bottom:8px;">📋 핵심 요약<' + '/div>' +
+    a.summary_json.map((s,i)=>'<div style="font-size:14px;color:#c9d1d9;padding:4px 0;">'+(i+1)+'. '+s+'<' + '/div>').join('') + '<' + '/div>';
+  if (a.insight) h += '<div style="background:#0d1f0d;border:1px solid #238636;border-radius:8px;padding:16px;margin-bottom:16px;">' +
+    '<div style="font-size:12px;color:#3fb950;font-weight:600;margin-bottom:8px;">💡 AI MICE 인사이트<' + '/div>' +
+    '<div style="font-size:14px;color:#c9d1d9;line-height:1.6;">' + a.insight + '<' + '/div><' + '/div>';
+  h += a.content_ko ?
+    '<div style="font-size:14px;color:#c9d1d9;line-height:1.8;">' + a.content_ko + '<' + '/div>' :
+    '<div style="color:#8b949e;font-size:13px;text-align:center;padding:24px;background:#161b22;border-radius:8px;">⏳ AI 번역 처리 중입니다. 잠시 후 확인해 주세요.<' + '/div>';
+  return {title, h};
+}
+
+function showMobileDetail(a) {
+  let ov = document.getElementById('mobileDetailOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'mobileDetailOverlay';
+    ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#0d1117;z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;';
+    document.body.appendChild(ov);
+  }
+  const {title, h} = buildDetailHTML(a);
+  ov.innerHTML = '<div style="position:sticky;top:0;background:#161b22;padding:12px 16px;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:12px;z-index:1;">' +
+    '<button onclick="closeMobileDetail()" style="background:none;border:none;color:#8b949e;font-size:22px;cursor:pointer;line-height:1;">←<' + '/button>' +
+    '<span style="font-size:13px;color:#8b949e;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (a.source||'') + '<' + '/span>' +
+    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#238636;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;">원문 →<' + '/a><' + '/div>' +
+    '<div style="padding:20px 16px;">' +
+    '<div style="margin-bottom:12px;"><span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
+    '<span style="color:#8b949e;font-size:12px;margin-left:8px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
+    '<h2 style="font-size:18px;font-weight:700;color:#e6edf3;line-height:1.4;margin:0 0 16px;">' + title + '<' + '/h2>' + h + '<' + '/div>';
+  ov.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileDetail() {
+  const ov = document.getElementById('mobileDetailOverlay');
+  if (ov) ov.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function renderDetailPanel(a) {
+  const noArt = document.getElementById('noArticle');
+  if (noArt) noArt.style.display = 'none';
+  const panel = document.getElementById('articleDetail') ||
+    document.querySelector('.article-detail, .article-view, .news-detail');
+  if (!panel) return;
+  panel.style.display = 'flex';
+  panel.style.flexDirection = 'column';
+  const {title, h} = buildDetailHTML(a);
+  panel.innerHTML = '<div style="padding:20px;border-bottom:1px solid #30363d;">' +
+    '<div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+    '<span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
+    '<span style="color:#8b949e;font-size:12px;">' + (a.source||'') + '<' + '/span>' +
+    '<span style="color:#8b949e;font-size:12px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
+    '<h2 style="font-size:17px;font-weight:700;color:#e6edf3;line-height:1.4;margin:0 0 12px;">' + title + '<' + '/h2>' +
+    '<div style="display:flex;gap:8px;">' +
+    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#238636;color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none;">원문 보기 →<' + '/a>' +
+    '<button onclick="toggleBookmark(' + a.id + ')" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;">🔖 저장<' + '/button><' + '/div><' + '/div>' +
+    '<div style="padding:20px;overflow-y:auto;">' + h + '<' + '/div>';
+}
+
+// ====== FILTER ======
+function filterSource(source, el) {
+  currentSource = source;
+  document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function filterType(type, el) {
+  currentType = type;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function filterNews() {
+  applyFilters();
+}
+
+function sortNews(val) {
+  currentSort = val;
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  filteredArticles = ARTICLES.filter(a => {
+    const matchSource = currentSource === 'all' || a.source === currentSource;
+    const matchType = currentType === 'all' || a.cat === currentType;
+    const matchSearch = !search || a.title.toLowerCase().includes(search) || a.source.toLowerCase().includes(search);
+    return matchSource && matchType && matchSearch;
+  });
+
+  if (currentSort === 'views') {
+    filteredArticles.sort((a, b) => b.views - a.views);
+  }
+
+  renderNewsList(filteredArticles);
+}
+
+// ====== VIEW TOGGLE ======
+function setView(mode, el) {
+  document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const enCol = document.getElementById('enCol');
+  const koCol = document.getElementById('koCol');
+  const grid = document.getElementById('dualGrid');
+
+  if (mode === 'dual') {
+    grid.style.gridTemplateColumns = '1fr 1fr';
+    enCol.style.display = ''; koCol.style.display = '';
+  } else if (mode === 'en') {
+    grid.style.gridTemplateColumns = '1fr';
+    enCol.style.display = ''; koCol.style.display = 'none';
+  } else {
+    grid.style.gridTemplateColumns = '1fr';
+    enCol.style.display = 'none'; koCol.style.display = '';
+  }
+}
+
+// ====== KEYWORDS ======
+function renderKeywords() {
+  const container = document.getElementById('keywordChips');
+  container.innerHTML = keywords.map(k => `
+    <span class="keyword-chip" onclick="removeKeyword('${k}')">
+      ${k} <span class="chip-x">×</span>
+    </span>
+  `).join('');
+}
+
+function addKeyword() {
+  const input = document.getElementById('keywordInput');
+  const val = input.value.trim();
+  if (val && !keywords.includes(val)) {
+    keywords.push(val);
+    renderKeywords();
+  }
+  input.value = '';
+}
+
+function removeKeyword(k) {
+  keywords = keywords.filter(x => x !== k);
+  renderKeywords();
+}
+
+// ====== ALERTS ======
+function renderAlerts() {
+  const container = document.getElementById('recentAlerts');
+  container.innerHTML = ALERTS.map(a => `
+    <div class="alert-noti-item">
+      <div class="alert-noti-icon">${a.icon}</div>
+      <div class="alert-noti-content">
+        <div class="alert-noti-keyword">${a.keyword}</div>
+        <div class="alert-noti-title">${a.title}</div>
+        <div class="alert-noti-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ====== MEDIA ======
+function renderMedia() {
+  const container = document.getElementById('mediaList');
+  container.innerHTML = MEDIA_SOURCES.map(m => `
+    <div class="media-item">
+      <div class="media-dot ${m.active ? '' : 'inactive'}"></div>
+      <span class="media-name">${m.name}</span>
+      <span class="media-count">${m.active ? m.count + '건' : '비활성'}</span>
+    </div>
+  `).join('');
+}
+
+// ====== ACTIONS ======
+function toggleBookmark() {
+  const btn = document.getElementById('bookmarkBtn');
+  const saved = btn.dataset.saved === '1';
+  if (saved) {
+    btn.textContent = '🔖 저장';
+    btn.dataset.saved = '0';
+    btn.classList.remove('primary-btn');
+  } else {
+    btn.innerHTML = '✅ 저장됨';
+    btn.dataset.saved = '1';
+    btn.classList.add('primary-btn');
+  }
+}
+
+function shareArticle() {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(window.location.href);
+  }
+  const btn = event.target.closest('.action-btn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '✅ 복사됨';
+  setTimeout(() => { btn.innerHTML = orig; }, 2000);
+}
+
+function openOriginal() {
+  if (window._currentUrl) {
+    window.open(window._currentUrl, '_blank');
+  }
+}
+
+// ====== START ======
+init();
+
+// Auto-select first article for demo
+setTimeout(() => { showArticle(0); }, 400);
+
+// ===== AUTH SYSTEM =====
+const MIK_USER_KEY = 'mik_user';
+
+function getUser() {
+  try { return JSON.parse(localStorage.getItem(MIK_USER_KEY)); } catch(e) { return null; }
+}
+function saveUser(user) {
+  localStorage.setItem(MIK_USER_KEY, JSON.stringify(user));
+}
+function clearUser() {
+  localStorage.removeItem(MIK_USER_KEY);
+}
+
+function openAuthModal(tab) {
+  document.getElementById('authModal').style.display = 'flex';
+  if (tab) switchAuthTab(tab);
+}
+function closeAuthModal() {
+  document.getElementById('authModal').style.display = 'none';
+}
+function switchAuthTab(tab) {
+  document.getElementById('panelLogin').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('panelSignup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+}
+function showPrivacy() {
+  document.getElementById('privacyModal').style.display = 'flex';
+}
+
+function loginGoogle() {
+  // Google OAuth - redirect to Google sign-in
+  // In production: replace CLIENT_ID with actual Google OAuth client ID
+  const clientId = 'YOUR_GOOGLE_CLIENT_ID';
+  const redirectUri = encodeURIComponent(window.location.origin + '/auth/google/callback');
+  const scope = encodeURIComponent('openid email profile');
+  if (clientId === 'YOUR_GOOGLE_CLIENT_ID') {
+    alert('Google OAuth 클라이언트 ID를 설정해주세요.\n(개발 중: 이메일 로그인을 이용해주세요)');
+    return;
+  }
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+}
+
+function loginKakao() {
+  const clientId = 'YOUR_KAKAO_APP_KEY';
+  const redirectUri = encodeURIComponent(window.location.origin + '/auth/kakao/callback');
+  if (clientId === 'YOUR_KAKAO_APP_KEY') {
+    alert('카카오 앱 키를 설정해주세요.\n(개발 중: 이메일 로그인을 이용해주세요)');
+    return;
+  }
+  window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+}
+
+function loginEmail() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) {
+    alert('이메일과 비밀번호를 입력해주세요.');
+    return;
+  }
+  // Check stored users
+  const users = JSON.parse(localStorage.getItem('mik_users') || '[]');
+  const user = users.find(u => u.email === email);
+  if (!user) {
+    alert('등록되지 않은 이메일입니다. 회원가입을 해주세요.');
+    switchAuthTab('signup');
+    return;
+  }
+  if (user.password !== btoa(password)) {
+    alert('비밀번호가 올바르지 않습니다.');
+    return;
+  }
+  saveUser({name: user.name, email: user.email, affiliation: user.affiliation, title: user.title});
+  closeAuthModal();
+  updateAuthUI();
+  showToast('로그인되었습니다. 환영합니다, ' + (user.name || user.email) + '!');
+}
+
+function submitSignup() {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const affiliation = document.getElementById('signupAffiliation').value.trim();
+  const title = document.getElementById('signupTitle').value.trim();
+  const contact = document.getElementById('signupContact').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const privacyOk = document.getElementById('privacyCheck').checked;
+
+  if (!email || !affiliation || !password) {
+    alert('이메일, 소속, 비밀번호는 필수 항목입니다.');
+    return;
+  }
+  if (password.length < 8) {
+    alert('비밀번호는 8자 이상이어야 합니다.');
+    return;
+  }
+  if (!privacyOk) {
+    alert('개인정보처리방침에 동의해주세요.');
+    return;
+  }
+  const users = JSON.parse(localStorage.getItem('mik_users') || '[]');
+  if (users.find(u => u.email === email)) {
+    alert('이미 등록된 이메일입니다. 로그인해주세요.');
+    switchAuthTab('login');
+    return;
+  }
+  users.push({name, email, affiliation, title, contact, password: btoa(password), joinedAt: new Date().toISOString()});
+  localStorage.setItem('mik_users', JSON.stringify(users));
+  saveUser({name, email, affiliation, title});
+  closeAuthModal();
+  updateAuthUI();
+  showToast('가입이 완료되었습니다. 환영합니다, ' + (name || email) + '!');
+}
+
+function logout() {
+  clearUser();
+  updateAuthUI();
+  showToast('로그아웃되었습니다.');
+}
+
+function updateAuthUI() {
+  const user = getUser();
+  const loginBtn = document.getElementById('headerLoginBtn');
+  const userBtn = document.getElementById('headerUserBtn');
+  if (loginBtn) loginBtn.style.display = user ? 'none' : 'block';
+  if (userBtn) {
+    userBtn.style.display = user ? 'flex' : 'none';
+    if (user) userBtn.textContent = (user.name || user.email || '?')[0].toUpperCase();
+  }
+}
+
+function showToast(msg) {
+  let t = document.getElementById('mik-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'mik-toast';
+    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:99999;transition:opacity .3s;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+}
+
+// Init auth UI on load
+document.addEventListener('DOMContentLoaded', updateAuthUI);
+
+</script>
+
+<!-- ========== LOGIN / SIGNUP MODAL ========== -->
+<div id="authModal" class="auth-modal" style="display:none;" onclick="if(event.target===this)closeAuthModal()">
+  <div class="auth-modal-content">
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">로그인</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">회원가입</button>
+      <button class="auth-close" onclick="closeAuthModal()">✕</button>
+    </div>
+
+    <!-- Login Panel -->
+    <div id="panelLogin" class="auth-panel">
+      <p class="auth-sub">MICE 인사이트 코리아에 오신 것을 환영합니다</p>
+      <button class="oauth-btn google-btn" onclick="loginGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+        Google로 계속하기
+      </button>
+      <button class="oauth-btn kakao-btn" onclick="loginKakao()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#3C1E1E" d="M9 1.5C4.86 1.5 1.5 4.08 1.5 7.27c0 2.04 1.34 3.83 3.37 4.87L4.1 15a.3.3 0 0 0 .45.33l3.5-2.3c.31.04.63.06.95.06 4.14 0 7.5-2.58 7.5-5.77S13.14 1.5 9 1.5z"/></svg>
+        카카오로 계속하기
+      </button>
+      <div class="auth-divider"><span>또는 이메일로</span></div>
+      <input type="email" id="loginEmail" placeholder="이메일" class="auth-input">
+      <input type="password" id="loginPassword" placeholder="비밀번호" class="auth-input">
+      <button class="auth-submit" onclick="loginEmail()">로그인</button>
+      <p class="auth-footer">계정이 없으신가요? <a onclick="switchAuthTab('signup')">회원가입</a></p>
+    </div>
+
+    <!-- Signup Panel -->
+    <div id="panelSignup" class="auth-panel" style="display:none;">
+      <p class="auth-sub">MICE 전문가 커뮤니티에 합류하세요</p>
+      <button class="oauth-btn google-btn" onclick="loginGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+        Google로 가입하기
+      </button>
+      <button class="oauth-btn kakao-btn" onclick="loginKakao()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#3C1E1E" d="M9 1.5C4.86 1.5 1.5 4.08 1.5 7.27c0 2.04 1.34 3.83 3.37 4.87L4.1 15a.3.3 0 0 0 .45.33l3.5-2.3c.31.04.63.06.95.06 4.14 0 7.5-2.58 7.5-5.77S13.14 1.5 9 1.5z"/></svg>
+        카카오로 가입하기
+      </button>
+      <div class="auth-divider"><span>또는 이메일로 가입</span></div>
+      <input type="text" id="signupName" placeholder="이름" class="auth-input">
+      <input type="email" id="signupEmail" placeholder="이메일 *" class="auth-input">
+      <input type="text" id="signupAffiliation" placeholder="소속 기관/회사 *" class="auth-input">
+      <input type="text" id="signupTitle" placeholder="직함/직위 (예: PCO 팀장)" class="auth-input">
+      <input type="tel" id="signupContact" placeholder="연락처 (선택)" class="auth-input">
+      <input type="password" id="signupPassword" placeholder="비밀번호 (8자 이상) *" class="auth-input">
+      <div class="auth-privacy">
+        <label><input type="checkbox" id="privacyCheck"> 
+          <a onclick="showPrivacy()" style="cursor:pointer;color:var(--accent)">개인정보처리방침</a>에 동의합니다 (필수)
+        </label>
+      </div>
+      <button class="auth-submit" onclick="submitSignup()">가입하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div id="privacyModal" class="auth-modal" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="auth-modal-content privacy-content">
+    <div class="auth-tabs"><h3 style="margin:0;flex:1">개인정보처리방침</h3><button class="auth-close" onclick="document.getElementById('privacyModal').style.display='none'">✕</button></div>
+    <div style="padding:20px;overflow-y:auto;max-height:70vh;font-size:13px;line-height:1.7;color:var(--text-muted)">
+      <p><strong>1. 수집 항목</strong><br>이름, 이메일, 소속 기관, 직함, 연락처</p>
+      <p><strong>2. 수집 목적</strong><br>MICE Insight Korea 서비스 제공, 뉴스레터 발송, 이용자 식별</p>
+      <p><strong>3. 보유 기간</strong><br>회원 탈퇴 시까지. 단, 관계 법령에 따라 보존이 필요한 경우 해당 기간 보관</p>
+      <p><strong>4. 제3자 제공</strong><br>원칙적으로 외부 제공 없음. 법령에 의한 경우 예외</p>
+      <p><strong>5. 동의 거부 권리</strong><br>동의를 거부할 수 있으나, 서비스 이용이 제한될 수 있습니다</p>
+      <p><strong>문의</strong>: premierplanlab@gmail.com</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

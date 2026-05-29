@@ -1,0 +1,110 @@
+name: Deploy MIK to Cloudflare
+
+# master 브랜치 push 시 자동 배포
+# ⚠️ 사전 조건: Cloudflare Pages 대시보드 > mik-dashboard > Settings > Builds & deployments
+#               Production branch = master 로 설정되어 있어야 함
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy Worker + Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write   # ci-results 브랜치 push용
+
+    steps:
+      # ── 1. 코드 체크아웃 ────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Node.js 설정 ─────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # ── 3. 의존성 설치 ───────────────────────────────────────────
+      - name: Install dependencies
+        run: npm install
+
+      # ── 4. Cloudflare Worker 배포 ───────────────────────────────
+      - name: Deploy Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "=== Deploying Worker ===" | tee worker_deploy.log
+          npx wrangler deploy 2>&1 | tee -a worker_deploy.log
+          echo "=== Worker deploy exit: $? ===" | tee -a worker_deploy.log
+
+      # ── 4b. Worker 응답 테스트 (배포 후 15초 대기) ──────────────
+      - name: Test Worker health
+        continue-on-error: true
+        run: |
+          sleep 15
+          WORKER_URL="https://mik-worker.isg11882-cloud.workers.dev"
+          echo "=== Worker Health Test ===" | tee worker_test.log
+          echo "--- /health ---" | tee -a worker_test.log
+          curl -sv --max-time 20 "$WORKER_URL/health" 2>&1 | tee -a worker_test.log
+          echo "" | tee -a worker_test.log
+          echo "--- /api/articles?limit=1 ---" | tee -a worker_test.log
+          curl -sv --max-time 20 "$WORKER_URL/api/articles?limit=1" 2>&1 | tee -a worker_test.log
+          echo "" | tee -a worker_test.log
+          echo "--- HTTP status code ---" | tee -a worker_test.log
+          curl -o /dev/null -w "HTTP_CODE:%{http_code} SIZE:%{size_download}\n" --max-time 20 \
+            "$WORKER_URL/health" 2>&1 | tee -a worker_test.log
+
+      # ── 5. Cloudflare Pages 배포 ────────────────────────────────
+      # --branch 플래그 제거: wrangler이 git HEAD(master)를 자동 감지
+      # Pages 대시보드에서 Production Branch = master 설정 시 프로덕션 URL에 반영됨
+      - name: Deploy Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          mkdir -p dist
+          cp MIK_MICE_Insight_Korea.html dist/index.html
+          cp og-image.png dist/og-image.png 2>/dev/null || true
+          cp _redirects dist/_redirects   2>/dev/null || true
+
+          echo "=== Deploying Pages ===" | tee pages_deploy.log
+          npx wrangler pages deploy dist \
+            --project-name mik-dashboard \
+            --commit-dirty=true \
+            2>&1 | tee -a pages_deploy.log
+
+          echo "=== Done: https://mik-dashboard.pages.dev ===" | tee -a pages_deploy.log
+
+      # ── 6. 기사 재분류 (실패해도 파이프라인 계속) ─────────────────
+      - name: Recategorize articles
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -f scripts/recategorize.js ]; then
+            node scripts/recategorize.js 2>&1 | tail -20 || true
+          else
+            echo "recategorize.js not found — skipping"
+          fi
+
+      # ── 7. 결과 저장 (always) ─────────────────────────────────────
+      - name: Save deploy results
+        if: always()
+        run: |
+          [ -f recategorize_result.json ] || echo '{"status":"no_result"}' > recategorize_result.json
+          [ -f pages_deploy.log ]       || echo "(no pages log)" > pages_deploy.log
+          [ -f worker_deploy.log ]      || echo "(no worker deploy log)" > worker_deploy.log
+          [ -f worker_test.log ]        || echo "(no worker test log)" > worker_test.log
+
+          git config user.email "premierplanlab@gmail.com"
+          git config user.name  "MIK-CI"
+          git checkout -B ci-results
+          git add -f recategorize_result.json pages_deploy.log worker_deploy.log worker_test.log 2>/dev/null || true
+          git commit -m "ci: deploy $(date -u +%Y%m%d-%H%M%S) [skip ci]" || true
+          git push origin ci-results --force 2>&1 || true
