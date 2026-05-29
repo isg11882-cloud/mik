@@ -237,26 +237,29 @@ async function runLocalOrMockAI(
 ): Promise<Response> {
   // macOS 등에서 localhost DNS 확인 지연(IPv6 ::1 대기 시간)을 피하기 위해 127.0.0.1 을 기본으로 지정합니다.
   const OLLAMA_URL = process.env.OLLAMA_API_URL || 'http://127.0.0.1:11434/api/chat'
+  const OLLAMA_TAGS_URL = OLLAMA_URL.replace('/api/chat', '/api/tags')
   
   try {
-    // Ollama 서버 헬스체크 및 모델 유무 검증 (1500ms 넉넉한 타이머로 지연 핸드쉐이크 커버)
+    // Ollama 서버 헬스체크 및 모델 유무 검증 (GET /api/tags API를 호출하여 cold-start 없이 50ms 내 고속 응답 확인)
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 1500)
     
-    const checkRes = await fetch(OLLAMA_URL, {
-      method: 'POST',
+    const checkRes = await fetch(OLLAMA_TAGS_URL, {
+      method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: process.env.OLLAMA_MODEL || 'gemma4:e4b',
-        messages: [{ role: 'user', content: 'test' }],
-        stream: false
-      }),
       signal: controller.signal
     }).catch(() => null)
     
     clearTimeout(timeoutId)
 
     if (checkRes && checkRes.ok) {
+      const tagsData = await checkRes.json().catch(() => ({ models: [] }))
+      const targetModel = process.env.OLLAMA_MODEL || 'gemma4:e4b'
+      const hasModel = tagsData.models?.some((m: any) => m.name === targetModel || m.model === targetModel)
+
+      if (!hasModel) {
+        throw new Error(`Target model ${targetModel} is not installed in Ollama. Available models: ${tagsData.models?.map((m: any) => m.name).join(', ')}`)
+      }
       console.log('[Ollama] Local server detected. Streaming from local LLM...')
       const systemPrompt = buildSystemPrompt(userContext)
       const ollamaResponse = await fetch(OLLAMA_URL, {
