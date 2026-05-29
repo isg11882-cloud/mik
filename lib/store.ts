@@ -186,7 +186,7 @@ export const useAppStore = create<AppState>()(
       incrementChatCount: () => set((s) => ({ chatCount: s.chatCount + 1 })),
 
       chatHistory: [],
-      setChatHistory: (messages) => set({ chatHistory: messages }),
+      setChatHistory: (messages) => set({ chatHistory: messages.slice(-10) }),
       clearChatHistory: () => set({ chatHistory: [] }),
 
       resetAll: () => set({
@@ -207,6 +207,19 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'reunion-app-storage',
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        if (version < 2) {
+          console.log('[Zustand] Migrating legacy schema. Clearing chatHistory and activeMissions to prevent conflicts.');
+          return {
+            ...persistedState,
+            chatHistory: [],
+            activeMissions: [],
+            completedMissions: [],
+          }
+        }
+        return persistedState
+      }
     }
   )
 )

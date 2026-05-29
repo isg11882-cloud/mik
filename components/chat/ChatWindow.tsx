@@ -21,6 +21,7 @@ interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
+  type?: string
   isError?: boolean
   timestamp?: number
   imagePreview?: string
@@ -220,12 +221,12 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
     if (chatHistory.length === 0) {
       if (initialMessage) {
         setMessages([
-          { id: 'welcome', role: 'assistant', content: initialMessage, timestamp: Date.now() }
+          { id: 'welcome', role: 'assistant', content: initialMessage, type: 'welcome', timestamp: Date.now() }
         ])
       } else {
         const welcome = getWelcomeMessage(userContext)
         setMessages([
-          { id: 'welcome', role: 'assistant', content: welcome, timestamp: Date.now() }
+          { id: 'welcome', role: 'assistant', content: welcome, type: 'welcome', timestamp: Date.now() }
         ])
       }
     }
@@ -273,7 +274,8 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
     }
 
     const historyForAPI = messages
-      .filter(m => m.id !== 'welcome')
+      .filter(m => m.id !== 'welcome' && m.type !== 'welcome')
+      .slice(-10)
       .map(m => ({ role: m.role, content: m.content }))
 
     setMessages(prev => [...prev, userMsg])
@@ -330,17 +332,27 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
         if (done) break
         fullText += decoder.decode(value, { stream: true })
 
-        // 실시간 렌더링
-        const mission = parseMissionRecommend(fullText)
+        // 실시간 렌더링 (스트리밍 도중에는 텍스트만 표시하고 미션 추천 JSON 파싱은 완충 처리)
         const cleanText = cleanContent(fullText)
         setMessages(prev =>
           prev.map(m =>
             m.id === aiMsgId
-              ? { ...m, content: cleanText, missionRecommend: mission ?? undefined }
+              ? { ...m, content: cleanText }
               : m
           )
         )
       }
+
+      // 스트리밍 종료 시점(done: true)에만 안전하게 <mission_recommend> JSON 파싱을 수행
+      const mission = parseMissionRecommend(fullText)
+      const cleanText = cleanContent(fullText)
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === aiMsgId
+            ? { ...m, content: cleanText, missionRecommend: mission ?? undefined }
+            : m
+        )
+      )
 
     } catch (error: any) {
       console.error('[Client Chat Error]:', error)
@@ -376,7 +388,7 @@ export default function ChatWindow({ userContext, initialMessage }: ChatWindowPr
       clearChatHistory()
       const welcome = getWelcomeMessage(userContext)
       setMessages([
-        { id: 'welcome', role: 'assistant', content: welcome, timestamp: Date.now() }
+        { id: 'welcome', role: 'assistant', content: welcome, type: 'welcome', timestamp: Date.now() }
       ])
       setInput('')
       setErrorState(null)

@@ -138,7 +138,7 @@ export async function POST(request: Request) {
         }),
       })
     } catch (fetchErr: any) {
-      console.error('[Gemini API Fetch Failure, routing to local/mock fallback]:', fetchErr.message)
+      console.error("[GEMINI_API_FAILURE_CRITICAL] Fallback triggered. Reason:", fetchErr);
       return runLocalOrMockAI(messages, userContext, image)
     }
 
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
         errorMessage = `HTTP ${response.status}: ${response.statusText}`
       }
 
-      console.error('[Gemini API Failure, routing to local/mock fallback]:', errorMessage)
+      console.error("[GEMINI_API_FAILURE_CRITICAL] API responded with non-200 status. Fallback triggered. Reason:", errorMessage)
       return runLocalOrMockAI(messages, userContext, image)
     }
 

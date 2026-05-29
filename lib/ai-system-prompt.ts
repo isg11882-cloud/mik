@@ -201,23 +201,34 @@ const COACHING_STYLE_GUIDES = {
 }
 
 export function buildSystemPrompt(ctx: UserContext): string {
-  const typeGuide = ctx.breakupType
-    ? BREAKUP_TYPE_STRATEGY[ctx.breakupType]
+  // Defensive logic to prevent crashes or template malformations due to missing or invalid context
+  const safeCtx = ctx || {
+    breakupType: null,
+    daysSinceBreakup: 0,
+    currentPhase: 1,
+    coachingStyle: 'healing'
+  }
+
+  const breakupType = safeCtx.breakupType
+  const typeGuide = (breakupType && BREAKUP_TYPE_STRATEGY[breakupType])
+    ? BREAKUP_TYPE_STRATEGY[breakupType]
     : '진단 유형 파악 중 — 첫 대화에서 이별 원인과 구체적 맥락을 면밀히 분석하여 유형(A, B, C, D)을 예리하게 판별할 것'
 
-  const phaseGuide = PHASE_GUIDE[ctx.currentPhase] || PHASE_GUIDE[1]
-  const selectedStyle = ctx.coachingStyle || 'healing'
-  const styleGuide = COACHING_STYLE_GUIDES[selectedStyle]
+  const currentPhase = safeCtx.currentPhase || 1
+  const phaseGuide = PHASE_GUIDE[currentPhase] || PHASE_GUIDE[1]
+
+  const selectedStyle = safeCtx.coachingStyle || 'healing'
+  const styleGuide = COACHING_STYLE_GUIDES[selectedStyle] || COACHING_STYLE_GUIDES['healing']
 
   const userInfo = [
-    ctx.userName ? `내담자 호칭: ${ctx.userName}님` : '',
-    ctx.gender ? `내담자 성별: ${ctx.gender === 'male' ? '남성' : '여성'}` : '',
-    ctx.partnerGender ? `상대 성별: ${ctx.partnerGender === 'male' ? '남성' : '여성'}` : '',
-    `이별 후 경과: ${ctx.daysSinceBreakup}일`,
-    `현재 단계: PHASE ${ctx.currentPhase}`,
+    safeCtx.userName ? `내담자 호칭: ${safeCtx.userName}님` : '',
+    safeCtx.gender ? `내담자 성별: ${safeCtx.gender === 'male' ? '남성' : '여성'}` : '',
+    safeCtx.partnerGender ? `상대 성별: ${safeCtx.partnerGender === 'male' ? '남성' : '여성'}` : '',
+    `이별 후 경과: ${safeCtx.daysSinceBreakup ?? 0}일`,
+    `현재 단계: PHASE ${currentPhase}`,
     `현재 선택한 코칭 스타일: ${selectedStyle === 'healing' ? '🌸 공감 힐링' : selectedStyle === 'analytical' ? '🧠 냉철 팩폭' : '⚡ 실전 지침'}`,
-    ctx.situation ? `진단 요약: ${ctx.situation}` : '',
-    ctx.situationMemo ? `내담자가 직접 남긴 메모: ${ctx.situationMemo}` : '',
+    safeCtx.situation ? `진단 요약: ${safeCtx.situation}` : '',
+    safeCtx.situationMemo ? `내담자가 직접 남긴 메모: ${safeCtx.situationMemo}` : '',
   ].filter(Boolean).join('\n')
 
   return `당신은 대한민국 No.1 재회컨설팅 플랫폼 위시아(WISHIA)의 수석 재회 컨설턴트 '재이'입니다.
