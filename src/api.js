@@ -12,8 +12,13 @@ function requireAdmin(request, env) {
   const token      = authHeader.startsWith('Bearer ')
                        ? authHeader.slice(7).trim()
                        : authHeader;
-  // 환경변수 우선 → 하드코딩 fallback (배포 후 반드시 CF Secret으로 교체)
-  const secret = (env.ADMIN_SECRET || env.JWT_SECRET || 'mik_secret_key_2026').trim();
+  // 환경변수 필수 — 미설정 시 403 반환 (기본값 폴백 제거)
+  // 설정: npx wrangler secret put ADMIN_SECRET
+  const secret = (env.ADMIN_SECRET || env.JWT_SECRET || '').trim();
+  if (!secret) {
+    console.error('[MIK] ADMIN_SECRET not configured. Set via: wrangler secret put ADMIN_SECRET');
+    return corsResponse(jsonResponse({ error: 'Server misconfiguration' }, 503));
+  }
   if (!token || token !== secret) {
     return corsResponse(jsonResponse({ error: 'Unauthorized' }, 401));
   }
@@ -528,7 +533,7 @@ async function generateToken(user, env) {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw', 
-    encoder.encode(env.JWT_SECRET || 'mik_secret_key_2026'), 
+    encoder.encode(env.JWT_SECRET || env.ADMIN_SECRET || ''), 
     { name: 'HMAC', hash: 'SHA-256' }, 
     false, 
     ['sign']
@@ -552,7 +557,7 @@ async function authenticate(request, env) {
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       'raw', 
-      encoder.encode(env.JWT_SECRET || 'mik_secret_key_2026'), 
+      encoder.encode(env.JWT_SECRET || env.ADMIN_SECRET || ''), 
       { name: 'HMAC', hash: 'SHA-256' }, 
       false, 
       ['verify']

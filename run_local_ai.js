@@ -46,8 +46,14 @@ const NUCLEAR_MODE       = process.argv.includes('--nuclear');
 const FIX_GIBBERISH_MODE = process.argv.includes('--fix-gibberish');
 
 // 반복 실패 추적
-const failCount = {};
-const MAX_FAIL  = 3;
+const failCount  = {};
+const failLog    = {};   // { id: [reason1, reason2, ...] } — 실패 원인 기록
+const MAX_FAIL   = 3;
+
+// MLX 장애 backoff 상태
+let mlxBackoffUntil  = 0;
+const MLX_BACKOFF_MS = [30_000, 60_000, 120_000, 300_000]; // 30초, 1분, 2분, 5분
+let mlxBackoffLevel  = 0;
 
 // ─────────────────────────────────────────────────────────────────
 // 카테고리 맵
@@ -531,16 +537,27 @@ async function runOnce() {
   const stamp = new Date().toLocaleTimeString('ko-KR');
   console.log(`\n[${stamp}] ═══ MIK 로컬 AI 처리 시작 ═══`);
 
-  // 1. rapid-mlx 연결 확인
+  // 1. rapid-mlx 연결 확인 (backoff 중이면 건너뜀)
+  const now = Date.now();
+  if (mlxBackoffUntil > now) {
+    const wait = Math.round((mlxBackoffUntil - now) / 1000);
+    console.log(`⏸️  MLX backoff 중 — ${wait}초 후 재시도`);
+    return;
+  }
+
   try {
     const r = await fetch(`${MLX_URL}/models`, { signal: AbortSignal.timeout(TIMEOUT_SHORT) });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const d      = await r.json();
     const models = (d.data || []).map(m => m.id);
     console.log(`✅ rapid-mlx OK | 모델: ${models.join(', ') || MLX_MODEL}`);
+    mlxBackoffLevel = 0; // 성공 시 backoff 리셋
   } catch (e) {
-    console.error(`❌ rapid-mlx 연결 실패: ${e.message}`);
-    console.error(`   서버 주소: ${MLX_URL}`);
+    const delay = MLX_BACKOFF_MS[Math.min(mlxBackoffLevel, MLX_BACKOFF_MS.length - 1)];
+    mlxBackoffUntil = Date.now() + delay;
+    mlxBackoffLevel++;
+    console.error(`❌ rapid-mlx 연결 실패 (${mlxBackoffLevel}회): ${e.message}`);
+    console.error(`   backoff: ${delay / 1000}초 후 재시도`);
     console.error(`   실행 명령: rapid-mlx serve qwen3.5-9b --served-model-name default`);
     return;
   }
@@ -582,7 +599,7 @@ async function runOnce() {
       continue;
     }
 
-    process.stdout.write(`${prefix} ${short}... `);
+    process.stdout.write(`${prefix} [ID:${a.id}] ${short}... `);
     const t0 = Date.now();
     try {
       const result = await analyzeArticle(a);
@@ -590,16 +607,39 @@ async function runOnce() {
       const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
       console.log(`✅ ${result.category} | ${result.title_ko.slice(0, 40)} (${elapsed}s)`);
       delete failCount[a.id];
+      delete failLog[a.id];
+      mlxBackoffLevel = 0; // 성공 시 backoff 리셋
     } catch (e) {
       errorCount++;
       failCount[a.id] = (failCount[a.id] || 0) + 1;
-      const elapsed   = ((Date.now() - t0) / 1000).toFixed(1);
-      console.log(`❌ [실패 ${failCount[a.id]}/${MAX_FAIL}] ${e.message.slice(0, 100)} (${elapsed}s)`);
+      // 실패 원인 기록 (민감정보 제외)
+      const reason = e.message.replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]').slice(0, 120);
+      failLog[a.id] = failLog[a.id] || [];
+      failLog[a.id].push(reason);
+      const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+      console.log(`❌ [ID:${a.id}] [실패 ${failCount[a.id]}/${MAX_FAIL}] ${reason} (${elapsed}s)`);
+    }
+
+    // 10건 단위 진행률 로그
+    if ((i + 1) % 10 === 0) {
+      const done  = results.length;
+      const fails = errorCount;
+      const skip  = skippedNonMice + skippedFail;
+      console.log(`\n📊 진행률: ${i+1}/${pending.length} | 성공:${done} 실패:${fails} 스킵:${skip}\n`);
     }
 
     // 기사 간 1초 딜레이 (모델 과부하 방지)
     if (i < pending.length - 1) {
       await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
+  // 반복 실패 기사 요약 출력
+  const persistentFails = Object.entries(failLog).filter(([, logs]) => logs.length >= MAX_FAIL);
+  if (persistentFails.length > 0) {
+    console.log(`\n⚠️  반복 실패 기사 (${persistentFails.length}건):`);
+    for (const [id, logs] of persistentFails.slice(0, 5)) {
+      console.log(`   ID:${id} → ${logs[logs.length - 1]}`);
     }
   }
 

@@ -1,13 +1,30 @@
 # Secrets — NEVER commit
 .dev.vars
+.env
+.env.local
+.env.production
 
 # Wrangler build artifacts
 .wrangler/
+dist/
 
 # Node
 node_modules/
 npm-debug.log*
+package-lock.json
 
 # OS
 .DS_Store
 Thumbs.db
+
+# 임시 스크립트 및 백업
+*.bak
+fix_deploy_push.sh
+push_changes.sh
+push_all_fixes.sh
+push_all_v2.sh
+get_html.py
+
+# 로그
+logs/
+*.log

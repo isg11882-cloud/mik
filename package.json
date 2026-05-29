@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:init": "wrangler d1 execute mik-db --file=./schema.sql"
+    "deploy:pages": "bash scripts/verify-pages-build.sh && npx wrangler pages deploy dist --project-name mik-dashboard",
+    "verify:pages": "bash scripts/verify-pages-build.sh",
+    "build:pages": "rm -rf dist && mkdir -p dist && cp MIK_MICE_Insight_Korea.html dist/index.html && cp og-image.png dist/og-image.png 2>/dev/null || true",
+    "db:init": "wrangler d1 execute mik_db --remote --file=./schema.sql",
+    "diagnose": "bash scripts/diagnose.sh"
   },
   "dependencies": {},
   "devDependencies": {

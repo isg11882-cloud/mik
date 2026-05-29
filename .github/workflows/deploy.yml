@@ -1,12 +1,8 @@
 name: Deploy MIK to Cloudflare
 
-# master 브랜치 push 시 자동 배포
-# ⚠️ 사전 조건: Cloudflare Pages 대시보드 > mik-dashboard > Settings > Builds & deployments
-#               Production branch = master 로 설정되어 있어야 함
 on:
   push:
-    branches:
-      - master
+    branches: [master]
 
 jobs:
   deploy:
@@ -14,25 +10,39 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      contents: write   # ci-results 브랜치 push용
+      contents: write
 
     steps:
-      # ── 1. 코드 체크아웃 ────────────────────────────────────────
+      # ── 1. 체크아웃 ─────────────────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ── 2. Node.js 설정 ─────────────────────────────────────────
+      # ── 2. Node.js 설정 ─────────────────────────────────────
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
-      # ── 3. 의존성 설치 ───────────────────────────────────────────
+      # ── 3. 의존성 설치 ───────────────────────────────────────
       - name: Install dependencies
         run: npm install
 
-      # ── 4. Cloudflare Worker 배포 ───────────────────────────────
+      # ── 4. WORKER_URL 소스 사전 검증 ─────────────────────────
+      - name: Pre-flight WORKER_URL check (source)
+        run: |
+          ACTUAL=$(grep -o "WORKER_URL = '[^']*'" MIK_MICE_Insight_Korea.html | head -1 | grep -o "'[^']*'" | tr -d "'")
+          ALLOWED="https://mik-worker.isg11882.workers.dev"
+          echo "Source WORKER_URL: $ACTUAL"
+          if [ "$ACTUAL" != "$ALLOWED" ]; then
+            echo "❌ FAIL: Source HTML의 WORKER_URL이 올바르지 않습니다."
+            echo "  허용: $ALLOWED"
+            echo "  실제: $ACTUAL"
+            exit 1
+          fi
+          echo "✅ Source WORKER_URL OK"
+
+      # ── 5. Worker 배포 ───────────────────────────────────────
       - name: Deploy Worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -40,71 +50,91 @@ jobs:
         run: |
           echo "=== Deploying Worker ===" | tee worker_deploy.log
           npx wrangler deploy 2>&1 | tee -a worker_deploy.log
-          echo "=== Worker deploy exit: $? ===" | tee -a worker_deploy.log
+          echo "Worker deploy exit: $?" | tee -a worker_deploy.log
 
-      # ── 4b. Worker 응답 테스트 (배포 후 15초 대기) ──────────────
-      - name: Test Worker health
-        continue-on-error: true
+      # ── 6. Worker 헬스체크 (배포 후 20초 대기) ──────────────
+      - name: Verify Worker health
         run: |
-          sleep 15
-          WORKER_URL="https://mik-worker.isg11882-cloud.workers.dev"
-          echo "=== Worker Health Test ===" | tee worker_test.log
-          echo "--- /health ---" | tee -a worker_test.log
-          curl -sv --max-time 20 "$WORKER_URL/health" 2>&1 | tee -a worker_test.log
-          echo "" | tee -a worker_test.log
-          echo "--- /api/articles?limit=1 ---" | tee -a worker_test.log
-          curl -sv --max-time 20 "$WORKER_URL/api/articles?limit=1" 2>&1 | tee -a worker_test.log
-          echo "" | tee -a worker_test.log
-          echo "--- HTTP status code ---" | tee -a worker_test.log
-          curl -o /dev/null -w "HTTP_CODE:%{http_code} SIZE:%{size_download}\n" --max-time 20 \
-            "$WORKER_URL/health" 2>&1 | tee -a worker_test.log
+          sleep 20
+          WORKER_URL="https://mik-worker.isg11882.workers.dev"
+          echo "=== Worker Health Check ==="
+          HEALTH=$(curl -sf --max-time 15 "$WORKER_URL/health" || echo "FAILED")
+          echo "Health response: $HEALTH"
+          if echo "$HEALTH" | grep -q '"ok"'; then
+            echo "✅ Worker health OK"
+          else
+            echo "❌ Worker health FAILED"
+            exit 1
+          fi
+          # API 응답 확인
+          ARTICLES=$(curl -sf --max-time 15 "$WORKER_URL/api/articles?limit=1" || echo "FAILED")
+          if echo "$ARTICLES" | grep -q '"articles"'; then
+            TOTAL=$(echo "$ARTICLES" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('total',0))" 2>/dev/null || echo "?")
+            echo "✅ API OK — total: ${TOTAL}건"
+          else
+            echo "⚠️ API 응답 이상 (Worker는 살아있음): $ARTICLES"
+          fi
 
-      # ── 5. Cloudflare Pages 배포 ────────────────────────────────
-      # --branch 플래그 제거: wrangler이 git HEAD(master)를 자동 감지
-      # Pages 대시보드에서 Production Branch = master 설정 시 프로덕션 URL에 반영됨
+      # ── 7. Pages dist 구성 ──────────────────────────────────
+      - name: Build Pages dist
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          cp MIK_MICE_Insight_Korea.html dist/index.html
+          cp og-image.png dist/og-image.png 2>/dev/null || true
+          cp _redirects dist/_redirects 2>/dev/null || true
+          echo "dist/ 구성 완료:"
+          ls -lh dist/
+
+      # ── 8. Pages 배포 전 WORKER_URL 검증 ────────────────────
+      - name: Verify WORKER_URL before Pages deploy
+        run: |
+          bash scripts/verify-pages-build.sh
+
+      # ── 9. Cloudflare Pages 배포 ────────────────────────────
       - name: Deploy Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          mkdir -p dist
-          cp MIK_MICE_Insight_Korea.html dist/index.html
-          cp og-image.png dist/og-image.png 2>/dev/null || true
-          cp _redirects dist/_redirects   2>/dev/null || true
-
           echo "=== Deploying Pages ===" | tee pages_deploy.log
           npx wrangler pages deploy dist \
             --project-name mik-dashboard \
             --commit-dirty=true \
             2>&1 | tee -a pages_deploy.log
+          echo "Pages deploy exit: $?" | tee -a pages_deploy.log
+          echo "✅ Pages 배포 완료: https://mik-dashboard.pages.dev"
 
-          echo "=== Done: https://mik-dashboard.pages.dev ===" | tee -a pages_deploy.log
-
-      # ── 6. 기사 재분류 (실패해도 파이프라인 계속) ─────────────────
-      - name: Recategorize articles
-        continue-on-error: true
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # ── 10. Pages 배포 후 WORKER_URL 검증 ───────────────────
+      - name: Verify deployed Pages WORKER_URL
         run: |
-          if [ -f scripts/recategorize.js ]; then
-            node scripts/recategorize.js 2>&1 | tail -20 || true
+          sleep 15
+          PAGES_URL="https://mik-dashboard.pages.dev/"
+          ALLOWED="https://mik-worker.isg11882.workers.dev"
+          echo "=== Pages 배포 HTML 검증 ==="
+          DEPLOYED_URL=$(curl -sf --max-time 20 "$PAGES_URL" \
+            | grep -o "WORKER_URL = '[^']*'" | head -1 \
+            | grep -o "'[^']*'" | tr -d "'" || echo "FETCH_FAILED")
+          echo "배포된 WORKER_URL: $DEPLOYED_URL"
+          if [ "$DEPLOYED_URL" = "$ALLOWED" ]; then
+            echo "✅ Pages WORKER_URL 검증 완료"
+          elif [ "$DEPLOYED_URL" = "FETCH_FAILED" ]; then
+            echo "⚠️ Pages 응답 확인 실패 (CDN 전파 지연일 수 있음)"
           else
-            echo "recategorize.js not found — skipping"
+            echo "❌ Pages WORKER_URL 오설정 감지: $DEPLOYED_URL"
+            exit 1
           fi
 
-      # ── 7. 결과 저장 (always) ─────────────────────────────────────
+      # ── 11. 결과 저장 (always) ───────────────────────────────
       - name: Save deploy results
         if: always()
         run: |
-          [ -f recategorize_result.json ] || echo '{"status":"no_result"}' > recategorize_result.json
-          [ -f pages_deploy.log ]       || echo "(no pages log)" > pages_deploy.log
-          [ -f worker_deploy.log ]      || echo "(no worker deploy log)" > worker_deploy.log
-          [ -f worker_test.log ]        || echo "(no worker test log)" > worker_test.log
+          [ -f pages_deploy.log ]  || echo "(no pages log)"  > pages_deploy.log
+          [ -f worker_deploy.log ] || echo "(no worker log)" > worker_deploy.log
 
           git config user.email "premierplanlab@gmail.com"
           git config user.name  "MIK-CI"
           git checkout -B ci-results
-          git add -f recategorize_result.json pages_deploy.log worker_deploy.log worker_test.log 2>/dev/null || true
+          git add -f pages_deploy.log worker_deploy.log 2>/dev/null || true
           git commit -m "ci: deploy $(date -u +%Y%m%d-%H%M%S) [skip ci]" || true
           git push origin ci-results --force 2>&1 || true

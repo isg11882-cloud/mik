@@ -1417,11 +1417,80 @@ async function fetchArticles(params = {}) {
     }));
     renderNewsList(ARTICLES);
     renderSourceTabs(ARTICLES);
-    if (ARTICLES.length > 0) showArticle(ARTICLES[0].id);
+    if (ARTICLES.length > 0) {
+      showArticle(ARTICLES[0].id);
+    } else if (grid) {
+      grid.innerHTML = '<div style="padding:40px;text-align:center;color:#6B7280;">' +
+        '<div style="font-size:32px;margin-bottom:8px;">📭</div>' +
+        '<div style="font-weight:600;margin-bottom:4px;">기사가 없습니다</div>' +
+        '<div style="font-size:12px;">RSS 수집 크론이 아직 실행되지 않았거나 필터 조건에 맞는 기사가 없습니다.</div>' +
+        '</div>';
+    }
   } catch(e) {
-    console.error('[MIK] API error:', e);
-    if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#f85149;"><div style="font-size:24px;margin-bottom:8px;">⚠️<' + '/div>기사를 불러올 수 없습니다.<br><small style="color:#8b949e">Worker API 상태를 확인해 주세요.<' + '/small><' + '/div>';
+    console.error('[MIK] fetchArticles error:', e.message);
+    if (grid) grid.innerHTML = buildErrorPanel(e);
   } finally { IS_LOADING = false; }
+}
+
+function buildErrorPanel(err) {
+  const msg = err ? err.message || String(err) : 'Unknown error';
+  let userMsg = '기사를 불러올 수 없습니다.';
+  let hint = '잠시 후 새로고침해 주세요.';
+  let debugType = 'unknown';
+
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) {
+    userMsg = 'API 서버에 연결할 수 없습니다.';
+    hint = '네트워크 상태를 확인하거나, 잠시 후 다시 시도해 주세요.';
+    debugType = 'fetch_failed';
+  } else if (msg.includes('HTTP 404')) {
+    userMsg = 'API 엔드포인트를 찾을 수 없습니다.';
+    hint = '서비스 점검 중일 수 있습니다. 잠시 후 다시 시도해 주세요.';
+    debugType = 'http_404';
+  } else if (msg.includes('HTTP 5') || msg.includes('HTTP 50')) {
+    userMsg = '서버 내부 오류가 발생했습니다.';
+    hint = '잠시 후 다시 시도해 주세요. 문제가 지속되면 관리자에게 문의하세요.';
+    debugType = 'http_5xx';
+  } else if (msg.includes('CORS') || msg.includes('cors') || msg.includes('Cross-Origin')) {
+    userMsg = 'API 접근 오류가 발생했습니다.';
+    hint = '브라우저 콘솔에서 CORS 오류를 확인해 주세요.';
+    debugType = 'cors';
+  } else if (msg.includes('JSON') || msg.includes('json') || msg.includes('Unexpected token')) {
+    userMsg = 'API 응답 형식 오류가 발생했습니다.';
+    hint = '서버 응답이 올바르지 않습니다. 잠시 후 다시 시도해 주세요.';
+    debugType = 'json_parse';
+  }
+
+  const panelId = 'mik-err-' + Date.now();
+  return `<div style="padding:32px 24px;max-width:520px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:36px;margin-bottom:8px;">⚠️</div>
+      <div style="font-size:16px;font-weight:600;color:#DC2626;margin-bottom:6px;">${userMsg}</div>
+      <div style="font-size:13px;color:#6B7280;">${hint}</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;">
+      <button onclick="fetchArticles({limit:30,sort:'latest'})"
+        style="padding:8px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">
+        🔄 다시 시도
+      </button>
+    </div>
+    <details id="${panelId}" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px;">
+      <summary style="cursor:pointer;font-size:12px;color:#6B7280;font-weight:500;">관리자용 진단 정보 ▾</summary>
+      <div style="margin-top:10px;font-size:11px;font-family:monospace;color:#374151;line-height:1.7;">
+        <div>오류 유형: <b>${debugType}</b></div>
+        <div>API 주소: <b>[설정됨]</b></div>
+        <div>시각: <b>${new Date().toISOString()}</b></div>
+        <div style="margin-top:6px;padding:6px;background:#FEF2F2;border-radius:4px;color:#DC2626;">
+          오류 메시지: ${msg.replace(/</g,'&lt;').replace(/>/g,'&gt;').substring(0, 120)}
+        </div>
+        <div style="margin-top:8px;color:#6B7280;">
+          확인 사항:<br>
+          1. 브라우저 콘솔(F12) → Network 탭에서 API 요청 확인<br>
+          2. Worker 헬스체크: /health 엔드포인트 직접 호출<br>
+          3. CORS 오류 시: Worker allowOrigins 설정 확인
+        </div>
+      </div>
+    </details>
+  </div>`;
 }
 
 const KEYWORDS_DEFAULT = ['Bio', 'CVB', 'Sustainability', 'AI Event', 'Korea MICE', 'PCO'];
