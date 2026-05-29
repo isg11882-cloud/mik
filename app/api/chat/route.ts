@@ -299,7 +299,7 @@ async function runLocalOrMockAI(
                   if (!line.trim()) continue
                   try {
                     const json = JSON.parse(line)
-                    const token = json.message?.content || json.response || ''
+                    const token = json.message?.content || json.message?.thinking || json.response || ''
                     if (token) {
                       ctrl.enqueue(encoder.encode(token))
                     }
