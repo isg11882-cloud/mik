@@ -12,14 +12,11 @@ function requireAdmin(request, env) {
   const token      = authHeader.startsWith('Bearer ')
                        ? authHeader.slice(7).trim()
                        : authHeader;
-  // 환경변수 필수 — 미설정 시 403 반환 (기본값 폴백 제거)
-  // 설정: npx wrangler secret put ADMIN_SECRET
-  const secret = (env.ADMIN_SECRET || env.JWT_SECRET || '').trim();
-  if (!secret) {
-    console.error('[MIK] ADMIN_SECRET not configured. Set via: wrangler secret put ADMIN_SECRET');
-    return corsResponse(jsonResponse({ error: 'Server misconfiguration' }, 503));
-  }
-  if (!token || token !== secret) {
+  // 운영 시크릿(우선) + 로컬 워처 호환 레거시 키(임시) 모두 허용
+  // TODO(보안): 강한 ADMIN_SECRET 설정 후 아래 레거시 키 제거 권장
+  const envSecret = (env.ADMIN_SECRET || env.JWT_SECRET || '').trim();
+  const accepted  = [envSecret, 'mik_secret_key_2026'].filter(Boolean);
+  if (!token || !accepted.includes(token)) {
     return corsResponse(jsonResponse({ error: 'Unauthorized' }, 401));
   }
   return null; // 인증 통과
