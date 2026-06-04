@@ -309,6 +309,19 @@ export async function handleApiRequest(request, env) {
       return corsResponse(await updateUserSettings(request, env));
     }
 
+    // GET/POST /api/user/keywords — 로그인 사용자 관심 키워드
+    if (path === '/api/user/keywords' && request.method === 'GET') {
+      return corsResponse(await getUserKeywords(request, env));
+    }
+    if (path === '/api/user/keywords' && request.method === 'POST') {
+      return corsResponse(await saveUserKeywords(request, env));
+    }
+
+    // GET /api/report/weekly — 주간 주요 뉴스 집계
+    if (path === '/api/report/weekly' && request.method === 'GET') {
+      return corsResponse(await getWeeklyReport(env));
+    }
+
     return corsResponse(jsonResponse({ error: 'Not Found' }, 404));
   } catch (err) {
     console.error('[API] Error:', err.message);
@@ -434,14 +447,31 @@ async function getHighlights(env) {
 /**
  * POST /api/auth/signup
  */
+async function hashPassword(pw){
+  const data = new TextEncoder().encode('mik_salt::' + pw);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function handleSignup(request, env) {
-  const { email, password, name } = await request.json();
-  if (!email || !password) return jsonResponse({ error: 'Email and password required' }, 400);
+  const _b = await request.json();
+  const { email, password, name, company, dept_title, phone, industry, company_size, interests, marketing_optin } = _b;
+  if (!email || !password) return jsonResponse({ error: '이메일과 비밀번호는 필수입니다.' }, 400);
+  const _hashed = await hashPassword(password);
+  const _interests = Array.isArray(interests) ? interests.join(',') : (interests || '');
 
   try {
-    const result = await env.DB.prepare(
-      'INSERT INTO users (email, password, name) VALUES (?, ?, ?)'
-    ).bind(email, password, name || email.split('@')[0]).run();
+    let result;
+    try {
+      result = await env.DB.prepare(
+        'INSERT INTO users (email, password, name, company, dept_title, phone, industry, company_size, interests, marketing_optin) VALUES (?,?,?,?,?,?,?,?,?,?)'
+      ).bind(email, _hashed, name || email.split('@')[0], company||'', dept_title||'', phone||'', industry||'', company_size||'', _interests, marketing_optin?1:0).run();
+    } catch (colErr) {
+      // 마이그레이션(신규 컬럼) 적용 전 폴백 — 기본 컬럼만 저장
+      result = await env.DB.prepare(
+        'INSERT INTO users (email, password, name) VALUES (?, ?, ?)'
+      ).bind(email, _hashed, name || email.split('@')[0]).run();
+    }
 
     const userId = result.meta.last_row_id;
     
@@ -460,16 +490,19 @@ async function handleSignup(request, env) {
  */
 async function handleLogin(request, env) {
   const { email, password } = await request.json();
-  const user = await env.DB.prepare('SELECT * FROM users WHERE email = ? AND password = ?')
-    .bind(email, password).first();
+  const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first();
+  if (!user) return jsonResponse({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' }, 401);
 
-  if (!user) return jsonResponse({ error: 'Invalid credentials' }, 401);
+  const _hashed = await hashPassword(password);
+  if (user.password !== _hashed && user.password !== password) {  // 해시 우선, 레거시 평문 폴백
+    return jsonResponse({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' }, 401);
+  }
 
   const token = await generateToken(user, env);
-  return jsonResponse({ 
-    success: true, 
+  return jsonResponse({
+    success: true,
     token,
-    user: { id: user.id, email: user.email, name: user.name } 
+    user: { id: user.id, email: user.email, name: user.name, company: user.company || '' }
   });
 }
 
@@ -519,6 +552,61 @@ async function updateUserSettings(request, env) {
   ).run();
 
   return jsonResponse({ success: true });
+}
+
+/**
+ * GET /api/user/keywords — 사용자 관심 키워드 조회
+ */
+async function getUserKeywords(request, env) {
+  const user = await authenticate(request, env);
+  if (!user) return jsonResponse({ error: 'Unauthorized' }, 401);
+  try {
+    const r = await env.DB.prepare('SELECT keyword FROM user_keywords WHERE user_id = ? ORDER BY id').bind(user.id).all();
+    return jsonResponse({ keywords: (r.results || []).map(x => x.keyword) });
+  } catch (e) { return jsonResponse({ keywords: [] }); }
+}
+
+/**
+ * POST /api/user/keywords — 사용자 관심 키워드 저장(전체 교체)
+ */
+async function saveUserKeywords(request, env) {
+  const user = await authenticate(request, env);
+  if (!user) return jsonResponse({ error: 'Unauthorized' }, 401);
+  const { keywords } = await request.json();
+  if (!Array.isArray(keywords)) return jsonResponse({ error: 'keywords array required' }, 400);
+  await env.DB.prepare('DELETE FROM user_keywords WHERE user_id = ?').bind(user.id).run();
+  let n = 0;
+  for (const k of keywords.slice(0, 50)) {
+    const kw = String(k || '').trim();
+    if (kw) { await env.DB.prepare('INSERT INTO user_keywords (user_id, keyword) VALUES (?, ?)').bind(user.id, kw).run(); n++; }
+  }
+  return jsonResponse({ success: true, count: n });
+}
+
+/**
+ * GET /api/report/weekly — 최근 7일 주요 뉴스 + 카테고리 분포
+ */
+async function getWeeklyReport(env) {
+  const since = new Date(Date.now() - 7 * 86400000).toISOString();
+  const top = await env.DB.prepare(
+    `SELECT id, title, title_ko, source, category, cat_class, views, summary_json, created_at
+     FROM articles
+     WHERE created_at >= ? AND insight IS NOT NULL AND insight NOT IN ('', 'skip-non-mice', 'pending')
+     ORDER BY views DESC, created_at DESC LIMIT 15`
+  ).bind(since).all();
+  const all = await env.DB.prepare('SELECT category FROM articles WHERE created_at >= ?').bind(since).all();
+  const cats = {};
+  (all.results || []).forEach(a => { const c = a.category || 'general'; cats[c] = (cats[c] || 0) + 1; });
+  return jsonResponse({
+    since,
+    total_week: (all.results || []).length,
+    categories: cats,
+    top: (top.results || []).map(a => ({
+      id: a.id, title: a.title, titleKo: a.title_ko || a.title, source: a.source,
+      category: a.category, catClass: a.cat_class, views: a.views,
+      summaryPoints: (() => { try { return JSON.parse(a.summary_json || '[]'); } catch { return []; } })()
+    }))
+  });
 }
 
 /**

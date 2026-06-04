@@ -28,6 +28,7 @@ export function classifyByRules(title, content, defaultCategory = 'convention') 
     convention:     0,
     exhibition:     0,
     incentive:      0,
+    event:          0,
     tech:           0,
     sustainability: 0,
     market:         0,
@@ -56,6 +57,16 @@ export function classifyByRules(title, content, defaultCategory = 'convention') 
                       'travel reward','incentive winner','top performer travel']],
     ['incentive', 2, ['incentive','luxury travel','group travel','team travel','rewards program']],
     ['incentive', 1, ['travel reward','trip reward']],
+
+    // event (축제 · 오프라인 이벤트 · 프로모션)
+    ['event', 5, ['music festival','cultural festival','film festival','arts festival','street festival',
+                  'brand activation','experiential marketing','experiential event','brand experience',
+                  'pop-up event','pop up event','product launch event','roadshow','activation campaign',
+                  'fan festival','city festival','live experience']],
+    ['event', 2, ['festival','activation','pop-up','experiential','roadshow','brand event',
+                  'promotional event','offline event','live event','concert','celebration',
+                  'parade','carnival','public event','launch event']],
+    ['event', 1, ['promotion','gala','ceremony','festival ']],
 
     // tech
     ['tech', 5, ['cvent','bizzabo','stova','eventbrite','whova','hopin','event app',
@@ -100,7 +111,7 @@ export function classifyByRules(title, content, defaultCategory = 'convention') 
   }
 
   // 점수가 동점일 때 우선순위 (더 구체적인 카테고리를 우선)
-  const PRIORITY = ['tech', 'exhibition', 'incentive', 'sustainability', 'convention', 'policy', 'market'];
+  const PRIORITY = ['tech', 'exhibition', 'event', 'incentive', 'sustainability', 'convention', 'policy', 'market'];
   let best = null;
   let bestScore = 0;
   for (const cat of PRIORITY) {
@@ -117,6 +128,7 @@ export function classifyByRules(title, content, defaultCategory = 'convention') 
     convention:     'tag-convention',
     exhibition:     'tag-exhibition',
     incentive:      'tag-incentive',
+    event:          'tag-event',
     tech:           'tag-tech',
     sustainability: 'tag-sustainability',
     market:         'tag-market',
@@ -183,6 +195,20 @@ export const RSS_FEEDS = [
   { name: 'J. Convention & Event Tourism',url:'https://www.tandfonline.com/feed/rss/wcet20',  defaultCategory: 'policy',     catClass: 'tag-policy'     },
   { name: 'Tourism Management Journal',url:'https://rss.sciencedirect.com/publication/science/02615177', defaultCategory: 'policy', catClass: 'tag-policy' },
   { name: "Int'l Journal of Event Management",url:'https://www.emerald.com/insight/rss/1758-2954', defaultCategory: 'policy', catClass: 'tag-policy' },
+
+  // ── 이벤트 · 축제 · 오프라인/체험 마케팅 (신규) ─────────────────
+  { name: 'BizBash',               url: 'https://www.bizbash.com/rss',                         defaultCategory: 'event',      catClass: 'tag-event'      },
+  { name: 'Access All Areas',      url: 'https://accessaa.co.uk/feed/',                        defaultCategory: 'event',      catClass: 'tag-event'      },
+  { name: 'Event Magazine UK',     url: 'https://www.eventmagazine.co.uk/rss/all',             defaultCategory: 'event',      catClass: 'tag-event'      },
+  { name: 'IQ Magazine',           url: 'https://www.iq-mag.net/feed/',                        defaultCategory: 'event',      catClass: 'tag-event'      },
+  { name: 'Festival Insights',     url: 'https://www.festivalinsights.com/feed/',              defaultCategory: 'event',      catClass: 'tag-event'      },
+
+  // ── 글로벌 추가 MICE 매체 (신규) ────────────────────────────────
+  { name: 'Exhibition News',       url: 'https://exhibitionnews.uk/feed/',                     defaultCategory: 'exhibition', catClass: 'tag-exhibition' },
+  { name: 'TTG Asia',              url: 'https://www.ttgasia.com/feed/',                       defaultCategory: 'convention', catClass: 'tag-convention' },
+  { name: 'Mix Meetings',          url: 'https://mixmeetings.com/feed/',                       defaultCategory: 'convention', catClass: 'tag-convention' },
+  { name: 'Conference & Meetings World', url: 'https://www.c-mw.net/feed/',                    defaultCategory: 'convention', catClass: 'tag-convention' },
+  { name: 'Boardroom',             url: 'https://boardroom.global/feed/',                      defaultCategory: 'convention', catClass: 'tag-convention' },
 ];
 
 // ─────────────────────────────────────────────────────────────────

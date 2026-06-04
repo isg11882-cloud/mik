@@ -59,6 +59,12 @@
     --cat-incentive-text: #C2410C;
     --cat-tech: #F5F3FF;
     --cat-tech-text: #6D28D9;
+    --cat-event: #FFF1F2;
+    --cat-event-text: #BE123C;
+    --cat-sustainability: #ECFDF5;
+    --cat-sustainability-text: #047857;
+    --cat-market: #EFF6FF;
+    --cat-market-text: #1D4ED8;
     --cat-bio: #FFF0F6;
     --cat-bio-text: #9D174D;
     --cat-policy: #FFFBEB;
@@ -84,6 +90,9 @@
     --cat-convention:      #172B1E; --cat-convention-text:  #6DDDA0;
     --cat-incentive:       #2B1E10; --cat-incentive-text:   #FFBA78;
     --cat-tech:            #201830; --cat-tech-text:        #C0A8FF;
+    --cat-event:           #2B1014; --cat-event-text:       #FF9DB0;
+    --cat-sustainability:  #102B1C; --cat-sustainability-text: #6DDDA8;
+    --cat-market:          #101F2B; --cat-market-text:      #8FC2FF;
     --cat-bio:             #2B1222; --cat-bio-text:         #FF9FCC;
     --cat-policy:          #282012; --cat-policy-text:      #FFD080;
   }
@@ -139,6 +148,25 @@
   body.dark-mode .dual-pane-en { background: #16181F; border-color: #2A2D37; }
   body.dark-mode .dual-pane-ko { background: #141C18; border-color: #253520; }
   body.dark-mode .dual-view-title { color: #8A8FA8; border-bottom-color: #2A2D37; }
+
+  /* ===== v2 Phase1: 메뉴 뷰 / 패널 토글 / 리사이저 ===== */
+  .nav-overlay{position:fixed;top:0;right:0;bottom:0;left:var(--sidebar-w,64px);background:var(--bg);z-index:300;display:none;flex-direction:column;overflow:hidden;}
+  .nav-overlay.open{display:flex;}
+  .nav-ov-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);}
+  .nav-ov-title{font-size:18px;font-weight:800;color:var(--text-primary);}
+  .nav-ov-close{border:1px solid var(--border);background:var(--card,#fff);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;color:var(--text-secondary);}
+  .nav-ov-close:hover{background:var(--primary-light);}
+  .nav-ov-body{flex:1;overflow-y:auto;padding:20px 24px;}
+  .nv-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--card,#fff);}
+  .nv-empty{text-align:center;color:var(--text-muted);padding:48px 16px;line-height:1.7;}
+  .nv-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .nv-row:last-child{border-bottom:none;}
+  .alert-panel.collapsed{display:none !important;}
+  #alertToggleBtn{display:none;position:fixed;top:12px;right:14px;z-index:120;border:1px solid var(--border);background:var(--card,#fff);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;color:var(--text-secondary);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+  #alertToggleBtn:hover{background:var(--primary-light);}
+  .col-resizer{flex:0 0 6px;cursor:col-resize;position:relative;}
+  .col-resizer:hover::before{background:var(--primary);}
+  .col-resizer::before{content:"";position:absolute;left:2px;top:50%;transform:translateY(-50%);width:2px;height:40px;background:var(--border);border-radius:2px;}
   body.dark-mode .dual-lang-label { background: #252830; color: #8A8FA8; border-color: #2A2D37; }
 
   /* 소스 탭 */
@@ -449,18 +477,49 @@
     overflow: hidden;
   }
   .news-item.active .news-item-title { color: var(--primary-dark); font-weight: 700; }
-  /* renderNewsList uses .news-title — mirror same style */
+  /* renderNewsList — 제목을 메인으로 크게, 시간은 작게 우측 */
+  .news-item-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+  }
+  .news-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .news-time {
+    margin-left: auto;
+    font-size: 10.5px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .news-type { display: none; }
   .news-title {
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.45;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
     color: var(--text-primary);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  .news-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .news-source { font-weight: 600; color: var(--text-secondary); }
+  .news-views { display: inline-flex; align-items: center; gap: 3px; }
 
   .news-item-footer {
     display: flex;
@@ -493,6 +552,9 @@
   .tag-tech { background: var(--cat-tech); color: var(--cat-tech-text); }
   .tag-bio { background: var(--cat-bio); color: var(--cat-bio-text); }
   .tag-policy { background: var(--cat-policy); color: var(--cat-policy-text); }
+  .tag-event { background: var(--cat-event); color: var(--cat-event-text); }
+  .tag-sustainability { background: var(--cat-sustainability); color: var(--cat-sustainability-text); }
+  .tag-market { background: var(--cat-market); color: var(--cat-market-text); }
 
   .time-ago { color: var(--text-muted); font-size: 11px; }
   .view-count { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--text-muted); }
@@ -1363,34 +1425,34 @@
 <aside class="sidebar">
   <div class="sidebar-logo" title="MICE Insight Korea">MIK</div>
 
-  <button class="sidebar-btn active" title="뉴스 피드">
+  <button class="sidebar-btn active" title="뉴스 피드" onclick="showView('news', this)">
     <span>📰</span><small>뉴스</small>
   </button>
-  <button class="sidebar-btn" title="즐겨찾기">
+  <button class="sidebar-btn" title="즐겨찾기" onclick="showView('bookmarks', this)">
     <span>🔖</span><small>즐겨찾기</small>
   </button>
-  <button class="sidebar-btn" title="알림">
+  <button class="sidebar-btn" title="알림" onclick="showView('alerts', this)">
     <span>🔔</span><small>알림</small>
     <span class="badge"></span>
   </button>
   <div class="sidebar-divider"></div>
-  <button class="sidebar-btn" title="MICE 매체 관리">
+  <button class="sidebar-btn" title="MICE 매체 관리" onclick="showView('media', this)">
     <span>🌐</span><small>매체</small>
   </button>
-  <button class="sidebar-btn" title="리포트">
+  <button class="sidebar-btn" title="리포트" onclick="showView('report', this)">
     <span>📊</span><small>리포트</small>
   </button>
-  <button class="sidebar-btn" title="뉴스레터">
+  <button class="sidebar-btn" title="뉴스레터" onclick="showView('letter', this)">
     <span>📧</span><small>레터</small>
   </button>
   <div class="sidebar-divider"></div>
   <button class="sidebar-btn" id="themeToggleBtn" title="다크/라이트 모드 전환" onclick="toggleTheme()" style="margin-top: auto;">
     <span id="themeIcon">🌙</span><small id="themeLabel">다크</small>
   </button>
-  <button class="sidebar-btn" title="설정">
+  <button class="sidebar-btn" title="설정" onclick="showView('settings', this)">
     <span>⚙️</span><small>설정</small>
   </button>
-  <button class="sidebar-btn" title="내 계정">
+  <button class="sidebar-btn" title="내 계정" onclick="showView('account', this)">
     <span>👤</span><small>계정</small>
   </button>
 </aside>
@@ -1421,6 +1483,7 @@
     <button class="filter-pill" onclick="filterType('전시', this)">전시</button>
     <button class="filter-pill" onclick="filterType('컨벤션', this)">컨벤션</button>
     <button class="filter-pill" onclick="filterType('인센티브', this)">인센티브</button>
+    <button class="filter-pill" onclick="filterType('이벤트', this)">이벤트</button>
     <button class="filter-pill" onclick="filterType('테크', this)">테크</button>
     <select class="sort-select" onchange="sortNews(this.value)">
       <option value="latest">최신순</option>
@@ -1435,6 +1498,9 @@
     <!-- Items injected by JS -->
   </div>
 </section>
+
+<!-- 리스트/상세 크기 조절 핸들 -->
+<div class="col-resizer" id="colResizer" title="드래그하여 크기 조절"></div>
 
 <!-- =========================================
      DETAIL PANEL
@@ -1497,22 +1563,22 @@
       </div>
 
       <div class="dual-grid" id="dualGrid">
-        <!-- English column -->
+        <!-- Korean column (기본·메인) -->
+        <div class="article-col" id="koCol">
+          <div class="article-col-header">
+            <span class="lang-badge lang-ko">🇰🇷 KO</span>
+            AI 번역 (한국어)
+          </div>
+          <div class="article-col-body" id="koContent"></div>
+        </div>
+
+        <!-- English column (원문) -->
         <div class="article-col" id="enCol">
           <div class="article-col-header">
             <span class="lang-badge lang-en">🇺🇸 EN</span>
             원문 (English)
           </div>
           <div class="article-col-body" id="enContent"></div>
-        </div>
-
-        <!-- Korean column -->
-        <div class="article-col" id="koCol">
-          <div class="article-col-header">
-            <span class="lang-badge lang-ko">🇰🇷 KO</span>
-            AI 번역 (Korean)
-          </div>
-          <div class="article-col-body" id="koContent"></div>
         </div>
       </div>
     </div>
@@ -1524,9 +1590,12 @@
 ========================================= -->
 <aside class="alert-panel">
   <div class="alert-panel-header">
-    <div class="alert-panel-title">
-      <span class="live-dot"></span>
-      키워드 알림
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div class="alert-panel-title">
+        <span class="live-dot"></span>
+        키워드 알림
+      </div>
+      <button class="nav-ov-close" style="padding:4px 10px;font-size:12px;flex-shrink:0;" onclick="toggleAlertPanel()" title="알림 패널 닫기">✕ 닫기</button>
     </div>
     <div class="alert-panel-desc">설정한 키워드가 포함된 기사 발생 시 알림을 수신합니다.</div>
   </div>
@@ -1564,11 +1633,13 @@
 const WORKER_URL = 'https://mik-worker.isg11882.workers.dev';
 const CAT_LABELS = {
   'exhibition':'전시', 'convention':'컨벤션', 'incentive':'인센티브',
-  'tech':'테크', 'bio':'바이오', 'policy':'정책', 'general':'일반'
+  'event':'이벤트', 'tech':'테크', 'sustainability':'지속가능', 'market':'시장',
+  'bio':'바이오', 'policy':'정책', 'general':'일반'
 };
 const CAT_CLASSES = {
   'exhibition':'tag-exhibition', 'convention':'tag-convention',
-  'incentive':'tag-incentive', 'tech':'tag-tech',
+  'incentive':'tag-incentive', 'event':'tag-event', 'tech':'tag-tech',
+  'sustainability':'tag-sustainability', 'market':'tag-market',
   'bio':'tag-bio', 'policy':'tag-policy', 'general':'tag-convention'
 };
 let ARTICLES = [];
@@ -1669,7 +1740,7 @@ function renderNewsList(articles) {
                   '<span class="news-pending-badge">번역대기<' + '/span>';
     return '<div class="news-item" data-id="' + a.id + '" onclick="showArticle(' + a.id + ')">' +
       '<div class="news-item-header"><span class="news-tag ' + (a.catClass||'tag-convention') + '">' + (a.cat||'') + '<' + '/span>' +
-      '<span class="news-type">' + (a.type||'') + '<' + '/span><span class="news-time">' + (a.time||'') + '<' + '/span><' + '/div>' +
+      '<span class="news-time">' + (a.time||'') + '<' + '/span><' + '/div>' +
       '<div class="news-title">' + title + '<' + '/div>' +
       '<div class="news-meta"><span class="news-source">' + (a.source||'') + '<' + '/span>' +
       '<span class="news-views">👁 ' + (a.views||0) + '<' + '/span>' + badge + '<' + '/div><' + '/div>';
@@ -1911,6 +1982,7 @@ function addKeyword() {
   if (val && !keywords.includes(val)) {
     keywords.push(val);
     renderKeywords();
+    if (typeof saveUserKeywordsToServer === 'function') saveUserKeywordsToServer();
   }
   input.value = '';
 }
@@ -1918,6 +1990,7 @@ function addKeyword() {
 function removeKeyword(k) {
   keywords = keywords.filter(x => x !== k);
   renderKeywords();
+  if (typeof saveUserKeywordsToServer === 'function') saveUserKeywordsToServer();
 }
 
 // ====== ALERTS ======
@@ -1978,11 +2051,133 @@ function openOriginal() {
   }
 }
 
+// ===== v2 Phase1: 좌측 메뉴 활성화 / 패널 토글 / 크기조절 / 북마크 =====
+const BOOKMARK_KEY = 'mik_bookmarks';
+function getBookmarks(){ try{ return new Set(JSON.parse(localStorage.getItem(BOOKMARK_KEY)||'[]')); }catch(e){ return new Set(); } }
+function setBookmarks(s){ try{ localStorage.setItem(BOOKMARK_KEY, JSON.stringify([...s])); }catch(e){} }
+
+function _artCard(a){
+  return '<div class="nv-card" style="cursor:pointer" onclick="showView(\'news\');showArticle(' + a.id + ')">' +
+    '<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">' + (a.cat||'') + ' · ' + (a.source||'') + ' · ' + (a.time||'') + '</div>' +
+    '<div style="font-weight:700;font-size:15px;color:var(--text-primary);line-height:1.4">' + (a.title_ko||a.title||'') + '</div></div>';
+}
+
+function showView(name, btn){
+  document.querySelectorAll('.sidebar-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const ov = document.getElementById('navOverlay');
+  if(name === 'news'){ if(ov) ov.classList.remove('open'); document.querySelectorAll('.sidebar-btn')[0].classList.add('active'); return; }
+  if(name === 'account'){ if(ov) ov.classList.remove('open'); if(typeof openAuthModal==='function') openAuthModal('login'); return; }
+  const V = {
+    bookmarks: ['🔖 즐겨찾기', renderBookmarksView],
+    alerts:    ['🔔 알림', renderAlertsView],
+    media:     ['🌐 수집 매체 현황', renderMediaView],
+    report:    ['📊 주간 리포트', renderReportView],
+    letter:    ['📧 뉴스레터', renderLetterView],
+    settings:  ['⚙️ 설정', renderSettingsView],
+  };
+  const v = V[name]; if(!v) return;
+  document.getElementById('navOvTitle').textContent = v[0];
+  const body = document.getElementById('navOvBody');
+  try { body.innerHTML = v[1](); } catch(e){ body.innerHTML = '<div class="nv-empty">표시 중 오류: ' + e.message + '</div>'; }
+  ov.classList.add('open');
+}
+
+function renderBookmarksView(){
+  const bm = getBookmarks();
+  const list = (ARTICLES||[]).filter(a=>bm.has(a.id));
+  if(!list.length) return '<div class="nv-empty">저장한 기사가 없습니다.<br><small>기사 상세에서 🔖 저장을 눌러 즐겨찾기에 추가하세요.</small></div>';
+  return list.map(_artCard).join('');
+}
+function renderAlertsView(){
+  const kw = (typeof keywords!=='undefined' && keywords.length) ? keywords : [];
+  let h = '<div class="nv-card"><div style="font-weight:700;margin-bottom:8px;">내 관심 키워드</div>' +
+    (kw.length ? kw.map(k=>'<span class="news-tag tag-tech" style="margin:2px 4px 2px 0;display:inline-block">'+k+'</span>').join('') : '<span style="color:var(--text-muted)">설정된 키워드가 없습니다. (우측 패널에서 추가)</span>') + '</div>';
+  if(kw.length){
+    const m = (ARTICLES||[]).filter(a=>kw.some(k=>(((a.title||'')+(a.title_ko||'')).toLowerCase().includes(String(k).toLowerCase()))));
+    h += '<div style="font-weight:700;margin:14px 0 8px;">키워드 일치 기사 (' + m.length + '건)</div>';
+    h += m.length ? m.slice(0,80).map(_artCard).join('') : '<div class="nv-empty">아직 일치하는 기사가 없습니다.</div>';
+  }
+  return h;
+}
+function renderMediaView(){
+  const map = {};
+  (ARTICLES||[]).forEach(a=>{ if(a.source) map[a.source] = (map[a.source]||0)+1; });
+  const rows = Object.entries(map).sort((x,y)=>y[1]-x[1]);
+  if(!rows.length) return '<div class="nv-empty">매체 정보가 없습니다.</div>';
+  return '<div class="nv-card"><div style="font-weight:700;margin-bottom:8px;">수집 매체 ' + rows.length + '곳 · 총 ' + (ARTICLES||[]).length + '건</div>' +
+    rows.map(([s,c])=>'<div class="nv-row"><span style="font-weight:600">'+s+'</span><span style="color:var(--text-muted)">'+c+'건</span></div>').join('') + '</div>';
+}
+function _weekly(){ return (ARTICLES||[]).slice(0,40); }
+function renderReportView(){
+  const arts = ARTICLES || [];
+  if(!arts.length) return '<div class="nv-empty">리포트를 만들 기사가 없습니다.</div>';
+  const catCount = {}; arts.forEach(a=>{ const c=a.cat||'기타'; catCount[c]=(catCount[c]||0)+1; });
+  const catRows = Object.entries(catCount).sort((x,y)=>y[1]-x[1]);
+  const maxC = catRows.length ? catRows[0][1] : 1;
+  const catColors = {'전시':'#3B82F6','컨벤션':'#22C55E','인센티브':'#F97316','이벤트':'#E11D48','테크':'#8B5CF6','지속가능':'#10B981','시장':'#2563EB'};
+  const srcCount = {}; arts.forEach(a=>{ if(a.source) srcCount[a.source]=(srcCount[a.source]||0)+1; });
+  const srcRows = Object.entries(srcCount).sort((x,y)=>y[1]-x[1]).slice(0,8);
+  const top = [...arts].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,8);
+
+  let h = '<div class="nv-card"><div style="font-weight:800;font-size:16px;margin-bottom:4px;">📊 전세계 MICE 트렌드 · 주간 리포트</div>' +
+    '<div style="color:var(--text-muted);font-size:12px;">총 ' + arts.length + '건 수집 기준 · 자동 집계</div></div>';
+  h += '<div class="nv-card"><div style="font-weight:700;margin-bottom:10px;">카테고리 분포</div>' +
+    catRows.map(([c,n])=>{ const pct=Math.round(n/maxC*100); const color=catColors[c]||'#94A3B8';
+      return '<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="font-weight:600">'+c+'</span><span style="color:var(--text-muted)">'+n+'건</span></div>'+
+        '<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+color+';"></div></div></div>';
+    }).join('') + '</div>';
+  h += '<div class="nv-card"><div style="font-weight:700;margin-bottom:8px;">활발한 매체 TOP 8</div>' +
+    srcRows.map(([s,n])=>'<div class="nv-row"><span style="font-weight:600">'+s+'</span><span style="color:var(--text-muted)">'+n+'건</span></div>').join('') + '</div>';
+  h += '<div style="font-weight:700;margin:8px 0;">🔥 주목 기사 TOP 8</div>';
+  h += top.map((a,i)=>'<div class="nv-card" style="cursor:pointer" onclick="showView(\'news\');showArticle('+a.id+')"><div style="font-weight:700">'+(i+1)+'. '+(a.title_ko||a.title||'')+'</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">'+(a.cat||'')+' · '+(a.source||'')+'</div></div>').join('');
+  return h;
+}
+function renderLetterView(){
+  const wk = _weekly().slice(0,5);
+  let h = '<div class="nv-card"><div style="font-weight:800;font-size:16px;">MIK 위클리 레터 (미리보기)</div><div style="color:var(--text-muted);font-size:12px;margin-top:4px">이메일 발송 연동은 다음 단계에서 추가됩니다. 현재는 사이트 내 미리보기만 제공합니다.</div></div>';
+  h += wk.map(a=>'<div class="nv-card"><div style="font-weight:700">'+(a.title_ko||a.title||'')+'</div>' +
+    '<ul style="margin:8px 0 0;padding-left:18px;color:var(--text-secondary);font-size:13px;line-height:1.6">' +
+    ((a.summary_json&&a.summary_json.length)?a.summary_json.map(s=>'<li>'+s+'</li>').join(''):'<li>요약 준비 중</li>')+'</ul></div>').join('');
+  return h;
+}
+function renderSettingsView(){
+  return '<div class="nv-card"><div class="nv-row"><span>다크 / 라이트 모드</span><button class="nav-ov-close" onclick="toggleTheme()">전환</button></div>' +
+    '<div class="nv-row"><span>키워드 알림 패널</span><button class="nav-ov-close" onclick="toggleAlertPanel()">열기 / 닫기</button></div>' +
+    '<div class="nv-row"><span>기사 패널 크기</span><span style="color:var(--text-muted);font-size:12px">목록과 상세 사이 경계선을 드래그</span></div>' +
+    '<div class="nv-row"><span>레이아웃 초기화</span><button class="nav-ov-close" onclick="resetLayout()">초기화</button></div></div>';
+}
+function resetLayout(){ const l=document.querySelector('.list-panel'); if(l){l.style.flex='';l.style.width='';} const p=document.querySelector('.alert-panel'); if(p){p.classList.remove('collapsed'); const b=document.getElementById('alertToggleBtn'); if(b)b.style.display='none';} }
+
+function toggleAlertPanel(){ const p=document.querySelector('.alert-panel'); if(!p)return; const collapsed=p.classList.toggle('collapsed'); const b=document.getElementById('alertToggleBtn'); if(b) b.style.display = collapsed ? 'block' : 'none'; }
+
+// 리스트/상세 경계 드래그 리사이즈
+(function(){
+  const r=document.getElementById('colResizer'); if(!r)return;
+  const list=document.querySelector('.list-panel'); let drag=false;
+  r.addEventListener('mousedown',e=>{ drag=true; document.body.style.cursor='col-resize'; e.preventDefault(); });
+  window.addEventListener('mousemove',e=>{ if(!drag||!list)return; const left=list.getBoundingClientRect().left; let w=Math.max(300,Math.min(820,e.clientX-left)); list.style.flex='0 0 '+w+'px'; list.style.width=w+'px'; });
+  window.addEventListener('mouseup',()=>{ if(drag){ drag=false; document.body.style.cursor=''; } });
+})();
+
+// 북마크: localStorage 영구 저장 + 상태 반영
+function toggleBookmark(){
+  const btn=document.getElementById('bookmarkBtn'); if(!btn)return;
+  const id=(typeof currentArticleId!=='undefined')?currentArticleId:null; if(id==null)return;
+  const bm=getBookmarks();
+  if(bm.has(id)){ bm.delete(id); btn.textContent='🔖 저장'; btn.dataset.saved='0'; btn.classList.remove('primary-btn'); }
+  else { bm.add(id); btn.innerHTML='✅ 저장됨'; btn.dataset.saved='1'; btn.classList.add('primary-btn'); }
+  setBookmarks(bm);
+}
+
 // ====== START ======
 init();
 
 // Auto-select first article for demo
 setTimeout(() => { showArticle(0); }, 400);
+
+// 로그인 상태면 서버에서 키워드 동기화
+setTimeout(() => { if (typeof getToken === 'function' && getToken()) syncUserKeywords(); }, 600);
 
 // ===== AUTH SYSTEM =====
 const MIK_USER_KEY = 'mik_user';
@@ -1995,6 +2190,7 @@ function saveUser(user) {
 }
 function clearUser() {
   localStorage.removeItem(MIK_USER_KEY);
+  localStorage.removeItem('mik_token');
 }
 
 function openAuthModal(tab) {
@@ -2037,64 +2233,78 @@ function loginKakao() {
   window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
 }
 
-function loginEmail() {
+async function loginEmail() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-  if (!email || !password) {
-    alert('이메일과 비밀번호를 입력해주세요.');
-    return;
+  if (!email || !password) { alert('이메일과 비밀번호를 입력해주세요.'); return; }
+  try {
+    const res = await fetch(WORKER_URL + '/api/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (res.status === 401) { alert('이메일 또는 비밀번호가 올바르지 않습니다.'); return; }
+      alert(data.error || '로그인에 실패했습니다.'); return;
+    }
+    if (data.token) localStorage.setItem('mik_token', data.token);
+    saveUser({ name: data.user && data.user.name, email: (data.user && data.user.email) || email, company: data.user && data.user.company });
+    closeAuthModal();
+    updateAuthUI();
+    showToast('로그인되었습니다. 환영합니다, ' + ((data.user && data.user.name) || email) + '!');
+    syncUserKeywords();
+  } catch (e) {
+    alert('서버 연결에 실패했습니다: ' + e.message);
   }
-  // Check stored users
-  const users = JSON.parse(localStorage.getItem('mik_users') || '[]');
-  const user = users.find(u => u.email === email);
-  if (!user) {
-    alert('등록되지 않은 이메일입니다. 회원가입을 해주세요.');
-    switchAuthTab('signup');
-    return;
-  }
-  if (user.password !== btoa(password)) {
-    alert('비밀번호가 올바르지 않습니다.');
-    return;
-  }
-  saveUser({name: user.name, email: user.email, affiliation: user.affiliation, title: user.title});
-  closeAuthModal();
-  updateAuthUI();
-  showToast('로그인되었습니다. 환영합니다, ' + (user.name || user.email) + '!');
 }
 
-function submitSignup() {
+// ===== 로그인 사용자 키워드 서버 동기화 =====
+function getToken(){ return localStorage.getItem('mik_token') || ''; }
+async function syncUserKeywords(){
+  const t = getToken(); if(!t) return;
+  try {
+    const res = await fetch(WORKER_URL + '/api/user/keywords', { headers: { 'Authorization': 'Bearer ' + t } });
+    if(res.ok){ const d = await res.json(); if(Array.isArray(d.keywords) && d.keywords.length){ keywords = d.keywords; if(typeof renderKeywords==='function') renderKeywords(); } }
+  } catch(e){}
+}
+async function saveUserKeywordsToServer(){
+  const t = getToken(); if(!t) return;
+  try { await fetch(WORKER_URL + '/api/user/keywords', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+t}, body: JSON.stringify({ keywords }) }); } catch(e){}
+}
+
+async function submitSignup() {
   const name = document.getElementById('signupName').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
   const affiliation = document.getElementById('signupAffiliation').value.trim();
   const title = document.getElementById('signupTitle').value.trim();
   const contact = document.getElementById('signupContact').value.trim();
+  const industry = (document.getElementById('signupIndustry')||{}).value || '';
+  const companySize = (document.getElementById('signupCompanySize')||{}).value || '';
+  const interests = [...document.querySelectorAll('.signup-interest:checked')].map(c => c.value);
   const password = document.getElementById('signupPassword').value;
   const privacyOk = document.getElementById('privacyCheck').checked;
 
-  if (!email || !affiliation || !password) {
-    alert('이메일, 소속, 비밀번호는 필수 항목입니다.');
-    return;
+  if (!email || !affiliation || !password) { alert('이메일, 소속, 비밀번호는 필수 항목입니다.'); return; }
+  if (password.length < 8) { alert('비밀번호는 8자 이상이어야 합니다.'); return; }
+  if (!privacyOk) { alert('개인정보처리방침에 동의해주세요.'); return; }
+
+  try {
+    const res = await fetch(WORKER_URL + '/api/auth/signup', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name, company: affiliation, dept_title: title, phone: contact, industry, company_size: companySize, interests, marketing_optin: 1 })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (res.status === 409) { alert('이미 등록된 이메일입니다. 로그인해주세요.'); switchAuthTab('login'); return; }
+      alert(data.error || '가입에 실패했습니다.'); return;
+    }
+    saveUser({ name, email, company: affiliation, title });
+    closeAuthModal();
+    updateAuthUI();
+    showToast('가입이 완료되었습니다. 환영합니다, ' + (name || email) + '!');
+  } catch (e) {
+    alert('서버 연결에 실패했습니다: ' + e.message);
   }
-  if (password.length < 8) {
-    alert('비밀번호는 8자 이상이어야 합니다.');
-    return;
-  }
-  if (!privacyOk) {
-    alert('개인정보처리방침에 동의해주세요.');
-    return;
-  }
-  const users = JSON.parse(localStorage.getItem('mik_users') || '[]');
-  if (users.find(u => u.email === email)) {
-    alert('이미 등록된 이메일입니다. 로그인해주세요.');
-    switchAuthTab('login');
-    return;
-  }
-  users.push({name, email, affiliation, title, contact, password: btoa(password), joinedAt: new Date().toISOString()});
-  localStorage.setItem('mik_users', JSON.stringify(users));
-  saveUser({name, email, affiliation, title});
-  closeAuthModal();
-  updateAuthUI();
-  showToast('가입이 완료되었습니다. 환영합니다, ' + (name || email) + '!');
 }
 
 function logout() {
@@ -2178,6 +2388,23 @@ document.addEventListener('DOMContentLoaded', updateAuthUI);
       <input type="text" id="signupAffiliation" placeholder="소속 기관/회사 *" class="auth-input">
       <input type="text" id="signupTitle" placeholder="직함/직위 (예: PCO 팀장)" class="auth-input">
       <input type="tel" id="signupContact" placeholder="연락처 (선택)" class="auth-input">
+      <select id="signupIndustry" class="auth-input">
+        <option value="">업종 선택</option>
+        <option>MICE/이벤트 대행</option><option>관광/여행</option><option>호텔/컨벤션센터</option>
+        <option>IT/플랫폼</option><option>제조/유통</option><option>공공기관/협회</option><option>기타</option>
+      </select>
+      <select id="signupCompanySize" class="auth-input">
+        <option value="">회사 규모</option>
+        <option>1-10명</option><option>11-50명</option><option>51-200명</option><option>201-1000명</option><option>1000명+</option>
+      </select>
+      <div style="margin:2px 0 8px;">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">관심 분야 (복수 선택)</div>
+        <label style="font-size:13px;margin-right:10px;"><input type="checkbox" class="signup-interest" value="전시"> 전시</label>
+        <label style="font-size:13px;margin-right:10px;"><input type="checkbox" class="signup-interest" value="컨벤션"> 컨벤션</label>
+        <label style="font-size:13px;margin-right:10px;"><input type="checkbox" class="signup-interest" value="이벤트"> 이벤트</label>
+        <label style="font-size:13px;margin-right:10px;"><input type="checkbox" class="signup-interest" value="인센티브"> 인센티브</label>
+        <label style="font-size:13px;margin-right:10px;"><input type="checkbox" class="signup-interest" value="테크"> 테크</label>
+      </div>
       <input type="password" id="signupPassword" placeholder="비밀번호 (8자 이상) *" class="auth-input">
       <div class="auth-privacy">
         <label><input type="checkbox" id="privacyCheck"> 
@@ -2203,5 +2430,17 @@ document.addEventListener('DOMContentLoaded', updateAuthUI);
     </div>
   </div>
 </div>
+<!-- 키워드 알림 패널 토글 버튼 -->
+<button id="alertToggleBtn" onclick="toggleAlertPanel()">🔔 알림 열기</button>
+
+<!-- 좌측 메뉴 뷰 오버레이 -->
+<div class="nav-overlay" id="navOverlay">
+  <div class="nav-ov-header">
+    <div class="nav-ov-title" id="navOvTitle"></div>
+    <button class="nav-ov-close" onclick="showView('news')">✕ 뉴스로 돌아가기</button>
+  </div>
+  <div class="nav-ov-body" id="navOvBody"></div>
+</div>
+
 </body>
 </html>
