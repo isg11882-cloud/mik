@@ -325,7 +325,7 @@ async function getArticles(url, env) {
   const category = url.searchParams.get('category');
   const search = url.searchParams.get('search');
   const sort = url.searchParams.get('sort') || 'latest';
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '30'), 100);
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '30'), 1000);
   const offset = parseInt(url.searchParams.get('offset') || '0');
 
   let query = 'SELECT * FROM articles WHERE 1=1';

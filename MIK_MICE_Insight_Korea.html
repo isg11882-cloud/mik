@@ -27,6 +27,7 @@
   ========================================= */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* ── 라이트 모드 (기본) ── */
   :root {
     --primary: #2563EB;
     --primary-light: #EFF6FF;
@@ -63,6 +64,104 @@
     --cat-policy: #FFFBEB;
     --cat-policy-text: #92400E;
   }
+
+  /* ── 다크 모드 — 따뜻한 중성 계열 ── */
+  body.dark-mode {
+    --bg:             #111215;
+    --surface:        #1C1E25;
+    --border:         #2A2D37;
+    --text-primary:   #E8E9EE;
+    --text-secondary: #8A8FA8;
+    --text-muted:     #5A5F74;
+    --primary:        #4F86F7;
+    --primary-light:  #1E2640;
+    --primary-dark:   #2563EB;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,.35);
+    --shadow:    0 4px 20px rgba(0,0,0,.45);
+
+    /* 카테고리 태그 — 차분한 파스텔톤 */
+    --cat-exhibition:      #1A2A40; --cat-exhibition-text:  #7DB8FF;
+    --cat-convention:      #172B1E; --cat-convention-text:  #6DDDA0;
+    --cat-incentive:       #2B1E10; --cat-incentive-text:   #FFBA78;
+    --cat-tech:            #201830; --cat-tech-text:        #C0A8FF;
+    --cat-bio:             #2B1222; --cat-bio-text:         #FF9FCC;
+    --cat-policy:          #282012; --cat-policy-text:      #FFD080;
+  }
+
+  /* 구성 요소별 다크 재정의 */
+  body.dark-mode .ai-summary-card {
+    /* 그라디언트를 유지하되 어둡게 */
+    background: linear-gradient(135deg, #162348 0%, #1A306A 60%, #153050 100%);
+    box-shadow: 0 4px 24px rgba(0,0,0,.5);
+  }
+  body.dark-mode .ai-insight-box {
+    /* 카드 내부 — 반투명 어두운 오버레이 */
+    background: rgba(0,0,0,.28);
+    border-color: rgba(255,255,255,.12);
+    color: #CBD8F5;
+  }
+  body.dark-mode .ko-pending-wrap {
+    background: #1C1E25;
+    border-color: #2A2D37;
+  }
+  body.dark-mode .search-box {
+    background: #1C1E25;
+    border-color: #2A2D37;
+  }
+  body.dark-mode .search-box input { color: var(--text-primary); background: transparent; }
+  body.dark-mode .mobile-back-bar  { background: #1C1E25; border-color: #2A2D37; }
+  body.dark-mode .news-item:hover  { background: #222430 !important; }
+  body.dark-mode .news-item.active { background: #1E2640 !important; border-left-color: #4F86F7; }
+  body.dark-mode .news-item:active { background: #1E2640 !important; }
+
+  /* 배지 */
+  body.dark-mode .news-pending-badge { background: #252830; color: #6A6F88; }
+  body.dark-mode .news-ai-badge      { background: #172B1E; color: #6DDDA0; }
+  body.dark-mode .news-trans-badge   { background: #1A2A40; color: #7DB8FF; }
+
+  /* 헤더 · 패널 구분선 */
+  body.dark-mode .top-header       { border-bottom-color: #2A2D37; }
+  body.dark-mode .sidebar          { border-right-color:  #2A2D37; }
+  body.dark-mode .news-list-panel  { border-right-color:  #2A2D37; }
+
+  /* 디테일 헤더 — white 하드코딩 제거 */
+  body.dark-mode .detail-header    { background: #1C1E25; border-bottom-color: #2A2D37; }
+  body.dark-mode .action-btn       { background: #252830; border-color: #2A2D37; color: #8A8FA8; }
+  body.dark-mode .action-btn:hover { background: #2E3245; border-color: #4F86F7; color: #7DB8FF; }
+  body.dark-mode .action-btn.primary-btn { background: #2563EB; border-color: #2563EB; color: #fff; }
+  body.dark-mode .action-btn.primary-btn:hover { background: #1E40AF; }
+
+  /* 뷰 토글 버튼 */
+  body.dark-mode .view-toggle { background: #111215; border-color: #2A2D37; }
+  body.dark-mode .view-toggle-btn.active { background: #252830; color: #7DB8FF; box-shadow: none; }
+
+  /* 원문·번역 패널 */
+  body.dark-mode .dual-pane-en { background: #16181F; border-color: #2A2D37; }
+  body.dark-mode .dual-pane-ko { background: #141C18; border-color: #253520; }
+  body.dark-mode .dual-view-title { color: #8A8FA8; border-bottom-color: #2A2D37; }
+  body.dark-mode .dual-lang-label { background: #252830; color: #8A8FA8; border-color: #2A2D37; }
+
+  /* 소스 탭 */
+  body.dark-mode .source-tab        { color: #5A5F74; }
+  body.dark-mode .source-tab.active { color: #4F86F7; border-bottom-color: #4F86F7; }
+  body.dark-mode .source-tabs-wrap  { border-bottom-color: #2A2D37; }
+
+  /* 기사 메타 */
+  body.dark-mode .article-meta-wrap { border-bottom-color: #2A2D37; }
+
+  /* 버튼류 */
+  body.dark-mode .btn-outline       { border-color: #2A2D37; color: #5A5F74; }
+  body.dark-mode .btn-outline:hover { background: #222430; color: #8A8FA8; }
+
+  /* 알림 패널 */
+  body.dark-mode .alert-panel       { background: #1C1E25; border-left-color: #2A2D37; }
+  body.dark-mode .alert-noti-item   { border-bottom-color: #2A2D37; }
+  body.dark-mode .alert-input       { background: #252830; border-color: #2A2D37; color: #E8E9EE; }
+
+  /* 스크롤바 */
+  body.dark-mode ::-webkit-scrollbar-track { background: #111215; }
+  body.dark-mode ::-webkit-scrollbar-thumb { background: #2E3140; border-radius: 4px; }
+  body.dark-mode ::-webkit-scrollbar-thumb:hover { background: #3A3D52; }
 
   body {
     font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif;
@@ -203,13 +302,32 @@
   .search-icon { color: var(--text-muted); font-size: 14px; }
 
   /* Source tabs */
+  .source-tabs-wrap {
+    position: relative;
+  }
+  .source-tabs-wrap::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 32px;
+    background: linear-gradient(to right, transparent, var(--surface));
+    pointer-events: none;
+  }
   .source-tabs {
     display: flex;
     gap: 2px;
-    overflow-x: auto;
+    overflow-x: scroll;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scroll-behavior: smooth;
     scrollbar-width: none;
     padding-bottom: 0;
+    width: 100%;
+    cursor: grab;
+    user-select: none;
   }
+  .source-tabs:active { cursor: grabbing; }
   .source-tabs::-webkit-scrollbar { display: none; }
   .source-tab {
     padding: 7px 12px;
@@ -321,7 +439,7 @@
 
   .news-item-title {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.45;
     color: var(--text-primary);
     margin-bottom: 6px;
@@ -330,7 +448,19 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .news-item.active .news-item-title { color: var(--primary-dark); font-weight: 600; }
+  .news-item.active .news-item-title { color: var(--primary-dark); font-weight: 700; }
+  /* renderNewsList uses .news-title — mirror same style */
+  .news-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 
   .news-item-footer {
     display: flex;
@@ -934,13 +1064,15 @@
       border-radius: 8px;
     }
 
-    /* Source tabs: horizontal scroll */
+    /* Source tabs: horizontal scroll (mobile) */
     .source-tabs {
-      overflow-x: auto;
+      overflow-x: scroll;
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
       flex-wrap: nowrap;
       gap: 4px;
       padding-bottom: 4px;
+      cursor: default;
     }
     .source-tab {
       white-space: nowrap;
@@ -1157,19 +1289,69 @@
     border: none;
   }
 
-/* === MIK API & Mobile Enhancements === */
-.news-pending-badge{background:#2d333b;color:#8b949e;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
-.news-ai-badge{background:#0d1f0d;color:#3fb950;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
-.news-trans-badge{background:#0d1c34;color:#58a6ff;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
-#mobileDetailOverlay{display:none;}
+/* === MIK 배지 === */
+.news-pending-badge{background:#F1F5F9;color:#64748B;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+.news-ai-badge{background:#F0FDF4;color:#15803D;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+.news-trans-badge{background:#EFF6FF;color:#2563EB;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;}
+
+/* === 상세패널 메타 배지 === */
+.article-source-badge{font-size:12px;color:#64748B;font-weight:500;}
+.article-time-badge{font-size:12px;color:#94A3B8;margin-left:8px;}
+
+/* === 번역 대기 표시 === */
+.pending-text{color:#94A3B8;font-style:italic;}
+.ko-pending-wrap{display:flex;align-items:center;gap:12px;padding:20px;background:#F8FAFC;border-radius:8px;border:1px dashed #CBD5E1;color:#64748B;font-size:14px;line-height:1.6;}
+.ko-pending-wrap small{color:#94A3B8;font-size:12px;}
+.ko-pending-icon{font-size:24px;flex-shrink:0;}
+
+/* === source-tabs === */
+.source-tabs-wrap{overflow:hidden;position:relative;}
 .source-tabs{padding-left:0!important;}
+
+/* === 모바일 뒤로가기 헤더 === */
+.mobile-back-bar{
+  display:none;
+  align-items:center;
+  gap:10px;
+  padding:10px 16px;
+  background:#FFFFFF;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.mobile-back-btn{
+  background:none;border:none;
+  color:var(--primary);font-size:20px;
+  cursor:pointer;padding:0;line-height:1;
+  display:flex;align-items:center;gap:4px;
+  font-size:14px;font-weight:600;
+}
+.mobile-back-btn::before{content:'←';font-size:18px;}
+.mobile-source-label{font-size:13px;color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mobile-orig-link{background:var(--primary);color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;}
+
+/* === 모바일 레이아웃 전환 === */
 @media(max-width:768px){
-  .article-detail,.article-view,#articleDetail,.news-detail{display:none!important;}
-  .news-list,.news-panel,.left-panel{width:100%!important;flex:1!important;max-width:none!important;border-right:none!important;}
-  .main-layout,.content-layout,.news-layout{flex-direction:column!important;}
+  /* 기본: 리스트만 */
+  .alert-panel{display:none!important;}
+  #articleDetail{display:none!important;}
+  #noArticle{display:none!important;}
+  .list-panel{width:100%!important;flex:1!important;max-width:none!important;border-right:none!important;}
+  .detail-panel{display:none!important;width:100%!important;}
+  .sidebar{display:none!important;}
+
+  /* 기사 열림: 리스트 숨기고 상세 전체화면 */
+  body.mobile-article-open .list-panel{display:none!important;}
+  body.mobile-article-open .detail-panel{display:flex!important;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;overflow-y:auto;background:var(--bg);}
+  body.mobile-article-open #articleDetail{display:flex!important;flex:1;}
+  body.mobile-article-open .mobile-back-bar{display:flex!important;}
+  body.mobile-article-open .detail-header{display:none!important;}
+
   .source-tabs{padding:0 0 8px!important;}
   .news-item{cursor:pointer;-webkit-tap-highlight-color:transparent;}
-  .news-item:active{background:#21262d!important;}
+  .news-item:active{background:#EFF6FF!important;}
 }
 </style>
 </head>
@@ -1202,7 +1384,10 @@
     <span>📧</span><small>레터</small>
   </button>
   <div class="sidebar-divider"></div>
-  <button class="sidebar-btn" title="설정" style="margin-top: auto;">
+  <button class="sidebar-btn" id="themeToggleBtn" title="다크/라이트 모드 전환" onclick="toggleTheme()" style="margin-top: auto;">
+    <span id="themeIcon">🌙</span><small id="themeLabel">다크</small>
+  </button>
+  <button class="sidebar-btn" title="설정">
     <span>⚙️</span><small>설정</small>
   </button>
   <button class="sidebar-btn" title="내 계정">
@@ -1223,8 +1408,10 @@
       <button class="btn-login" id="headerLoginBtn" onclick="openAuthModal('login')">로그인</button>
       <button class="user-avatar" id="headerUserBtn" style="display:none" onclick="openAuthModal('login')" title="내 계정"></button>
     </div><!-- end list-header-top -->
-    <div class="source-tabs" id="sourceTabs" style="padding: 0 16px 12px;">
-      <div class="source-tab active" onclick="filterSource('all', this)">전체</div>
+    <div class="source-tabs-wrap">
+      <div class="source-tabs" id="sourceTabs" style="padding: 0 16px 12px;">
+        <div class="source-tab active" onclick="filterSource('all', this)">전체</div>
+      </div>
     </div>
   </div>
 
@@ -1253,6 +1440,13 @@
      DETAIL PANEL
 ========================================= -->
 <section class="detail-panel" id="detailPanel">
+  <!-- 모바일 전용 뒤로가기 헤더 -->
+  <div class="mobile-back-bar" id="mobileBackBar">
+    <button class="mobile-back-btn" onclick="closeMobileDetail()">목록</button>
+    <span class="mobile-source-label" id="mobileSourceLabel"></span>
+    <a class="mobile-orig-link" id="mobileOrigBtn" href="#" target="_blank" rel="noopener">원문 →</a>
+  </div>
+
   <!-- Default: no article selected -->
   <div class="no-article" id="noArticle">
     <div class="no-article-icon">🌏</div>
@@ -1261,7 +1455,7 @@
       왼쪽 뉴스 목록에서 기사를 선택하면<br>
       AI가 번역·요약한 전문가 인사이트를<br>듀얼 뷰로 확인할 수 있습니다.
     </div>
-    <div style="font-size:13px;color:#8b949e;margin-top:12px;">기사를 선택하면 상세 내용이 여기에 표시됩니다</div>
+    <div style="font-size:13px;color:#94A3B8;margin-top:12px;">기사를 선택하면 상세 내용이 여기에 표시됩니다</div>
   </div>
 
   <!-- Article detail (hidden until selected) -->
@@ -1396,230 +1590,32 @@ async function fetchArticles(params = {}) {
   if (IS_LOADING) return;
   IS_LOADING = true;
   const grid = document.getElementById('newsList');
-  const fetchStart = Date.now();
-
-  if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e;"><div style="font-size:24px;margin-bottom:8px;">⏳<' + '/div>기사를 불러오는 중...<' + '/div>';
-
-  // ── 타임아웃 가드 (10초) ──────────────────────────────────────
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
-    controller.abort();
-    console.error('[MIK][TIMEOUT] /api/articles 요청이 10초를 초과하여 자동 중단됨');
-  }, 10000);
-
+  if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#64748B;"><div style="font-size:24px;margin-bottom:8px;">⏳<' + '/div>기사를 불러오는 중...<' + '/div>';
   try {
     const sp = new URLSearchParams(params);
-    const url = WORKER_URL + '/api/articles?' + sp.toString();
-
-    console.group('[MIK] fetchArticles 시작');
-    console.log('  요청 URL     :', url);
-    console.log('  파라미터     :', params);
-    console.log('  요청 시각    :', new Date().toISOString());
-
-    const res = await fetch(url, {
-      mode: 'cors',
-      headers: { 'Accept': 'application/json' },
-      signal: controller.signal
+    const res = await fetch(WORKER_URL + '/api/articles?' + sp.toString(), {
+      mode: 'cors', headers: { 'Accept': 'application/json' }
     });
-    clearTimeout(timeoutId);
-
-    // ── HTTP 상태 로그 ────────────────────────────────────────
-    console.log('  HTTP 상태    :', res.status, res.statusText);
-    console.log('  Content-Type :', res.headers.get('content-type'));
-    console.log('  CF-Ray       :', res.headers.get('cf-ray') || '(없음)');
-    console.log('  CORS Origin  :', res.headers.get('access-control-allow-origin') || '(없음)');
-
-    if (!res.ok) {
-      let bodyPreview = '(응답 본문 없음)';
-      try { bodyPreview = (await res.text()).substring(0, 500); } catch(_) {}
-      console.error('[MIK][HTTP ERROR] 상태코드:', res.status, res.statusText);
-      console.error('[MIK][HTTP ERROR] 응답 본문 미리보기:', bodyPreview);
-      throw new Error('HTTP ' + res.status + ' — ' + res.statusText);
-    }
-
-    // ── JSON 파싱 분리 try-catch ──────────────────────────────
-    let data;
-    try {
-      data = await res.json();
-    } catch (jsonErr) {
-      let rawText = '(텍스트 추출 실패)';
-      try { rawText = (await res.clone().text()).substring(0, 500); } catch(_) {}
-      console.error('[MIK][JSON PARSE] JSON 파싱 실패:', jsonErr.message);
-      console.error('[MIK][JSON PARSE] 원시 응답 미리보기:', rawText);
-      throw new Error('JSON parse error: ' + jsonErr.message);
-    }
-
-    // ── 응답 형태 검증 (Array.isArray 기반) ───────────────────
-    let rawArticles;
-    if (Array.isArray(data)) {
-      rawArticles = data;
-      console.log('  응답 구조    : 배열 (직접 반환)');
-    } else if (data && Array.isArray(data.articles)) {
-      rawArticles = data.articles;
-      console.log('  응답 구조    : { articles: [...] }');
-    } else if (data && typeof data === 'object') {
-      console.warn('[MIK][DATA SHAPE] 예상치 못한 응답 구조. 키 목록:', Object.keys(data));
-      console.warn('[MIK][DATA SHAPE] 실제 데이터 미리보기:', JSON.stringify(data).substring(0, 300));
-      rawArticles = [];
-    } else {
-      console.error('[MIK][DATA SHAPE] 응답이 null 또는 알 수 없는 타입:', typeof data, data);
-      rawArticles = [];
-    }
-
-    // 최종 안전망: rawArticles가 배열인지 한 번 더 확인
-    if (!Array.isArray(rawArticles)) {
-      console.error('[MIK][ARRAY CHECK] rawArticles가 배열이 아님 — 강제로 []로 초기화:', typeof rawArticles);
-      rawArticles = [];
-    }
-
-    console.log('  수신 기사    :', rawArticles.length + '건');
-
-    // ── 각 기사 매핑 (개별 에러 격리) ────────────────────────
-    ARTICLES = rawArticles.map((a, idx) => {
-      if (!a || typeof a !== 'object') {
-        console.warn('[MIK][MAP] index ' + idx + ' 항목이 객체가 아님 — 스킵:', a);
-        return null;
-      }
-      try {
-        return {
-          id: a.id, source: a.source||'',
-          cat: CAT_LABELS[a.cat] || CAT_LABELS[a.category] || a.cat || a.category || '일반',
-          catClass: a.catClass || CAT_CLASSES[a.cat] || a.cat_class || 'tag-convention',
-          type: a.type || a.article_type || '분석',
-          time: a.time || formatTime(a.pub_date||a.created_at), views: a.views||0,
-          title: a.title||'', title_ko: a.titleKo||a.title_ko||a.title||'',
-          url: a.url||a.link||'#', content_ko: a.koText||a.content_ko||'',
-          insight: a.insight||'',
-          summary_json: (()=>{ if(Array.isArray(a.summaryPoints))return a.summaryPoints; try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
-        };
-      } catch (mapErr) {
-        console.warn('[MIK][MAP] id=' + a.id + ' 매핑 실패 — 스킵:', mapErr.message);
-        return null;
-      }
-    }).filter(Boolean); // null 항목 제거
-
-    const elapsed = Date.now() - fetchStart;
-    console.log('  유효 기사    :', ARTICLES.length + '건 (매핑 실패 제외)');
-    console.log('  소요 시간    :', elapsed + 'ms');
-    console.groupEnd();
-
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    ARTICLES = (data.articles || data || []).map(a => ({
+      id: a.id, source: a.source||'',
+      cat: CAT_LABELS[a.cat] || CAT_LABELS[a.category] || a.cat || a.category || '일반',
+      catClass: a.catClass || CAT_CLASSES[a.cat] || a.cat_class || 'tag-convention',
+      type: a.type || a.article_type || '분석',
+      time: a.time || formatTime(a.pub_date||a.created_at), views: a.views||0,
+      title: a.title||'', title_ko: a.titleKo||a.title_ko||a.title||'',
+      url: a.url||a.link||'#', content_ko: a.koText||a.content_ko||'', enText: a.enText||'',
+      insight: a.insight||'',
+      summary_json: (()=>{ if(Array.isArray(a.summaryPoints))return a.summaryPoints; try{return JSON.parse(a.summary_json||'[]');}catch(e){return [];} })()
+    }));
     renderNewsList(ARTICLES);
     renderSourceTabs(ARTICLES);
-
-    if (ARTICLES.length > 0) {
-      showArticle(ARTICLES[0].id);
-    } else if (grid) {
-      grid.innerHTML = buildEmptyPanel(rawArticles.length);
-    }
-
+    if (ARTICLES.length > 0) showArticle(ARTICLES[0].id);
   } catch(e) {
-    clearTimeout(timeoutId);
-    const elapsed = Date.now() - fetchStart;
-
-    // AbortError → 사람이 읽기 좋은 메시지로 교체
-    if (e.name === 'AbortError') {
-      e.message = 'TIMEOUT: 요청이 10초를 초과하여 자동 중단되었습니다';
-    }
-
-    console.error('[MIK][FETCH FAILED] 기사 로딩 최종 실패');
-    console.error('  오류 유형    :', e.name);
-    console.error('  오류 메시지  :', e.message);
-    console.error('  WORKER_URL  :', WORKER_URL);
-    console.error('  요청 파라미터:', params);
-    console.error('  소요 시간    :', elapsed + 'ms');
-    console.error('  스택 트레이스:', e.stack);
-    console.groupEnd();
-
-    if (grid) grid.innerHTML = buildErrorPanel(e);
-  } finally {
-    IS_LOADING = false;
-  }
-}
-
-// buildEmptyPanel: API는 성공했으나 기사가 0건일 때 표시
-// rawCount = API가 반환한 원시 배열 길이 (매핑 전), 0이면 DB도 비어있음
-function buildEmptyPanel(rawCount) {
-  const isDbEmpty = (rawCount === 0);
-  return '<div style="padding:48px 24px;text-align:center;color:#6B7280;">' +
-    '<div style="font-size:40px;margin-bottom:12px;">📭<' + '/div>' +
-    '<div style="font-size:15px;font-weight:600;color:#374151;margin-bottom:6px;">' +
-      (isDbEmpty ? '등록된 기사가 없습니다' : '표시할 기사가 없습니다') +
-    '<' + '/div>' +
-    '<div style="font-size:13px;color:#9CA3AF;margin-bottom:20px;">' +
-      (isDbEmpty
-        ? 'RSS 수집 크론이 아직 실행되지 않았습니다. 잠시 후 다시 확인해 주세요.'
-        : '현재 필터 조건에 맞는 기사가 없습니다. 필터를 변경해 보세요.') +
-    '<' + '/div>' +
-    '<button onclick="fetchArticles({limit:30,sort:\'latest\'})"' +
-      ' style="padding:8px 18px;background:#2563EB;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">' +
-      '🔄 새로고침' +
-    '<' + '/button>' +
-  '<' + '/div>';
-}
-
-function buildErrorPanel(err) {
-  const msg = err ? err.message || String(err) : 'Unknown error';
-  let userMsg = '데이터를 불러올 수 없습니다.';
-  let hint = '잠시 후 새로고침해 주세요.';
-  let debugType = 'unknown';
-
-  if (msg.includes('TIMEOUT') || (err && err.name === 'AbortError')) {
-    userMsg = '요청 시간이 초과되었습니다. (10초)';
-    hint = 'Worker 서버가 응답하지 않거나 네트워크가 느립니다. 잠시 후 다시 시도해 주세요.';
-    debugType = 'timeout';
-  } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) {
-    userMsg = 'API 서버에 연결할 수 없습니다.';
-    hint = '네트워크 상태를 확인하거나, 잠시 후 다시 시도해 주세요.';
-    debugType = 'fetch_failed';
-  } else if (msg.includes('HTTP 404')) {
-    userMsg = 'API 엔드포인트를 찾을 수 없습니다.';
-    hint = '서비스 점검 중일 수 있습니다. 잠시 후 다시 시도해 주세요.';
-    debugType = 'http_404';
-  } else if (msg.includes('HTTP 5') || msg.includes('HTTP 50')) {
-    userMsg = '서버 내부 오류가 발생했습니다.';
-    hint = '잠시 후 다시 시도해 주세요. 문제가 지속되면 관리자에게 문의하세요.';
-    debugType = 'http_5xx';
-  } else if (msg.includes('CORS') || msg.includes('cors') || msg.includes('Cross-Origin')) {
-    userMsg = 'API 접근 오류가 발생했습니다. (CORS)';
-    hint = '브라우저 콘솔(F12 → Console)에서 CORS 오류 메시지를 확인해 주세요.';
-    debugType = 'cors';
-  } else if (msg.includes('JSON') || msg.includes('json') || msg.includes('Unexpected token')) {
-    userMsg = 'API 응답 형식 오류가 발생했습니다.';
-    hint = '서버가 JSON이 아닌 응답을 반환했습니다. 잠시 후 다시 시도해 주세요.';
-    debugType = 'json_parse';
-  }
-
-  const panelId = 'mik-err-' + Date.now();
-  return `<div style="padding:32px 24px;max-width:520px;margin:0 auto;">
-    <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:36px;margin-bottom:8px;">⚠️</div>
-      <div style="font-size:16px;font-weight:600;color:#DC2626;margin-bottom:6px;">${userMsg}</div>
-      <div style="font-size:13px;color:#6B7280;">${hint}</div>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;">
-      <button onclick="fetchArticles({limit:30,sort:'latest'})"
-        style="padding:8px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">
-        🔄 다시 시도
-      </button>
-    </div>
-    <details id="${panelId}" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px;">
-      <summary style="cursor:pointer;font-size:12px;color:#6B7280;font-weight:500;">관리자용 진단 정보 ▾</summary>
-      <div style="margin-top:10px;font-size:11px;font-family:monospace;color:#374151;line-height:1.7;">
-        <div>오류 유형: <b>${debugType}</b></div>
-        <div>API 주소: <b>[설정됨]</b></div>
-        <div>시각: <b>${new Date().toISOString()}</b></div>
-        <div style="margin-top:6px;padding:6px;background:#FEF2F2;border-radius:4px;color:#DC2626;">
-          오류 메시지: ${msg.replace(/</g,'&lt;').replace(/>/g,'&gt;').substring(0, 120)}
-        </div>
-        <div style="margin-top:8px;color:#6B7280;">
-          확인 사항:<br>
-          1. 브라우저 콘솔(F12) → Network 탭에서 API 요청 확인<br>
-          2. Worker 헬스체크: /health 엔드포인트 직접 호출<br>
-          3. CORS 오류 시: Worker allowOrigins 설정 확인
-        </div>
-      </div>
-    </details>
-  </div>`;
+    console.error('[MIK] API error:', e);
+    if (grid) grid.innerHTML = '<div style="padding:40px;text-align:center;color:#EF4444;"><div style="font-size:24px;margin-bottom:8px;">⚠️<' + '/div>기사를 불러올 수 없습니다.<br><small style="color:#94A3B8">Worker API 상태를 확인해 주세요.<' + '/small><' + '/div>';
+  } finally { IS_LOADING = false; }
 }
 
 const KEYWORDS_DEFAULT = ['Bio', 'CVB', 'Sustainability', 'AI Event', 'Korea MICE', 'PCO'];
@@ -1638,7 +1634,7 @@ let filteredArticles = [...ARTICLES];
 // ====== INIT ======
 function init() {
   updateAuthUI();
-  fetchArticles({ limit: 30, sort: 'latest' });
+  fetchArticles({ limit: 1000, sort: 'latest' });
 }
 
 // ====== RENDER NEWS LIST ======
@@ -1658,24 +1654,19 @@ function renderSourceTabs(articles) {
 function renderNewsList(articles) {
   const grid = document.getElementById('newsList');
   if (!grid) return;
-
-  // ── Array.isArray 완충 가드 ──────────────────────────────────
-  // articles가 배열이 아닌 경우(null, undefined, 객체 등) Silent Crash 방지
-  if (!Array.isArray(articles)) {
-    console.warn('[MIK][renderNewsList] articles 인자가 배열이 아님 — 빈 화면으로 처리:', typeof articles, articles);
-    grid.innerHTML = buildEmptyPanel(0);
-    return;
-  }
-
-  if (articles.length === 0) {
-    grid.innerHTML = buildEmptyPanel(0);
+  if (!articles || articles.length === 0) {
+    grid.innerHTML = '<div style="padding:40px;text-align:center;color:#64748B;">' +
+      '<div style="font-size:32px;margin-bottom:12px;">📭<' + '/div>' +
+      '<div style="font-weight:600;margin-bottom:6px;">기사가 없습니다<' + '/div>' +
+      '<div style="font-size:12px;">RSS 크롤링 후 기사가 표시됩니다.<' + '/div><' + '/div>';
     return;
   }
   grid.innerHTML = articles.map(a => {
     const title = a.title_ko || a.title || '제목 없음';
-    const badge = a.insight ? '<span class="news-ai-badge">AI분석</span>' :
-                  a.content_ko ? '<span class="news-trans-badge">번역완료</span>' :
-                  '<span class="news-pending-badge">번역대기</span>';
+    const PEND=/번역 대기|번역 처리 중|대기 중/i;
+    const badge = (a.insight && a.insight.length > 5) ? '<span class="news-ai-badge">AI분석<' + '/span>' :
+                  (a.content_ko && !PEND.test(a.content_ko) && a.content_ko.length > 30) ? '<span class="news-trans-badge">번역완료<' + '/span>' :
+                  '<span class="news-pending-badge">번역대기<' + '/span>';
     return '<div class="news-item" data-id="' + a.id + '" onclick="showArticle(' + a.id + ')">' +
       '<div class="news-item-header"><span class="news-tag ' + (a.catClass||'tag-convention') + '">' + (a.cat||'') + '<' + '/span>' +
       '<span class="news-type">' + (a.type||'') + '<' + '/span><span class="news-time">' + (a.time||'') + '<' + '/span><' + '/div>' +
@@ -1685,84 +1676,164 @@ function renderNewsList(articles) {
   }).join('');
 }
 
-// ====== SHOW ARTICLE ======
+// ====== SHOW ARTICLE — CSS 클래스 기반 (인라인 스타일 없음) ======
+let _currentArticle = null;
+
 function showArticle(id) {
   currentArticleId = id;
   const a = ARTICLES.find(x => x.id === id);
   if (!a) return;
+  _currentArticle = a;
+
+  // 리스트 active 상태 업데이트
   document.querySelectorAll('.news-item').forEach(el => el.classList.remove('active'));
   const item = document.querySelector('[data-id="' + id + '"]');
   if (item) { item.classList.add('active'); item.scrollIntoView({block:'nearest',behavior:'smooth'}); }
   a.views = (a.views||0) + 1;
   const vEl = item && item.querySelector('.news-views');
   if (vEl) vEl.textContent = '👁 ' + a.views;
-  if (window.innerWidth <= 768) { showMobileDetail(a); return; }
-  renderDetailPanel(a);
-}
 
-function buildDetailHTML(a) {
-  const title = a.title_ko || a.title || '';
-  const sum = a.summary_json && a.summary_json.length > 0;
-  let h = '';
-  if (sum) h += '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:16px;">' +
-    '<div style="font-size:12px;color:#58a6ff;font-weight:600;margin-bottom:8px;">📋 핵심 요약<' + '/div>' +
-    a.summary_json.map((s,i)=>'<div style="font-size:14px;color:#c9d1d9;padding:4px 0;">'+(i+1)+'. '+s+'<' + '/div>').join('') + '<' + '/div>';
-  if (a.insight) h += '<div style="background:#0d1f0d;border:1px solid #238636;border-radius:8px;padding:16px;margin-bottom:16px;">' +
-    '<div style="font-size:12px;color:#3fb950;font-weight:600;margin-bottom:8px;">💡 AI MICE 인사이트<' + '/div>' +
-    '<div style="font-size:14px;color:#c9d1d9;line-height:1.6;">' + a.insight + '<' + '/div><' + '/div>';
-  h += a.content_ko ?
-    '<div style="font-size:14px;color:#c9d1d9;line-height:1.8;">' + a.content_ko + '<' + '/div>' :
-    '<div style="color:#8b949e;font-size:13px;text-align:center;padding:24px;background:#161b22;border-radius:8px;">⏳ AI 번역 처리 중입니다. 잠시 후 확인해 주세요.<' + '/div>';
-  return {title, h};
-}
+  // 기존 HTML 구조에 데이터 채우기
+  populateDetailPanel(a);
 
-function showMobileDetail(a) {
-  let ov = document.getElementById('mobileDetailOverlay');
-  if (!ov) {
-    ov = document.createElement('div');
-    ov.id = 'mobileDetailOverlay';
-    ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#0d1117;z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;';
-    document.body.appendChild(ov);
+  // 모바일: History API로 뒤로가기 지원
+  if (window.innerWidth <= 768) {
+    history.pushState({ articleId: id }, '', '#a' + id);
+    document.body.classList.add('mobile-article-open');
   }
-  const {title, h} = buildDetailHTML(a);
-  ov.innerHTML = '<div style="position:sticky;top:0;background:#161b22;padding:12px 16px;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:12px;z-index:1;">' +
-    '<button onclick="closeMobileDetail()" style="background:none;border:none;color:#8b949e;font-size:22px;cursor:pointer;line-height:1;">←<' + '/button>' +
-    '<span style="font-size:13px;color:#8b949e;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (a.source||'') + '<' + '/span>' +
-    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#238636;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;">원문 →<' + '/a><' + '/div>' +
-    '<div style="padding:20px 16px;">' +
-    '<div style="margin-bottom:12px;"><span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
-    '<span style="color:#8b949e;font-size:12px;margin-left:8px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
-    '<h2 style="font-size:18px;font-weight:700;color:#e6edf3;line-height:1.4;margin:0 0 16px;">' + title + '<' + '/h2>' + h + '<' + '/div>';
-  ov.style.display = 'block';
-  document.body.style.overflow = 'hidden';
 }
+
+// 기존 HTML 슬롯에 채우는 함수 — innerHTML 교체 없음
+function populateDetailPanel(a) {
+  const PEND = /번역 대기|번역 처리 중|대기 중|pending/i;
+
+  // 빈 화면 숨기고 상세 보이기
+  const noArt = document.getElementById('noArticle');
+  const panel = document.getElementById('articleDetail');
+  if (noArt) noArt.style.display = 'none';
+  if (panel) { panel.style.display = 'flex'; panel.style.flexDirection = 'column'; }
+
+  // 카테고리 태그
+  const tagWrap = document.getElementById('detailTagWrap');
+  if (tagWrap) tagWrap.innerHTML = '<span class="news-tag ' + (a.catClass||'tag-convention') + '">' + (a.cat||'') + '</span>';
+
+  // 제목
+  const titleEl = document.getElementById('detailTitleText');
+  if (titleEl) titleEl.textContent = a.title_ko || a.title || '';
+
+  // 메타
+  const metaEl = document.getElementById('articleMeta');
+  if (metaEl) metaEl.innerHTML =
+    '<span class="article-source-badge">' + (a.source||'') + '</span>' +
+    '<span class="article-time-badge">' + (a.time||'') + '</span>';
+
+  // 요약 포인트
+  const summaryEl = document.getElementById('aiSummaryPoints');
+  if (summaryEl) {
+    summaryEl.innerHTML = (a.summary_json && a.summary_json.length > 0)
+      ? a.summary_json.map(s => '<li>' + s + '</li>').join('')
+      : '<li class="pending-text">AI 분석을 준비하고 있습니다...</li>';
+  }
+
+  // 인사이트
+  const insightEl = document.getElementById('aiInsight');
+  if (insightEl) {
+    const hasInsight = a.insight && !PEND.test(a.insight) && a.insight.length > 5;
+    insightEl.textContent = hasInsight ? a.insight : 'AI 인사이트를 분석하고 있습니다...';
+    insightEl.classList.toggle('pending-text', !hasInsight);
+  }
+
+  // 원문(영문)
+  const enEl = document.getElementById('enContent');
+  if (enEl) {
+    enEl.innerHTML = (a.enText && a.enText.length > 20)
+      ? '<p>' + a.enText.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>') + '</p>'
+      : '<p class="pending-text">원문 전문은 \'원문 보기\'를 클릭하세요.</p>';
+  }
+
+  // 한국어 번역
+  const koEl = document.getElementById('koContent');
+  if (koEl) {
+    const hasKo = a.content_ko && !PEND.test(a.content_ko) && a.content_ko.length > 30;
+    if (hasKo) {
+      koEl.innerHTML = a.content_ko;
+      koEl.classList.remove('ko-pending-wrap');
+    } else {
+      koEl.innerHTML = '<div class="ko-pending-wrap"><div class="ko-pending-icon">⏳</div><div>AI가 번역하고 있습니다.<br><small>다음 번역 주기(매시간)에 자동 완성됩니다.</small></div></div>';
+    }
+  }
+
+  // 원문 링크 업데이트
+  const origBtn = document.querySelector('.action-btn.primary-btn');
+  if (origBtn) origBtn.onclick = () => window.open(a.url||'#', '_blank', 'noopener');
+
+  // 모바일 상단 원문 버튼
+  const mobileOrig = document.getElementById('mobileOrigBtn');
+  if (mobileOrig) { mobileOrig.href = a.url||'#'; }
+  const mobileSrc = document.getElementById('mobileSourceLabel');
+  if (mobileSrc) mobileSrc.textContent = a.source||'';
+}
+
+// 모바일 뒤로가기 (History API popstate)
+window.addEventListener('popstate', function(e) {
+  if (document.body.classList.contains('mobile-article-open')) {
+    document.body.classList.remove('mobile-article-open');
+    // 스크롤 복원
+    const listPanel = document.querySelector('.list-panel');
+    if (listPanel) listPanel.scrollTop = 0;
+  }
+});
 
 function closeMobileDetail() {
-  const ov = document.getElementById('mobileDetailOverlay');
-  if (ov) ov.style.display = 'none';
-  document.body.style.overflow = '';
+  history.back();
 }
 
-function renderDetailPanel(a) {
-  const noArt = document.getElementById('noArticle');
-  if (noArt) noArt.style.display = 'none';
-  const panel = document.getElementById('articleDetail') ||
-    document.querySelector('.article-detail, .article-view, .news-detail');
-  if (!panel) return;
-  panel.style.display = 'flex';
-  panel.style.flexDirection = 'column';
-  const {title, h} = buildDetailHTML(a);
-  panel.innerHTML = '<div style="padding:20px;border-bottom:1px solid #30363d;">' +
-    '<div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
-    '<span class="news-tag ' + (a.catClass||'') + '" style="font-size:11px;">' + (a.cat||'') + '<' + '/span>' +
-    '<span style="color:#8b949e;font-size:12px;">' + (a.source||'') + '<' + '/span>' +
-    '<span style="color:#8b949e;font-size:12px;">' + (a.time||'') + '<' + '/span><' + '/div>' +
-    '<h2 style="font-size:17px;font-weight:700;color:#e6edf3;line-height:1.4;margin:0 0 12px;">' + title + '<' + '/h2>' +
-    '<div style="display:flex;gap:8px;">' +
-    '<a href="' + (a.url||'#') + '" target="_blank" rel="noopener" style="background:#238636;color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none;">원문 보기 →<' + '/a>' +
-    '<button onclick="toggleBookmark(' + a.id + ')" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;">🔖 저장<' + '/button><' + '/div><' + '/div>' +
-    '<div style="padding:20px;overflow-y:auto;">' + h + '<' + '/div>';
+// ====== 다크/라이트 모드 토글 ======
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('mik-theme', isDark ? 'dark' : 'light');
+  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = isDark ? '라이트' : '다크';
 }
+// 저장된 테마 복원
+(function() {
+  const saved = localStorage.getItem('mik-theme');
+  if (saved === 'dark') {
+    document.body.classList.add('dark-mode');
+    const icon = document.getElementById('themeIcon');
+    const label = document.getElementById('themeLabel');
+    if (icon) icon.textContent = '☀️';
+    if (label) label.textContent = '라이트';
+  }
+})();
+
+// ====== SOURCE TABS DRAG SCROLL (데스크톱) ======
+(function() {
+  let isDown = false, startX, scrollLeft, didDrag = false;
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('sourceTabs');
+    if (!el) return;
+    el.addEventListener('mousedown', e => {
+      isDown = true; didDrag = false;
+      startX = e.pageX - el.offsetLeft;
+      scrollLeft = el.scrollLeft;
+      e.preventDefault();
+    });
+    window.addEventListener('mouseup', () => { isDown = false; });
+    el.addEventListener('mouseleave', () => { isDown = false; });
+    el.addEventListener('mousemove', e => {
+      if (!isDown) return;
+      const x = e.pageX - el.offsetLeft;
+      const dist = x - startX;
+      if (Math.abs(dist) > 3) didDrag = true;
+      el.scrollLeft = scrollLeft - dist;
+    });
+    // 드래그 중엔 탭 클릭 무시
+    el.addEventListener('click', e => {
+      if (didDrag) { e.stopPropagation(); e.preventDefault(); didDrag = false; }
+    }, true);
+  });
+})();
 
 // ====== FILTER ======
 function filterSource(source, el) {
