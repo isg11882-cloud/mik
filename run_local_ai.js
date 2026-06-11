@@ -62,7 +62,8 @@ const CATEGORY_MAP = {
   convention:     'tag-convention',
   exhibition:     'tag-exhibition',
   incentive:      'tag-incentive',
-  tech:           'tag-tech',
+  event:          'tag-event',
+  tech:           'tag-event',
   sustainability: 'tag-sustainability',
   market:         'tag-market',
   policy:         'tag-policy',
@@ -119,7 +120,7 @@ function isMiceRelevant(title, content) {
 // ─────────────────────────────────────────────────────────────────
 function guessCategoryHint(title, content) {
   const txt = ((title || '') + ' ' + (content || '')).toLowerCase();
-  const scores = { convention:0, exhibition:0, incentive:0, tech:0, sustainability:0, market:0, policy:0 };
+  const scores = { convention:0, exhibition:0, incentive:0, event:0, sustainability:0, market:0, policy:0 };
 
   const RULES = [
     ['convention',     5, ['pcma','icca','mpi ','cvb ','pco ','convention center','convention bureau','meeting planner','hosted buyer','association meeting','corporate meeting']],
@@ -130,9 +131,9 @@ function guessCategoryHint(title, content) {
     ['exhibition',     1, ['display','showcase','stand ','booth']],
     ['incentive',      5, ['incentive travel','incentive trip','incentive program','dmc ','site global','fam trip','reward travel','group incentive']],
     ['incentive',      2, ['incentive','luxury travel','group travel','team travel']],
-    ['tech',           5, ['cvent','bizzabo','stova','event app','event platform','event software','event tech','virtual event','hybrid event platform','event management software']],
-    ['tech',           2, ['technology platform','digital event','livestream event','event automation','event analytics','artificial intelligence']],
-    ['tech',           1, ['mobile app','digital','ai tool','tech solution']],
+    ['event',          5, ['cvent','bizzabo','stova','event app','event platform','event software','event tech','virtual event','hybrid event platform','event management software','music festival','cultural festival','film festival','brand activation','experiential marketing','experiential event','pop-up event','roadshow','activation campaign','brand experience']],
+    ['event',          2, ['technology platform','digital event','livestream event','event automation','event analytics','artificial intelligence','festival','activation','experiential','offline event','live event','promotional event','concert','carnival','celebration']],
+    ['event',          1, ['mobile app','digital','ai tool','tech solution','promotion','gala','ceremony']],
     ['sustainability', 5, ['esg','green meeting','carbon neutral','net zero','sustainable event','gmic','carbon offset','zero waste event','eco-friendly event']],
     ['sustainability', 2, ['sustainable','carbon footprint','renewable energy','waste reduction','environmental impact']],
     ['sustainability', 1, ['green ','carbon','environment','climate']],
@@ -148,7 +149,7 @@ function guessCategoryHint(title, content) {
     for (const kw of keywords)
       if (txt.includes(kw)) scores[cat] += weight;
 
-  const PRIORITY = ['tech','exhibition','incentive','sustainability','convention','policy','market'];
+  const PRIORITY = ['event','exhibition','incentive','sustainability','convention','policy','market'];
   let best = 'convention', bestScore = 0;
   for (const cat of PRIORITY)
     if (scores[cat] > bestScore) { bestScore = scores[cat]; best = cat; }
@@ -324,7 +325,8 @@ Output ONLY valid JSON matching this schema — no explanation, no markdown, no 
 Schema:
 {
   "title_ko": string,   // Korean translation of the article title (natural, fluent Korean)
-  "category": string,   // MUST be exactly one of: convention | exhibition | incentive | tech | sustainability | market | policy
+  "category": string,   // MUST be exactly one of: convention | exhibition | incentive | event | sustainability | market | policy
+                        //   event = festivals, offline/experiential events, brand activations, promotions, AND event technology/platforms/apps/AI tools (no separate "tech" category)
   "insight":  string    // One Korean sentence (15–60 chars) summarizing key takeaway for Korean MICE professionals
 }
 
@@ -347,9 +349,10 @@ Excerpt: ${excerpt}`;
     throw new Error(`[Step1] ${e.message}`);
   }
 
-  // 카테고리 유효성 보정
-  const catRaw  = (meta.category || hint).toLowerCase().trim();
-  const catKey  = VALID_CATEGORIES.has(catRaw) ? catRaw : hint;
+  // 카테고리 유효성 보정 (테크 → 이벤트 병합)
+  let catRaw  = (meta.category || hint).toLowerCase().trim();
+  if (catRaw === 'tech') catRaw = 'event';
+  const catKey  = VALID_CATEGORIES.has(catRaw) ? catRaw : (hint === 'tech' ? 'event' : hint);
   meta.category = catKey;
 
   // title_ko 한국어 검증 (실패 시 Step 1 전체를 오류로 처리)
