@@ -324,18 +324,32 @@ Output ONLY valid JSON matching this schema — no explanation, no markdown, no 
 
 Schema:
 {
-  "title_ko": string,   // Korean translation of the article title (natural, fluent Korean)
-  "category": string,   // MUST be exactly one of: convention | exhibition | incentive | event | sustainability | market | policy
-                        //   event = festivals, offline/experiential events, brand activations, promotions, AND event technology/platforms/apps/AI tools (no separate "tech" category)
-  "insight":  string    // One Korean sentence (15–60 chars) summarizing key takeaway for Korean MICE professionals
+  "title_ko": string,   // Natural, fluent Korean translation of the title
+  "category": string,   // EXACTLY one of: convention | exhibition | incentive | event | sustainability | market | policy
+  "insight":  string    // One Korean sentence (15-60 chars), key takeaway for Korean MICE professionals
 }
 
-Example input:
-Title: "PCMA Announces Record Attendance at Convening Leaders 2025"
-Category hint: convention
+CATEGORY GUIDE — pick by the article's MAIN TOPIC, never by a single keyword:
+- convention: conferences, congresses, summits, association MEETINGS, convention centers, meeting planners, PCO/CVB, hosted buyers.
+- exhibition: trade shows, expos, trade fairs, exhibitor/booth/show floor, UFI/IAEE.
+- incentive: incentive TRAVEL, reward trips, DMC, corporate group travel rewards ONLY (must be about travel rewards).
+- event: festivals, cultural/music festivals, offline/experiential events, brand activations, pop-ups, promotions, roadshows, AND event technology/platforms/apps/AI tools (this replaces the old "tech" category).
+- sustainability: ESG, green/carbon-neutral events, sustainable venues.
+- market: market research, industry reports, statistics, revenue/forecast data.
+- policy: GOVERNMENT policy, ministries, visa/regulation, official standards, public grants.
 
-Example output:
-{"title_ko":"PCMA, 컨비닝 리더스 2025 역대 최고 참가자 수 발표","category":"convention","insight":"PCMA 연례회의 참가자가 역대 최고를 기록하며 글로벌 MICE 산업 회복세를 확인했다."}`;
+DISAMBIGUATION (avoid common mistakes):
+- The word "association" alone is NOT convention. An "event industry association" reporting on festivals/activations -> event; on conferences/meetings -> convention. Decide by the topic.
+- A trade body / industry association news item -> classify by WHAT the news is about, not the org type.
+- Do NOT pick incentive unless the article is specifically about incentive travel / reward trips.
+
+Examples:
+Input: Title: "PCMA Announces Record Attendance at Convening Leaders 2025" | hint: convention
+Output: {"title_ko":"PCMA, 컨비닝 리더스 2025 역대 최고 참가자 수 발표","category":"convention","insight":"PCMA 연례회의 참가자가 역대 최고를 기록하며 글로벌 MICE 회복세를 확인했다."}
+Input: Title: "Event Industry Association unveils 2026 brand activation festival lineup" | hint: convention
+Output: {"title_ko":"이벤트산업협회, 2026 브랜드 액티베이션 페스티벌 라인업 공개","category":"event","insight":"이벤트산업협회가 체험형 브랜드 페스티벌을 예고하며 오프라인 이벤트 시장 확대를 시사했다."}
+Input: Title: "Top performers rewarded with luxury incentive trip to Maldives" | hint: incentive
+Output: {"title_ko":"우수 성과자, 몰디브 럭셔리 인센티브 여행으로 포상","category":"incentive","insight":"기업 포상 여행이 럭셔리 목적지로 확대되며 인센티브 시장 회복세를 보여준다."}`;
 
   const step1User  = `Title: "${article.title}"
 Category hint: ${hint}
