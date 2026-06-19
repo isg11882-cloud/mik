@@ -1166,6 +1166,21 @@
       overflow-y: auto;
       margin: 5vh auto;
     }
+
+    /* 듀얼뷰: 모바일은 좌우 2단 → 세로 1단으로 쌓아 전체 폭 사용 (가독성) */
+    .dual-grid {
+      grid-template-columns: 1fr !important;
+      gap: 12px;
+    }
+    .article-col-body {
+      max-height: none;          /* 내부 스크롤박스 제거 — 본문 자연스럽게 흐르게 */
+      font-size: 15px;
+      line-height: 1.9;
+      padding: 16px 18px;
+      word-break: keep-all;      /* 한글 단어 단위 줄바꿈 */
+      overflow-wrap: break-word;
+    }
+    .ai-summary-points, .ai-insight-text { font-size: 14px; line-height: 1.8; }
   }
 
   @media (max-width: 480px) {
@@ -1484,6 +1499,7 @@
     <button class="filter-pill" onclick="filterType('컨벤션', this)">컨벤션</button>
     <button class="filter-pill" onclick="filterType('인센티브', this)">인센티브</button>
     <button class="filter-pill" onclick="filterType('이벤트', this)">이벤트</button>
+    <button class="filter-pill" onclick="filterType('정책', this)">정책</button>
     <select class="sort-select" onchange="sortNews(this.value)">
       <option value="latest">최신순</option>
       <option value="views">인기순</option>
