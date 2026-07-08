@@ -31,7 +31,6 @@ export function classifyByRules(title, content, defaultCategory = 'convention') 
     event:          0,
     tech:           0,
     sustainability: 0,
-    market:         0,
     policy:         0,
   };
 
@@ -86,14 +85,13 @@ export function classifyByRules(title, content, defaultCategory = 'convention') 
                             'environmental impact','green initiative','responsible tourism']],
     ['sustainability', 1, ['green ','carbon','environment','climate','recycl']],
 
-    // market
-    ['market', 5, ['market research','industry report','market forecast','revenue data',
-                   'market size','benchmark study','industry statistics','market share',
-                   'economic impact study','market analysis','industry outlook',
-                   'spending report','demand forecast','global market']],
-    ['market', 3, ['report shows','according to research','survey results','new data',
-                   'industry data','growth rate','market trend','record revenue','record high']],
-    ['market', 1, ['report','survey','data','forecast','outlook','statistics','revenue']],
+    // market → convention 흡수 (산업 리포트/시장 분석은 일반 업계 뉴스로 분류)
+    ['convention', 3, ['market research','industry report','market forecast','revenue data',
+                       'market size','benchmark study','industry statistics','market share',
+                       'economic impact study','market analysis','industry outlook',
+                       'spending report','demand forecast','global market']],
+    ['convention', 2, ['report shows','according to research','survey results','new data',
+                       'industry data','growth rate','market trend','record revenue','record high']],
 
     // policy
     ['policy', 5, ['government policy','ministry of tourism','visa policy','legislation',
@@ -111,7 +109,7 @@ export function classifyByRules(title, content, defaultCategory = 'convention') 
   }
 
   // 점수가 동점일 때 우선순위 (더 구체적인 카테고리를 우선)
-  const PRIORITY = ['tech', 'exhibition', 'event', 'incentive', 'sustainability', 'convention', 'policy', 'market'];
+  const PRIORITY = ['tech', 'exhibition', 'event', 'incentive', 'sustainability', 'policy', 'convention'];
   let best = null;
   let bestScore = 0;
   for (const cat of PRIORITY) {
@@ -131,7 +129,6 @@ export function classifyByRules(title, content, defaultCategory = 'convention') 
     event:          'tag-event',
     tech:           'tag-tech',
     sustainability: 'tag-sustainability',
-    market:         'tag-market',
     policy:         'tag-policy',
   };
   const catClass = CLASS_MAP[category] || 'tag-convention';
