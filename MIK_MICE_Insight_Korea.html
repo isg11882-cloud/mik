@@ -821,16 +821,37 @@
   .lang-ko { background: #DBEAFE; color: #1E40AF; }
 
   .article-col-body {
-    padding: 16px;
-    font-size: 13px;
-    line-height: 1.75;
+    padding: 20px 24px;
+    font-size: 15px;
+    line-height: 1.9;
     color: var(--text-primary);
-    max-height: 420px;
+    max-height: 520px;
     overflow-y: auto;
     scrollbar-width: thin;
+    word-break: keep-all;
+    letter-spacing: -0.01em;
   }
 
-  .article-col-body p { margin-bottom: 12px; }
+  /* 영문 컬럼은 줄바꿈 기본, 자간 기본 */
+  #enContent {
+    word-break: normal;
+    letter-spacing: 0;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  /* 본문 내 하이퍼링크 — 읽기 방해 억제 */
+  .article-col-body a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .article-col-body a:hover {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+
+  .article-col-body p { margin-bottom: 16px; }
   .article-col-body p:last-child { margin-bottom: 0; }
 
   .source-link {
@@ -1648,13 +1669,13 @@
 const WORKER_URL = 'https://mik-worker.isg11882.workers.dev';
 const CAT_LABELS = {
   'exhibition':'전시', 'convention':'컨벤션', 'incentive':'인센티브',
-  'event':'이벤트', 'tech':'이벤트', 'sustainability':'지속가능', 'market':'시장',
+  'event':'이벤트', 'tech':'이벤트', 'sustainability':'지속가능', 'market':'컨벤션',
   'bio':'바이오', 'policy':'정책', 'general':'일반'
 };
 const CAT_CLASSES = {
   'exhibition':'tag-exhibition', 'convention':'tag-convention',
   'incentive':'tag-incentive', 'event':'tag-event', 'tech':'tag-event',
-  'sustainability':'tag-sustainability', 'market':'tag-market',
+  'sustainability':'tag-sustainability', 'market':'tag-convention',
   'bio':'tag-bio', 'policy':'tag-policy', 'general':'tag-convention'
 };
 let ARTICLES = [];
@@ -2130,7 +2151,7 @@ function renderReportView(){
   const catCount = {}; arts.forEach(a=>{ const c=a.cat||'기타'; catCount[c]=(catCount[c]||0)+1; });
   const catRows = Object.entries(catCount).sort((x,y)=>y[1]-x[1]);
   const maxC = catRows.length ? catRows[0][1] : 1;
-  const catColors = {'전시':'#3B82F6','컨벤션':'#22C55E','인센티브':'#F97316','이벤트':'#E11D48','테크':'#8B5CF6','지속가능':'#10B981','시장':'#2563EB'};
+  const catColors = {'전시':'#3B82F6','컨벤션':'#22C55E','인센티브':'#F97316','이벤트':'#E11D48','테크':'#8B5CF6','지속가능':'#10B981'};
   const srcCount = {}; arts.forEach(a=>{ if(a.source) srcCount[a.source]=(srcCount[a.source]||0)+1; });
   const srcRows = Object.entries(srcCount).sort((x,y)=>y[1]-x[1]).slice(0,8);
   const top = [...arts].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,8);
