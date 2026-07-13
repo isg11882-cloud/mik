@@ -1,19 +1,39 @@
-# ──────────────────────────────────────────────────────
-# Cloudflare Pages / Workers 설정
-# ──────────────────────────────────────────────────────
+name = "mik-worker"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
 
-name = "ex-back"
-compatibility_date = "2024-11-18"
-compatibility_flags = ["nodejs_compat"]
+# Cron Triggers — run every hour
+[triggers]
+crons = ["0 * * * *"]
 
-# ── 환경변수 ─────────────────────────────────────────
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "mik_db"
+database_id = "bf91713c-3474-4e48-8ece-9a759707754b"
+migrations_dir = "migrations"
+
+# Cloudflare Workers AI binding (free tier — used for title translation fallback)
+[ai]
+binding = "AI"
+
+# Environment variables (non-secret)
 [vars]
-GEMMA_MODEL_ID = "gemini-1.5-flash-latest"
-NEXT_PUBLIC_APP_URL = "https://ex-back.pages.dev"
-NEXT_PUBLIC_SUPABASE_URL = "https://duiwsicqmpqijuhobhun.supabase.co"
+ENVIRONMENT = "production"
+# Ollama model to use for AI analysis and translation
+OLLAMA_MODEL = "qwen2.5:7b"
 
-# ── 빌드 설정 ─────────────────────────────────────────
-# Cloudflare Pages 대시보드 설정이 우선되지만, 로컬 테스트를 위해 남겨둡니다.
-[build]
-command = "npm run build"
-path = ".next"
+# Secrets — set via CLI before deploying:
+#   wrangler secret put OLLAMA_URL
+#   wrangler secret put JWT_SECRET
+#   wrangler secret put ADMIN_SECRET      ← 관리자 API 인증 토큰 (필수!)
+#
+# ADMIN_SECRET 등록 예시:
+#   wrangler secret put ADMIN_SECRET
+#   > (프롬프트에 토큰 입력, 예: my_super_secret_token_2026)
+#
+# OLLAMA_URL example: https://your-tunnel.trycloudflare.com
+# (expose local Ollama via: cloudflared tunnel --url http://localhost:11434)
+
+# D1 마이그레이션 실행:
+#   npx wrangler d1 migrations apply mik_db --remote

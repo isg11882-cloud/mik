@@ -1,35 +1,30 @@
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Secrets — NEVER commit
+.dev.vars
+.env
+.env.local
+.env.production
 
-# testing
-/coverage
+# Wrangler build artifacts
+.wrangler/
+dist/
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Node
+node_modules/
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+package-lock.json
 
-# local env files
-.env*.local
+# OS
+.DS_Store
+Thumbs.db
 
-# vercel
-.vercel
+# 임시 스크립트 및 백업
+*.bak
+fix_deploy_push.sh
+push_changes.sh
+push_all_fixes.sh
+push_all_v2.sh
+get_html.py
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-.vercel
+# 로그
+logs/
+*.log
