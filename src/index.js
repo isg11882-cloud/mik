@@ -229,67 +229,7 @@ async function translateText(text, env) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────
-// AI 큐 처리 (Cron에서 호출 — 현재는 로컬 AI 전용이므로 최소화)
-// ─────────────────────────────────────────────────────────────────
-
-export async function processAIQueue(env, limit = 2) {
-  const t0 = Date.now();
-  console.log(`[AI Queue] Processing up to ${limit} articles...`);
-
-  if (!env.OLLAMA_URL && !env.AI) {
-    console.warn('[AI Queue] No AI service configured — skipping');
-    return { status: 'skipped', message: 'No AI service configured' };
-  }
-
-  const pending = await env.DB.prepare(`
-    SELECT * FROM articles
-    WHERE (insight = '' OR insight IS NULL)
-      AND insight != 'skip-non-mice'
-    ORDER BY created_at DESC
-    LIMIT ?
-  `).bind(limit).all();
-
-  if (!pending.results?.length) {
-    return { status: 'no_pending' };
-  }
-
-  const batch = pending.results.map(row => ({
-    id:      row.id,
-    title:   row.title,
-    content: row.content_en || row.title,
-    source:  row.source,
-  }));
-
-  const processed = await processArticles(batch, env);
-  let updatedCount = 0;
-
-  for (const article of processed) {
-    try {
-      const r = await env.DB.prepare(`
-        UPDATE articles
-        SET title_ko = ?, summary_json = ?, insight = ?,
-            content_ko = ?, category = ?, cat_class = ?, article_type = ?
-        WHERE id = ?
-      `).bind(
-        article.title_ko  || article.titleKo   || article.title || '',
-        JSON.stringify(article.summaryPoints || []),
-        article.insight   || '',
-        article.content_ko || article.contentKo || '',
-        article.category  || 'general',
-        article.catClass  || 'tag-convention',
-        article.articleType || '분석',
-        article.id,
-      ).run();
-      if (r.meta.changes > 0) updatedCount++;
-    } catch (err) {
-      console.error(`[AI Queue] Update failed for ID ${article.id}: ${err?.message}`);
-    }
-  }
-
-  const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-  return { status: 'success', processed: updatedCount, elapsed: `${elapsed}s` };
-}
+// processAIQueue는 ollama.js에서 import — CW AI 기반 완전 클라우드 처리
 
 // ─────────────────────────────────────────────────────────────────
 // 제목 번역 보정 (Cloudflare AI 무료 티어 활용)
