@@ -821,37 +821,16 @@
   .lang-ko { background: #DBEAFE; color: #1E40AF; }
 
   .article-col-body {
-    padding: 20px 24px;
-    font-size: 15px;
-    line-height: 1.9;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.75;
     color: var(--text-primary);
-    max-height: 520px;
+    max-height: 420px;
     overflow-y: auto;
     scrollbar-width: thin;
-    word-break: keep-all;
-    letter-spacing: -0.01em;
   }
 
-  /* 영문 컬럼은 줄바꿈 기본, 자간 기본 */
-  #enContent {
-    word-break: normal;
-    letter-spacing: 0;
-    font-size: 14px;
-    line-height: 1.8;
-  }
-
-  /* 본문 내 하이퍼링크 — 읽기 방해 억제 */
-  .article-col-body a {
-    color: inherit;
-    text-decoration: none;
-    border-bottom: 1px solid var(--border);
-  }
-  .article-col-body a:hover {
-    color: var(--primary);
-    border-bottom-color: var(--primary);
-  }
-
-  .article-col-body p { margin-bottom: 16px; }
+  .article-col-body p { margin-bottom: 12px; }
   .article-col-body p:last-child { margin-bottom: 0; }
 
   .source-link {

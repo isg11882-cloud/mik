@@ -1,19 +1,17 @@
 /**
- * MIK Worker — Main Entry Point v3
+ * MIK Worker — Main Entry Point v4
  * ──────────────────────────────────────────────────────────────────
- * 변경사항 (v3):
- *  - fetchAndStoreRawRSS: 개별 item 저장 실패가 다음 item 처리를 막지 않도록 개편
- *  - storeArticleRaw: INSERT OR IGNORE + ON CONFLICT(guid) DO NOTHING 이중 보호
- *  - rss-parser의 classifyByRules 결과를 카테고리로 사용 (AI 없이도 분류됨)
- *  - deduplicateItems: 개별 DB 쿼리 오류가 전체를 중단하지 않도록 개편
- *  - processAIQueue: AI 없이도 크롤링 자체는 계속 작동
+ * 변경사항 (v4):
+ *  - processAIQueue: Cloudflare Workers AI로 번역·분석 완전 클라우드화
+ *    (run_local_ai.js + rapid-mlx 로컬 서버 불필요)
+ *  - cron: RSS 수집 → CW AI 번역·분석 → D1 업데이트 자동화
  * ──────────────────────────────────────────────────────────────────
  */
 
 import { fetchAllFeeds, fetchFullContent } from './rss-parser.js';
-import { processArticles, translateTitle }  from './ollama.js';
-import { handleApiRequest }                 from './api.js';
-import { isMiceRelevant }                   from './mice-filter.js';
+import { processArticles, translateTitle, processAIQueue } from './ollama.js';
+import { handleApiRequest }                from './api.js';
+import { isMiceRelevant }                  from './mice-filter.js';
 
 // ─────────────────────────────────────────────────────────────────
 // Worker 진입점
@@ -42,15 +40,24 @@ export default {
     });
   },
 
-  /** Cron 핸들러 — 매 시간 RSS 수집 + 제목 번역 보정 */
+  /** Cron 핸들러 — 매 시간 RSS 수집 → CW AI 번역·분석 */
   async scheduled(event, env, ctx) {
     console.log(`[Cron] Triggered at ${new Date().toISOString()}`);
     ctx.waitUntil((async () => {
+      // 1. RSS 수집 → D1 원문 저장
       try {
         await fetchAndStoreRawRSS(env);
       } catch (e) {
         console.error('[Cron] fetchAndStoreRawRSS fatal:', e?.message);
       }
+      // 2. CW AI로 미번역 기사 분석·번역 (1회 최대 5건)
+      try {
+        const stats = await processAIQueue(env, 5);
+        console.log(`[Cron] AI queue done — processed:${stats.processed} errors:${stats.errors}`);
+      } catch (e) {
+        console.error('[Cron] processAIQueue fatal:', e?.message);
+      }
+      // 3. 영문 제목 한국어 보정 (기존 유지)
       try {
         await repairTitles(env);
       } catch (e) {
