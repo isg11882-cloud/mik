@@ -95,13 +95,7 @@ Return this exact JSON structure:
     max_tokens: 1500,
   });
 
-  const responseText = result?.response || '';
-  const firstBrace = responseText.indexOf('{');
-  const lastBrace = responseText.lastIndexOf('}');
-  if (firstBrace === -1 || lastBrace <= firstBrace) {
-    throw new Error('CW AI returned no JSON: ' + responseText.substring(0, 100));
-  }
-  return JSON.parse(responseText.slice(firstBrace, lastBrace + 1));
+  return parseJsonLoose(extractAIText(result));
 }
 
 // ─────────────────────────────────────────────
@@ -124,7 +118,7 @@ export async function translateTitle(text, env) {
         ],
         max_tokens: 150,
       });
-      const translated = (result?.response || '').trim();
+      const translated = extractAIText(result).trim();
       if (translated && translated !== text) return translated;
     } catch (err) {
       console.error('[CW-AI] Title translation failed:', err.message);
@@ -251,6 +245,40 @@ function fallbackResult(article) {
 // run_local_ai.js 대체 — Mac 없이 클라우드에서 처리
 // ─────────────────────────────────────────────
 
+/**
+ * env.AI.run() 결과에서 텍스트를 안전하게 추출한다.
+ * "-fast" 모델 변형은 가끔 response를 문자열이 아니라 이미 파싱된
+ * 객체/배열로 반환하는 경우가 있어 raw.indexOf/raw.trim 이 터진다
+ * ("raw.indexOf is not a function" — 2026-08 모델 교체 후 확인된 버그).
+ */
+function extractAIText(result) {
+  const r = result?.response;
+  if (typeof r === 'string') return r;
+  if (r == null) return '';
+  return JSON.stringify(r); // 객체/배열로 온 경우 문자열화해서 이어서 처리
+}
+
+/**
+ * 모델이 생성한 JSON 문자열에서 { ... } 구간을 추출해 파싱한다.
+ * 흔한 깨진 패턴(제어문자, trailing comma, 잘못된 유니코드 escape)을
+ * 1차 시도 실패 시 복구해서 재시도한다.
+ */
+function parseJsonLoose(raw) {
+  const fb = raw.indexOf('{');
+  const lb = raw.lastIndexOf('}');
+  if (fb === -1 || lb <= fb) throw new Error('No JSON in AI response: ' + raw.slice(0, 150));
+  const jsonStr = raw.slice(fb, lb + 1);
+  try {
+    return JSON.parse(jsonStr);
+  } catch {
+    const repaired = jsonStr
+      .replace(/[\u0000-\u001F]+/g, ' ')     // 제어문자(원시 개행 등) 제거
+      .replace(/,\s*([}\]])/g, '$1')          // trailing comma 제거
+      .replace(/\\(?!["\\/bfnrtu])/g, '');    // 잘못된 이스케이프(\x 등) 제거
+    return JSON.parse(repaired);
+  }
+}
+
 const CAT_CLASS_MAP = {
   convention:     'tag-convention',
   exhibition:     'tag-exhibition',
@@ -299,11 +327,7 @@ Content: ${excerpt}`;
     max_tokens: 800,
   });
 
-  const raw = result?.response || '';
-  const fb  = raw.indexOf('{');
-  const lb  = raw.lastIndexOf('}');
-  if (fb === -1 || lb <= fb) throw new Error('No JSON in CW AI response');
-  return JSON.parse(raw.slice(fb, lb + 1));
+  return parseJsonLoose(extractAIText(result));
 }
 
 /** CW AI 단일 호출 — 본문 한국어 번역 */
@@ -322,7 +346,7 @@ async function cwaiTranslate(text, env) {
     max_tokens: 1200,
   });
 
-  const translated = (result?.response || '').trim();
+  const translated = extractAIText(result).trim();
   if (!translated || !/[가-힣]/.test(translated)) return '';
   return '<p>' + translated.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
 }
