@@ -263,6 +263,19 @@ function extractAIText(result) {
  * 흔한 깨진 패턴(제어문자, trailing comma, 잘못된 유니코드 escape)을
  * 1차 시도 실패 시 복구해서 재시도한다.
  */
+/**
+ * 반복형 gibberish 감지 — "-fast" 모델이 가끔 의미 없는 짧은 음절을
+ * 반복 생성하는 실패 모드를 잡아낸다.
+ * 예: "촍세요 주성었시 촍지료 주장을 사엘세요" (2026-08-10~11 확인된 실사례)
+ * 판정 기준: 단어(공백 기준) 4개 이상 & 고유 단어 비율이 60% 이하
+ */
+function isRepeatedGibberish(text) {
+  const words = (text || '').split(/\s+/).filter(Boolean);
+  if (words.length < 4) return false;
+  const uniq = new Set(words);
+  return uniq.size <= Math.ceil(words.length * 0.6);
+}
+
 function parseJsonLoose(raw) {
   const fb = raw.indexOf('{');
   const lb = raw.lastIndexOf('}');
@@ -399,17 +412,17 @@ export async function processAIQueue(env, batchSize = 5) {
 
       const catClass = CAT_CLASS_MAP[cat] || 'tag-convention';
 
-      // title_ko 검증
+      // title_ko 검증 (gibberish 포함 — 반복 음절 실패 시 재시도 대상으로 남김)
       const titleKo = (meta.title_ko || '').trim();
-      if (!titleKo || !/[가-힣]/.test(titleKo)) {
-        console.error(`[CWAI] Bad title_ko [${article.id}]: "${titleKo}"`);
+      if (!titleKo || !/[가-힣]/.test(titleKo) || isRepeatedGibberish(titleKo)) {
+        console.error(`[CWAI] Bad/gibberish title_ko [${article.id}]: "${titleKo}"`);
         errors++;
         continue;
       }
 
-      // summary_points 검증 및 보정
+      // summary_points 검증 및 보정 (gibberish 항목은 제외)
       let summaryPoints = Array.isArray(meta.summary_points)
-        ? meta.summary_points.filter(s => s && /[가-힣]/.test(s)).slice(0, 3)
+        ? meta.summary_points.filter(s => s && /[가-힣]/.test(s) && !isRepeatedGibberish(s)).slice(0, 3)
         : [];
       while (summaryPoints.length < 3) {
         const fallbacks = [
@@ -420,16 +433,20 @@ export async function processAIQueue(env, batchSize = 5) {
         summaryPoints.push(fallbacks[summaryPoints.length]);
       }
 
-      // insight 검증
+      // insight 검증 (gibberish면 안전한 대체 문구로 폴백)
       let insight = (meta.insight || '').trim();
-      if (!insight || !/[가-힣]/.test(insight)) {
+      if (!insight || !/[가-힣]/.test(insight) || isRepeatedGibberish(insight)) {
         insight = `${article.title.slice(0, 30)} 관련 MICE 산업 동향이 주목받고 있다.`;
       }
 
-      // 3. 본문 번역
+      // 3. 본문 번역 (gibberish면 빈 값으로 — 제목/insight는 이미 정상이므로 기사 자체는 저장)
       let contentKo = '';
       try {
         contentKo = await cwaiTranslate(article.content_en, env);
+        if (isRepeatedGibberish(contentKo.replace(/<[^>]+>/g, ' '))) {
+          console.warn(`[CWAI] Gibberish body translation [${article.id}], dropping body`);
+          contentKo = '';
+        }
       } catch (e) {
         console.warn(`[CWAI] Translation failed [${article.id}], skipping body: ${e.message}`);
       }
