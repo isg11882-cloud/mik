@@ -2,9 +2,11 @@ name = "mik-worker"
 main = "src/index.js"
 compatibility_date = "2024-12-01"
 
-# Cron Triggers — run every hour
+# Cron Triggers
+# - 매시 정각(0분): RSS 수집만 (피드 30여개 + 신규기사 본문수집 = 서브리퀘스트 다수 소모)
+# - 매시 30분: AI 분석·번역만 (RSS 수집과 같은 실행에 묶으면 서브리퀘스트 한도 초과로 AI 호출이 전부 실패함 — 2026-08 장애 원인)
 [triggers]
-crons = ["0 * * * *"]
+crons = ["0 * * * *", "30 * * * *"]
 
 # D1 Database binding
 [[d1_databases]]

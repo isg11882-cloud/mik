@@ -3,6 +3,12 @@
  * Provides endpoints for the frontend to fetch articles data from D1.
  */
 
+// processAIQueue는 ollama.js에서 직접 가져온다.
+// (이전에는 `await import('./index.js')`로 동적 로딩했는데, index.js가
+//  processAIQueue를 재수출하지 않아 undefined가 되며
+//  "processAIQueue is not a function" 에러 발생 — 수동/크론 번역 처리 모두 영향)
+import { processAIQueue } from './ollama.js';
+
 // ─────────────────────────────────────────────────────────────────
 // 관리자 인증 미들웨어
 // 사용법: const err = requireAdmin(request, env); if (err) return err;
@@ -268,7 +274,6 @@ export async function handleApiRequest(request, env) {
       if (authError) return authError;
       console.log('[API] Processing AI Queue manually (GET)...');
       const limit = parseInt(url.searchParams.get('limit') || '10');
-      const { processAIQueue } = await import('./index.js');
       const result = await processAIQueue(env, limit);
       return corsResponse(jsonResponse(result));
     }
@@ -281,7 +286,6 @@ export async function handleApiRequest(request, env) {
       const urlParams = new URL(request.url);
       const limit = parseInt(urlParams.searchParams.get('limit') || '5');
       console.log(`[API] Limit set to: ${limit}`);
-      const { processAIQueue } = await import('./index.js');
       const result = await processAIQueue(env, limit);
       console.log('[API] AI Queue process result:', JSON.stringify(result));
       return corsResponse(jsonResponse(result));
@@ -804,7 +808,7 @@ async function recategorizeArticles(url, env) {
  * POST /api/crawl — trigger manual full sync (Raw + AI)
  */
 async function triggerCrawl(env) {
-  const { fetchAndStoreRawRSS, processAIQueue } = await import('./index.js');
+  const { fetchAndStoreRawRSS } = await import('./index.js');
   const rawResult = await fetchAndStoreRawRSS(env);
   const aiResult = await processAIQueue(env, 2);
   return jsonResponse({

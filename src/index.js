@@ -13,6 +13,12 @@ import { processArticles, translateTitle, processAIQueue } from './ollama.js';
 import { handleApiRequest }                from './api.js';
 import { isMiceRelevant }                  from './mice-filter.js';
 
+// api.js가 `await import('./index.js')`로 동적 로딩할 때 processAIQueue를
+// 찾을 수 있도록 명시적으로 재수출한다.
+// (버그: 단순 import만 하고 export하지 않으면 동적 import 시
+//  undefined가 되어 "processAIQueue is not a function" 런타임 에러 발생 — 2026-08-04 이후 번역 중단 원인)
+export { processAIQueue };
+
 // ─────────────────────────────────────────────────────────────────
 // Worker 진입점
 // ─────────────────────────────────────────────────────────────────
@@ -40,24 +46,38 @@ export default {
     });
   },
 
-  /** Cron 핸들러 — 매 시간 RSS 수집 → CW AI 번역·분석 */
+  /**
+   * Cron 핸들러
+   * RSS 수집과 AI 분석을 같은 Worker 실행(invocation) 안에서 함께 돌리면
+   * 서브리퀘스트 한도(RSS 피드 30여개 + 신규기사 본문수집만으로도 근접)를
+   * RSS 수집 단계에서 이미 소진해버려 AI 호출이 전부 "Too many subrequests"로
+   * 실패한다 (2026-08-04 ~ 08-11 번역 완전 중단의 실제 원인).
+   * → 정각(0분)에는 RSS 수집만, 30분에는 AI 분석만 실행해 서로 다른
+   *   invocation으로 분리, 각자 독립된 서브리퀘스트 예산을 쓰도록 한다.
+   */
   async scheduled(event, env, ctx) {
-    console.log(`[Cron] Triggered at ${new Date().toISOString()}`);
+    const isAIRun = event.cron === '30 * * * *';
+    console.log(`[Cron] Triggered at ${new Date().toISOString()} (${isAIRun ? 'AI' : 'RSS'})`);
+
     ctx.waitUntil((async () => {
-      // 1. RSS 수집 → D1 원문 저장
-      try {
-        await fetchAndStoreRawRSS(env);
-      } catch (e) {
-        console.error('[Cron] fetchAndStoreRawRSS fatal:', e?.message);
+      if (!isAIRun) {
+        // 1. RSS 수집 → D1 원문 저장
+        try {
+          await fetchAndStoreRawRSS(env);
+        } catch (e) {
+          console.error('[Cron] fetchAndStoreRawRSS fatal:', e?.message);
+        }
+        return;
       }
-      // 2. CW AI로 미번역 기사 분석·번역 (1회 최대 5건)
+
+      // 2. CW AI로 미번역 기사 분석·번역 (1회 최대 8건 — 별도 invocation이라 서브리퀘스트 여유 있음)
       try {
-        const stats = await processAIQueue(env, 5);
+        const stats = await processAIQueue(env, 8);
         console.log(`[Cron] AI queue done — processed:${stats.processed} errors:${stats.errors}`);
       } catch (e) {
         console.error('[Cron] processAIQueue fatal:', e?.message);
       }
-      // 3. 영문 제목 한국어 보정 (기존 유지)
+      // 3. 영문 제목 한국어 보정
       try {
         await repairTitles(env);
       } catch (e) {

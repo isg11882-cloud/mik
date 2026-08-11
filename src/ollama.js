@@ -87,7 +87,7 @@ Return this exact JSON structure:
   "content_ko": "<p>Korean translation of the article</p>"
 }`;
 
-  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
     messages: [
       { role: 'system', content: 'You are a MICE industry analyst. Respond ONLY with valid JSON, no extra text.' },
       { role: 'user', content: prompt },
@@ -114,7 +114,7 @@ export async function translateTitle(text, env) {
   // Primary: Cloudflare Workers AI
   if (env.AI) {
     try {
-      const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+      const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
         messages: [
           {
             role: 'system',
@@ -291,7 +291,7 @@ Article title: "${article.title}"
 Source: ${article.source || ''}
 Content: ${excerpt}`;
 
-  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
     messages: [
       { role: 'system', content: 'You are a MICE industry analyst. Output ONLY valid JSON.' },
       { role: 'user',   content: prompt },
@@ -311,7 +311,7 @@ async function cwaiTranslate(text, env) {
   if (!text || text.length < 20) return '';
   const content = text.slice(0, 1500); // 토큰 한도 내로 제한
 
-  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
     messages: [
       {
         role: 'system',
