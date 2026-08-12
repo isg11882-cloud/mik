@@ -93,6 +93,10 @@ Return this exact JSON structure:
       { role: 'user', content: prompt },
     ],
     max_tokens: 1500,
+    // 기본 temperature(0.6)에서 작은 모델이 반복 음절 루프(gibberish)에 빠지는
+    // 경우가 확인되어 낮춤 + 반복 페널티 추가 (무료 티어, 추가 비용 없음)
+    temperature: 0.3,
+    repetition_penalty: 1.3,
   });
 
   return parseJsonLoose(extractAIText(result));
@@ -117,6 +121,8 @@ export async function translateTitle(text, env) {
           { role: 'user', content: text },
         ],
         max_tokens: 150,
+        temperature: 0.3,
+        repetition_penalty: 1.3,
       });
       const translated = extractAIText(result).trim();
       if (translated && translated !== text) return translated;
@@ -338,6 +344,8 @@ Content: ${excerpt}`;
       { role: 'user',   content: prompt },
     ],
     max_tokens: 800,
+    temperature: 0.3,
+    repetition_penalty: 1.3,
   });
 
   return parseJsonLoose(extractAIText(result));
@@ -357,6 +365,8 @@ async function cwaiTranslate(text, env) {
       { role: 'user', content: content },
     ],
     max_tokens: 1200,
+    temperature: 0.3,
+    repetition_penalty: 1.3,
   });
 
   const translated = extractAIText(result).trim();
