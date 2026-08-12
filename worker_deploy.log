@@ -1,0 +1,30 @@
+=== Deploying Worker ===
+
+ ⛅️ wrangler 3.114.17 (update available 4.121.0)
+------------------------------------------------
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe version of Wrangler you are using is now out-of-date.[0m
+
+  Please update to the latest version to prevent critical errors.
+  Run `npm install --save-dev wrangler@4` to update to the latest version.
+  After installation, run Wrangler with `npx wrangler`.
+
+
+Total Upload: 81.11 KiB / gzip: 21.73 KiB
+Your worker has access to the following bindings:
+- D1 Databases:
+  - DB: mik_db (bf91713c-3474-4e48-8ece-9a759707754b)
+- AI:
+  - Name: AI
+- Vars:
+  - ENVIRONMENT: "production"
+  - OLLAMA_MODEL: "qwen2.5:7b"
+Uploaded mik-worker (3.03 sec)
+Deployed mik-worker triggers (0.41 sec)
+  https://mik-worker.isg11882.workers.dev
+  schedule: 0 * * * *
+  schedule: 30 * * * *
+Current Version ID: 516dd546-f7d7-4d71-aa42-d76b50c49564
+
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+Worker deploy exit: 0
